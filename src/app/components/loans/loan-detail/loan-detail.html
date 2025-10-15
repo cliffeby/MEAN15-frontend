@@ -1,0 +1,50 @@
+<mat-toolbar color="primary">
+    <span>Loan #{{ loanData._id }}</span>
+  </mat-toolbar>
+  
+  <div class="loan-detail-container" *ngIf="!loading && loanData; else loadingTemplate">
+    <mat-card class="loan-details-card">
+        <mat-card-header>
+          <mat-card-title>Customer: {{ loanData.customer?.name }} ({{ loanData.customer?.email }})</mat-card-title>
+          
+        </mat-card-header>
+      
+        <mat-card-content>
+            <div class="loan-row">
+                <span class="label">Loan #</span>
+                <span class="value">{{ loanData._id }}</span>
+            </div>
+
+          <div class="loan-row">
+            <span class="label">Amount:</span>
+            <span class="value">{{ loanData.amount | currency }}</span>
+          </div>
+          <div class="loan-row">
+            <span class="label">Term:</span>
+            <span class="value">{{ loanData.termMonths }} months</span>
+          </div>
+          <div class="loan-row">
+            <span class="label">Interest Rate:</span>
+            <span class="value">{{ loanData.interestRate }}%</span>
+          </div>
+          <div class="loan-row">
+            <span class="label">Status:</span>
+            <span class="status-badge" [ngClass]="loanData.status">{{ loanData.status | titlecase }}</span>
+          </div>
+          <div class="loan-row">
+            <span class="label">Created By:</span>
+            <span class="value">{{ loanData.createdBy?.name }} ({{ loanData.createdBy?.email }})</span>
+          </div>
+        </mat-card-content>
+      
+        <mat-card-actions align="end">
+          <button mat-raised-button color="primary" (click)="goBack()">Back</button>
+        </mat-card-actions>
+      </mat-card>
+      
+  </div>
+  
+  <ng-template #loadingTemplate>
+    <p>Loading loan details...</p>
+  </ng-template>
+  

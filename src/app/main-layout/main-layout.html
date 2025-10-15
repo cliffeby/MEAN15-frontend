@@ -1,0 +1,43 @@
+<mat-sidenav-container class="sidenav-container">
+
+    <!-- Sidebar -->
+    <mat-sidenav #drawer mode="side" opened class="sidenav" [fixedInViewport]="false" fixedTopGap="0">
+      <mat-toolbar color="primary" class="sidenav-header">
+        <span><strong>ARCTutorials</strong></span>
+      </mat-toolbar>
+      <mat-nav-list>
+        <a mat-list-item *ngFor="let link of sidebarLinks" [routerLink]="link.route" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">
+          <span>{{ link.label }}</span>
+        </a>
+      </mat-nav-list>
+    </mat-sidenav>
+  
+    <!-- Main content -->
+    <mat-sidenav-content>
+      <!-- Top Navbar -->
+      <mat-toolbar color="accent" class="top-navbar">
+        <button mat-icon-button (click)="drawer.toggle()" class="menu-btn">
+          <mat-icon>menu</mat-icon>
+        </button>
+        <span class="app-title">Auto Quote Loan Management System</span>
+        <span class="flex-spacer"></span>
+        <button mat-icon-button (click)="logout()" matTooltip="Logout">
+          <mat-icon>logout</mat-icon>
+        </button>
+      </mat-toolbar>
+  
+      <!-- Routed components render here -->
+      <div class="main-content">
+        <router-outlet></router-outlet>
+      </div>
+  
+      <!-- Footer -->
+      <mat-toolbar color="primary" class="footer">
+        <p>&copy; 2025 ARCTutorials. All rights reserved.</p>
+
+        <p>&copy; AutoQuote Loan Management App. All rights reserved.</p>
+      </mat-toolbar>
+    </mat-sidenav-content>
+  
+  </mat-sidenav-container>
+  

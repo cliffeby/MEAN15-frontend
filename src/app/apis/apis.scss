@@ -1,0 +1,11 @@
+.json-code {
+    white-space: pre-wrap;       /* Wraps the text */
+    word-wrap: break-word;       /* Break long words */
+    max-width: 400px;            /* Optional: limit width */
+    overflow-x: auto;            /* Horizontal scroll if still too wide */
+    background: #ddd;         /* Light grey background */
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+  

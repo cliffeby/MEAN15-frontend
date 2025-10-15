@@ -1,0 +1,67 @@
+<mat-card class="loan-form-card">
+    <mat-card-header>
+      <mat-card-title>
+        {{ isEdit ? 'Edit Existing Loan' : 'Add New Loan' }}
+      </mat-card-title>
+    </mat-card-header>
+  
+    <mat-card-content>
+      <form [formGroup]="loanForm" (ngSubmit)="submit()" class="loan-form-vertical">
+  
+        <!-- Customer Field -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Customer</mat-label>
+          <!-- Edit mode: disabled input -->
+          <input *ngIf="isEdit" matInput [value]="loanForm.get('customerId')?.value" disabled />
+          <!-- Add mode: select dropdown -->
+          <mat-select *ngIf="!isEdit" formControlName="customerId">
+            <mat-option *ngFor="let customer of customers" [value]="customer._id">
+              {{ customer.name }} ({{ customer.email }})
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+  
+        <!-- Amount -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Amount</mat-label>
+          <input matInput type="number" formControlName="amount" />
+          <mat-error *ngIf="loanForm.get('amount')?.hasError('required')">Amount is required</mat-error>
+          <mat-error *ngIf="loanForm.get('amount')?.hasError('min')">Amount must be greater than 0</mat-error>
+        </mat-form-field>
+  
+        <!-- Term Months -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Term (Months)</mat-label>
+          <input matInput type="number" formControlName="termMonths" />
+          <mat-error *ngIf="loanForm.get('termMonths')?.hasError('required')">Term is required</mat-error>
+          <mat-error *ngIf="loanForm.get('termMonths')?.hasError('min')">Term must be at least 1 month</mat-error>
+        </mat-form-field>
+  
+        <!-- Interest Rate -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Interest Rate (%)</mat-label>
+          <input matInput type="number" formControlName="interestRate" />
+          <mat-error *ngIf="loanForm.get('interestRate')?.hasError('required')">Interest Rate is required</mat-error>
+          <mat-error *ngIf="loanForm.get('interestRate')?.hasError('min')">Interest Rate cannot be negative</mat-error>
+        </mat-form-field>
+  
+        <!-- Status -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Status</mat-label>
+          <mat-select formControlName="status">
+            <mat-option value="pending">Pending</mat-option>
+            <mat-option value="approved">Approved</mat-option>
+            <mat-option value="declined">Declined</mat-option>
+          </mat-select>
+        </mat-form-field>
+  
+        <!-- Submit -->
+        <button mat-raised-button color="accent" class="submit-btn" type="submit">
+          <mat-icon>{{ isEdit ? 'edit' : 'add' }}</mat-icon>
+          {{ isEdit ? 'Update' : 'Create' }} Loan
+        </button>
+  
+      </form>
+    </mat-card-content>
+  </mat-card>
+  

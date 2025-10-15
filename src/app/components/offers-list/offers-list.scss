@@ -1,0 +1,21 @@
+.offers-card {
+    margin: 20px;
+    padding: 20px;
+  
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 15px;
+    }
+  
+    .offers-table {
+      width: 100%;
+      th.mat-header-cell {
+        font-weight: 600;
+      }
+      td.mat-cell {
+        vertical-align: middle;
+      }
+    }
+  }
+  

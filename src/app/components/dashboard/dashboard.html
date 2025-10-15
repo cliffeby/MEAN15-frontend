@@ -1,0 +1,94 @@
+<div style="text-align:center">
+  <h1>Dashboard with Material Table - Sorting, Filtering, Pagination & Charts</h1>
+</div>
+
+<mat-toolbar color="primary">
+    <span>Dashboard</span>
+  </mat-toolbar>
+  
+  <!-- Admin View -->
+  <div *ngIf="auth.role === 'admin'" class="dashboard-container">
+    <mat-card class="dashboard-card">
+      <h3>Total Offers</h3>
+      <p>{{ totalOffers() }}</p>
+      <button mat-raised-button color="accent" (click)="goTo('/offers')">View Customers</button>
+    </mat-card>
+  
+    <mat-card class="dashboard-card">
+      <h3>Total Loans</h3>
+      <p>{{ totalLoans() }}</p>
+      <button mat-raised-button color="accent" (click)="goTo('/loans')">View Loans</button>
+    </mat-card>
+  
+    <mat-card class="dashboard-card">
+      <h3>Loan Status Overview</h3>
+      <canvas baseChart [data]="loanStatusChartData" chartType="pie" style="max-width:100%"></canvas>
+    </mat-card>
+
+    <mat-toolbar color="primary">
+        <span>Loans</span>
+        <span class="spacer"></span>
+        <button mat-raised-button color="accent" (click)="goToAddLoan()">Add Loan</button>
+      </mat-toolbar>
+  
+    <mat-card class="dashboard-card">
+        <h3>Loans Table</h3>
+      
+        <!-- Search input -->
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Search Loans</mat-label>
+          <input matInput (keyup)="applyFilter($event)" placeholder="Search by customer, amount, status..." />
+        </mat-form-field>
+      
+        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8" matSort>
+      
+          <!-- Customer Column -->
+          <ng-container matColumnDef="customer">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Customer </th>
+            <td mat-cell *matCellDef="let loan"> {{ loan.customer?.name || 'N/A' }} </td>
+          </ng-container>
+      
+          <!-- Amount Column -->
+          <ng-container matColumnDef="amount">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Amount </th>
+            <td mat-cell *matCellDef="let loan"> {{ loan.amount }} </td>
+          </ng-container>
+      
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
+            <td mat-cell *matCellDef="let loan"> {{ loan.status }} </td>
+          </ng-container>
+      
+          <!-- CreatedBy Column -->
+          <ng-container matColumnDef="createdBy">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Created By </th>
+            <td mat-cell *matCellDef="let loan"> {{ loan.createdBy?.name || 'N/A' }} </td>
+          </ng-container>
+      
+          <tr mat-header-row *matHeaderRowDef="displayedLoanColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedLoanColumns"></tr>
+        </table>
+      
+        <!-- Paginator -->
+        <mat-paginator [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons></mat-paginator>
+      </mat-card>
+      
+  </div>
+  
+  <!-- Customer View -->
+  <div *ngIf="auth.role === 'customer'" class="dashboard-container">
+    <mat-card class="dashboard-card">
+      <h3>My Loans</h3>
+      <ng-container *ngIf="myLoans().length > 0; else noLoans">
+        <div *ngFor="let loan of myLoans()">
+          <p>Loan ID: {{ loan._id }} | Amount: {{ loan.amount }} | Status: {{ loan.status }}</p>
+        </div>
+      </ng-container>
+      <ng-template #noLoans>
+        <p>No loans found.</p>
+      </ng-template>
+      <button mat-raised-button color="primary" (click)="goTo('/loans/add')">Apply for Loan</button>
+    </mat-card>
+  </div>
+  

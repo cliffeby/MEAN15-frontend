@@ -1,0 +1,107 @@
+<mat-card class="readme-card">
+  <mat-card-header>
+    <mat-card-title>Loan & Offers Management System - Project Overview</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <h3>Project Overview</h3>
+    <p>
+      This system is a full-featured platform for administrators and customers, 
+      enabling management of loans, offers, users, dashboards, and contact submissions. 
+      It provides secure authentication, dynamic dashboards, CRUD operations for loans and offers, 
+      and a template-driven contact form.
+    </p>
+
+    <h3>Tech Stack & Backend Setup</h3>
+    <ul>
+      <li><strong>Frontend:</strong>Angular 20</li>
+      <li><strong>Backend:</strong> Node.js with Express.js</li>
+      <li><strong>Database:</strong> MongoDB using Mongoose ODM</li>
+      <li><strong>Authentication:</strong> JWT token-based authentication</li>
+      <li><strong>Password Security:</strong> bcrypt for password hashing</li>
+      <li><strong>API Endpoints:</strong> RESTful endpoints for loans, offers, contact submissions, and authentication</li>
+      <li><strong>Middleware:</strong> Helmet for security headers, CORS, rate limiting, compression, and error handling</li>
+      <li><strong>Logging:</strong> Morgan for request logging (development and production modes)</li>
+      <li><strong>Deployment Ready:</strong> Modular route and controller structure with production-ready error handling</li>
+    </ul>
+
+    <h3>Key Features (End-User Readable)</h3>
+
+    <h4>Dashboard Overview</h4>
+    <ul>
+      <li>Real-time total loans, total offers, and total customers.</li>
+      <li>Quick overview of loan statuses (Pending, Approved, Declined) via charts.</li>
+      <li>Direct access to loan and offer lists from the dashboard.</li>
+    </ul>
+
+    <h4>Loan Management (CRUD)</h4>
+    <ul>
+      <li><strong>Create Loan:</strong> Admins can add new loans with amount, term, interest rate, and status.</li>
+      <li><strong>Read/List Loans:</strong> View all loans in searchable, sortable, paginated tables.</li>
+      <li><strong>Update Loan:</strong> Edit loan details or status seamlessly.</li>
+      <li><strong>Delete Loan:</strong> Remove loans with confirmation prompts.</li>
+      <li><strong>Loan Detail Page:</strong> View all loan information including customer details.</li>
+    </ul>
+
+    <h4>Offer Management (CRUD with NgRx)</h4>
+    <ul>
+      <li><strong>Create Offer:</strong> Admins can add new offers using a reactive form integrated with NgRx.</li>
+      <li><strong>Read/List Offers:</strong> Offers displayed in elegant tables or cards with real-time updates.</li>
+      <li><strong>Update Offer:</strong> Edit existing offers; state management handled by NgRx store and effects.</li>
+      <li><strong>Delete Offer:</strong> Remove offers with confirmation; NgRx updates state automatically.</li>
+      <li><strong>State Management:</strong> Offers CRUD fully integrated with NgRx actions, reducers, selectors, and effects.</li>
+    </ul>
+
+    <h4>Contact Us (Template-Driven Form)</h4>
+    <ul>
+      <li>Simple contact form for users to submit inquiries.</li>
+      <li>Template-driven validation for required fields (name, email, message).</li>
+      <li>Submissions handled via a backend API endpoint.</li>
+      <li>Responsive design with Angular Material card and form styling.</li>
+    </ul>
+
+    <h4>Authentication & User Management</h4>
+    <ul>
+      <li>Secure login/logout for admins and customers.</li>
+      <li>Role-based access: Admins manage all loans and offers; customers view their own data.</li>
+      <li>JWT token-based authentication for API calls.</li>
+      <li>Password hashing with bcrypt for secure storage.</li>
+    </ul>
+
+    <h4>Form Handling & Validation</h4>
+    <ul>
+      <li>Reactive forms for offers and loans with real-time validation and feedback.</li>
+      <li>Template-driven forms for contact us with validation messages.</li>
+      <li>Error messages and notifications for invalid input or failed actions.</li>
+    </ul>
+
+    <h4>Interactive Tables & UI</h4>
+    <ul>
+      <li>Sorting, searching, and pagination for loans and offers.</li>
+      <li>Material tables and cards with responsive layouts.</li>
+      <li>Dynamic filtering by multiple fields (status, amount, customer, offer type).</li>
+    </ul>
+
+    <h4>Notifications & Feedback</h4>
+    <ul>
+      <li>Success and error notifications on loan and offer actions.</li>
+      <li>Confirmation prompts for critical actions like deletion.</li>
+    </ul>
+
+    <h4>User-Friendly Design</h4>
+    <ul>
+      <li>Clean, responsive UI using Angular Material components.</li>
+      <li>Toolbar with navigation and action buttons for better workflow.</li>
+      <li>Vertical and card-based forms for better readability.</li>
+    </ul>
+
+    <h4>Additional Notes</h4>
+    <ul>
+      <li>All components are responsive and enterprise-ready.</li>
+      <li>Supports scaling with additional modules like Reports, Analytics, and Notifications.</li>
+      <li>Seamless integration between CRUD operations and state management via NgRx.</li>
+      <li>Template-driven forms ensure quick and simple user interactions for contact requests.</li>
+      <li>Backend is production-ready with secure authentication, proper error handling, and modular design.</li>
+    </ul>
+  </mat-card-content>
+</mat-card>
