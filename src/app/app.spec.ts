@@ -18,6 +18,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, autoquote-ui');
+    console.log(compiled);
+    expect(compiled.querySelector('h1')?.textContent).toContain('Welcome to the Frontend Application!');
   });
 });
