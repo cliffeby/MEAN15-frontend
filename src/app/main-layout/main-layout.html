@@ -9,6 +9,9 @@
         <a mat-list-item *ngFor="let link of sidebarLinks" [routerLink]="link.route" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">
           <span>{{ link.label }}</span>
         </a>
+        <a *ngIf="showUserListLink" mat-list-item [routerLink]="'/users'" routerLinkActive="active-link">
+          <span>User List</span>
+        </a>
       </mat-nav-list>
     </mat-sidenav>
   

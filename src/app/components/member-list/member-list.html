@@ -1,0 +1,15 @@
+<div class="member-list">
+  <h2>Members</h2>
+  <button mat-raised-button color="primary" (click)="addMember()">Add Member</button>
+  <mat-divider></mat-divider>
+  <mat-list *ngIf="members.length">
+    <mat-list-item *ngFor="let member of members">
+      <span>{{ member.fullName || member.firstName + ' ' + member.lastName }}</span>
+      <span class="spacer"></span>
+      <button mat-button color="accent" (click)="editMember((member.id ?? member._id) || '')">Edit</button>
+  <button *ngIf="isAdmin" mat-button color="warn" (click)="deleteMember((member.id ?? member._id) || '')">Delete</button>
+    </mat-list-item>
+  </mat-list>
+  <div *ngIf="!members.length && !loading">No members found.</div>
+  <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+</div>

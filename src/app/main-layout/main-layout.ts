@@ -37,10 +37,16 @@ export class MainLayoutComponent {
     { label: 'Offers CRUD + NgRX)', route: '/offers'},
     { label: 'Contact Us(Template)', route: '/contact'},
     { label: 'Offers (Parent + Child)', route: '/offers/dashboard' },
+  { label: 'Member List', route: '/members' },
+  { label: 'Add Member', route: '/members/add' },
     { label: 'API Details', route: '/apis' },
     { label: 'Read Me', route: '/read-me' },
     { label: 'Resume Notes', route: '/resume' }
   ];
+
+  get showUserListLink() {
+    return this.auth.role === 'admin';
+  }
 
   logout() {
     this.auth.logout();

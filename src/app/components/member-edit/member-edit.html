@@ -1,0 +1,35 @@
+<form [formGroup]="memberForm" (ngSubmit)="submit()" class="member-form">
+  <mat-form-field appearance="fill">
+    <mat-label>First Name</mat-label>
+    <input matInput formControlName="firstName" required />
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Last Name</mat-label>
+    <input matInput formControlName="lastName" required />
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>USGA Index</mat-label>
+    <input matInput formControlName="usgaIndex" type="number" />
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Last Date Played</mat-label>
+    <input matInput formControlName="lastDatePlayed" type="date" />
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Email</mat-label>
+    <input matInput formControlName="email" type="email" required />
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>User</mat-label>
+    <input matInput formControlName="user" />
+  </mat-form-field>
+
+  <button mat-raised-button color="primary" type="submit" [disabled]="loading || memberForm.invalid">
+    {{ loading ? 'Saving...' : 'Update Member' }}
+  </button>
+</form>

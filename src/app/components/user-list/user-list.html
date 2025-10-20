@@ -1,0 +1,12 @@
+<div class="user-list">
+  <h2>Users</h2>
+  <mat-list *ngIf="users.length">
+    <mat-list-item *ngFor="let user of users">
+      <span>{{ user.name }} ({{ user.email }}) - {{ user.role }}</span>
+      <span class="spacer"></span>
+      <button *ngIf="isAdmin" mat-button color="warn" (click)="deleteUser(user._id)">Delete</button>
+    </mat-list-item>
+  </mat-list>
+  <div *ngIf="!users.length && !loading">No users found.</div>
+</div>
+<mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>

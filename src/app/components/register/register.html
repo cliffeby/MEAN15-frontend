@@ -8,7 +8,7 @@
       <!-- Name -->
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>Name</mat-label>
-        <input matInput formControlName="name" />
+        <input matInput formControlName="name" placeholder="Enter your name" title="Name" />
         <mat-error *ngIf="registerForm.get('name')?.hasError('required')">
           Name is required
         </mat-error>
@@ -17,7 +17,7 @@
       <!-- Email -->
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>Email</mat-label>
-        <input matInput formControlName="email" type="email" />
+        <input matInput formControlName="email" type="email" placeholder="Enter your email" title="Email" />
         <mat-error *ngIf="registerForm.get('email')?.hasError('required')">
           Email is required
         </mat-error>
@@ -29,7 +29,7 @@
       <!-- Password -->
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>Password</mat-label>
-        <input matInput formControlName="password" type="password" />
+        <input matInput formControlName="password" type="password" placeholder="Enter your password" title="Password" />
         <mat-error *ngIf="registerForm.get('password')?.hasError('required')">
           Password is required
         </mat-error>
@@ -42,7 +42,7 @@
       <mat-form-field appearance="fill" class="full-width">
         <mat-label>Role</mat-label>
         <mat-select formControlName="role">
-          <mat-option value="customer">User</mat-option>
+          <mat-option value="user">User</mat-option>
           <mat-option value="admin">Admin</mat-option>
         </mat-select>
         <mat-error *ngIf="registerForm.get('role')?.hasError('required')">

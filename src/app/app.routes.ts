@@ -16,6 +16,10 @@ import { OffersForm } from './components/offers-form/offer-form';
 import { ContactUsComponent } from './components/contact/contact';
 import { OffersDashboard } from './components/offers-dashboard/offers-dashboard';
 import { OfferStats } from './components/offer-stats/offer-stats';
+import { MemberFormComponent } from './components/member-form/member-form';
+import { MemberEditComponent } from './components/member-edit/member-edit';
+import { MemberListComponent } from './components/member-list/member-list';
+import { UserListComponent } from './components/user-list/user-list';
 
 export const routes: Routes = [
     // Public
@@ -43,8 +47,12 @@ export const routes: Routes = [
         { path: 'offers/stats', component: OfferStats },
         { path: 'offers/create', component: OffersForm },
         { path: 'offers/edit/:id', component: OffersForm },
-        { path: 'contact', component: ContactUsComponent },
-        { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+         { path: 'contact', component: ContactUsComponent },
+         { path: 'members', component: MemberListComponent },
+         { path: 'members/add', component: MemberFormComponent },
+  { path: 'members/edit/:id', component: MemberEditComponent },
+  { path: 'users', component: UserListComponent, canActivate: [roleGuard], data: { role: 'admin' } },
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
       ]
     },
   

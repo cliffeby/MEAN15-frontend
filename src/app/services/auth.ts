@@ -28,6 +28,7 @@ export class Auth {
         }),
         catchError(err => {
           console.error('Login error:', err);
+          console.log('Error details:', email, err.error);
   
           // You can customize error messages here based on backend response
           let errorMsg = 'An error occurred during login. Please try again.';

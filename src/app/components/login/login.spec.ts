@@ -35,4 +35,11 @@ describe('Login', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+    it('should render title', () => {
+    const fixture = TestBed.createComponent(Login);
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    console.log(compiled);
+    expect(compiled.querySelector('h1')?.textContent).toContain('Welcome to ARCTutorials - Login');
+  });
 });

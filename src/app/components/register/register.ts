@@ -29,7 +29,8 @@ export class Register {
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      role: ['customer', Validators.required] // default to customer
+      role: ['user', Validators.required] // default to user
+      
     });
   }
 
