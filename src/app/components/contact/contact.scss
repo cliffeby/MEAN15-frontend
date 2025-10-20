@@ -1,26 +1,31 @@
 .contact-card {
-    max-width: 600px;
-    margin: 2rem auto;
-    padding: 1rem;
-  }
-  
-  .full-width {
-    width: 100%;
-    margin-bottom: 16px;
-  }
-  
-  .success-msg {
-    color: green;
-    margin-top: 12px;
-  }
-  
-  .error-msg {
-    color: red;
-    margin-top: 12px;
-  }
-  
-  .vertical-form {
-    display: flex;
-    flex-direction: column;
-  }
-  
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+.center-text {
+  text-align: center;
+}
+.contact-header {
+  margin-bottom: 20px;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.success-msg {
+  color: green;
+  margin-top: 12px;
+}
+
+.error-msg {
+  color: red;
+  margin-top: 12px;
+}
+
+.vertical-form {
+  display: flex;
+  flex-direction: column;
+}

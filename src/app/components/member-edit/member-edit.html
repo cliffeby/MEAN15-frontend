@@ -1,32 +1,44 @@
 <form [formGroup]="memberForm" (ngSubmit)="submit()" class="member-form">
   <mat-form-field appearance="fill">
     <mat-label>First Name</mat-label>
-    <input matInput formControlName="firstName" required />
+  <input matInput formControlName="firstName" required placeholder="Enter first name" />
+    <mat-error *ngIf="memberForm.get('firstName')?.hasError('required') && memberForm.get('firstName')?.touched">
+      First name is required
+    </mat-error>
   </mat-form-field>
 
   <mat-form-field appearance="fill">
     <mat-label>Last Name</mat-label>
-    <input matInput formControlName="lastName" required />
+  <input matInput formControlName="lastName" required placeholder="Enter last name" />
+    <mat-error *ngIf="memberForm.get('lastName')?.hasError('required') && memberForm.get('lastName')?.touched">
+      Last name is required
+    </mat-error>
   </mat-form-field>
 
   <mat-form-field appearance="fill">
     <mat-label>USGA Index</mat-label>
-    <input matInput formControlName="usgaIndex" type="number" />
+  <input matInput formControlName="usgaIndex" type="number" placeholder="Enter USGA index" />
   </mat-form-field>
 
   <mat-form-field appearance="fill">
     <mat-label>Last Date Played</mat-label>
-    <input matInput formControlName="lastDatePlayed" type="date" />
+  <input matInput formControlName="lastDatePlayed" type="date" placeholder="Select last date played" />
   </mat-form-field>
 
   <mat-form-field appearance="fill">
     <mat-label>Email</mat-label>
-    <input matInput formControlName="email" type="email" required />
+  <input matInput formControlName="email" type="email" required placeholder="Enter email address" />
+    <mat-error *ngIf="memberForm.get('email')?.hasError('required') && memberForm.get('email')?.touched">
+      Email is required
+    </mat-error>
+    <mat-error *ngIf="memberForm.get('email')?.hasError('email') && memberForm.get('email')?.touched">
+      Invalid email address
+    </mat-error>
   </mat-form-field>
 
   <mat-form-field appearance="fill">
     <mat-label>User</mat-label>
-    <input matInput formControlName="user" />
+  <input matInput formControlName="user" placeholder="Enter user" />
   </mat-form-field>
 
   <button mat-raised-button color="primary" type="submit" [disabled]="loading || memberForm.invalid">

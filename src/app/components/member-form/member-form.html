@@ -1,32 +1,32 @@
 <form [formGroup]="memberForm" (ngSubmit)="submit()" class="member-form">
   <mat-form-field appearance="fill">
     <mat-label>First Name</mat-label>
-    <input matInput formControlName="firstName" required />
+    <input matInput formControlName="firstName" required placeholder="Enter first name" title="First Name" />
   </mat-form-field>
 
   <mat-form-field appearance="fill">
     <mat-label>Last Name</mat-label>
-    <input matInput formControlName="lastName" required />
+    <input matInput formControlName="lastName" required placeholder="Enter last name" title="Last Name" />
   </mat-form-field>
 
   <mat-form-field appearance="fill">
     <mat-label>USGA Index</mat-label>
-    <input matInput formControlName="usgaIndex" type="number" />
+    <input matInput formControlName="usgaIndex" type="number" placeholder="Enter USGA Index" title="USGA Index" />
   </mat-form-field>
 
   <mat-form-field appearance="fill">
     <mat-label>Last Date Played</mat-label>
-    <input matInput formControlName="lastDatePlayed" type="date" />
+    <input matInput formControlName="lastDatePlayed" type="date" placeholder="Select last date played" title="Last Date Played" />
   </mat-form-field>
 
   <mat-form-field appearance="fill">
     <mat-label>Email</mat-label>
-    <input matInput formControlName="email" type="email" required />
+    <input matInput formControlName="email" type="email" required placeholder="Enter email" title="Email" />
   </mat-form-field>
 
   <mat-form-field appearance="fill">
     <mat-label>User</mat-label>
-    <input matInput formControlName="user" />
+    <input matInput formControlName="user" placeholder="Enter user" title="User" />
   </mat-form-field>
 
   <button mat-raised-button color="primary" type="submit" [disabled]="loading || memberForm.invalid">
