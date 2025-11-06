@@ -20,6 +20,8 @@ import { MemberFormComponent } from './components/member-form/member-form';
 import { MemberEditComponent } from './components/member-edit/member-edit';
 import { MemberListComponent } from './components/member-list/member-list';
 import { UserListComponent } from './components/user-list/user-list';
+import { ScorecardListComponent } from './components/scorecard-list/scorecard-list';
+import { ScorecardFormComponent } from './components/scorecard-form/scorecard-form';
 
 export const routes: Routes = [
     // Public
@@ -52,6 +54,9 @@ export const routes: Routes = [
          { path: 'members/add', component: MemberFormComponent },
   { path: 'members/edit/:id', component: MemberEditComponent },
   { path: 'users', component: UserListComponent, canActivate: [roleGuard], data: { role: 'admin' } },
+  { path: 'scorecards', component: ScorecardListComponent },
+  { path: 'scorecards/add', component: ScorecardFormComponent },
+  { path: 'scorecards/edit/:id', component: ScorecardFormComponent },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
       ]
     },
@@ -59,4 +64,4 @@ export const routes: Routes = [
     // Wildcard
     { path: '**', redirectTo: '' }
   ];
-  
+

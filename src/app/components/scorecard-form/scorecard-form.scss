@@ -1,0 +1,136 @@
+.scorecard-form-container {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 20px;
+}
+
+.scorecard-form-card {
+  .mat-card-header {
+    .mat-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      mat-icon {
+        color: #4caf50;
+      }
+    }
+    
+    .mat-card-subtitle {
+      margin-top: 8px;
+      color: #666;
+    }
+  }
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-top: 16px;
+}
+
+.form-section {
+  h3 {
+    margin: 0 0 8px 0;
+    color: #333;
+    font-weight: 500;
+  }
+  
+  .section-description {
+    margin: 12px 0 16px 0;
+    color: #666;
+    font-size: 14px;
+  }
+  
+  mat-divider {
+    margin-bottom: 20px;
+  }
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  
+  &:not(:last-child) {
+    margin-bottom: 16px;
+  }
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.half-width {
+  width: calc(50% - 8px);
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-start;
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+  
+  button {
+    min-width: 140px;
+    
+    mat-icon {
+      margin-right: 8px;
+    }
+  }
+}
+
+// Material form field customizations
+.mat-form-field {
+  .mat-form-field-suffix {
+    mat-icon {
+      color: #666;
+      font-size: 20px;
+    }
+  }
+  
+  .mat-hint {
+    font-size: 12px;
+    color: #888;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .scorecard-form-container {
+    padding: 10px;
+  }
+  
+  .form-row {
+    flex-direction: column;
+    gap: 8px;
+    
+    .half-width {
+      width: 100%;
+    }
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    
+    button {
+      width: 100%;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .mat-card-header {
+    .mat-card-title {
+      font-size: 18px;
+    }
+  }
+  
+  .form-section h3 {
+    font-size: 16px;
+  }
+}

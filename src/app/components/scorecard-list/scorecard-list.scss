@@ -1,0 +1,77 @@
+.scorecard-list-container {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+}
+
+.header-actions {
+  margin-left: auto;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px;
+  
+  mat-spinner {
+    margin-bottom: 16px;
+  }
+}
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  
+  table {
+    width: 100%;
+    
+    th {
+      font-weight: 600;
+      background-color: #f5f5f5;
+    }
+    
+    td, th {
+      padding: 12px 8px;
+      text-align: left;
+    }
+  }
+}
+
+.no-data {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+  
+  mat-icon {
+    font-size: 48px;
+    height: 48px;
+    width: 48px;
+    margin-bottom: 16px;
+    color: #999;
+  }
+  
+  h3 {
+    margin: 16px 0 8px 0;
+    font-weight: 400;
+  }
+  
+  p {
+    margin-bottom: 24px;
+    color: #999;
+  }
+}
+
+@media (max-width: 768px) {
+  .scorecard-list-container {
+    padding: 10px;
+  }
+  
+  .table-container {
+    font-size: 14px;
+    
+    td, th {
+      padding: 8px 4px;
+    }
+  }
+}
