@@ -4,8 +4,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
-import { Contact, ContactMessage } from '../../services/contact';
-
+// import { Contact, ContactMessage, ContactService } from '../../services/contactService';
+import { ContactService, ContactMessage } from '../../services/contactService';
 @Component({
   selector: 'app-contact-us',
   standalone: true,
@@ -18,7 +18,7 @@ export class ContactUsComponent {
   successMessage = '';
   errorMessage = '';
 
-  constructor(private contactService: Contact) {}
+  constructor(private contactService: ContactService) {}
 
   onSubmit(form: NgForm) {
     if (!form.valid) return;

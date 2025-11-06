@@ -7,7 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
-import { Loan } from '../../../services/loan';
+import { LoanService } from '../../../services/loanService';
 
 @Component({
   selector: 'app-loan-detail',
@@ -20,7 +20,7 @@ export class LoanDetail implements OnInit {
   router = inject(Router);
   route = inject(ActivatedRoute);
   snackBar = inject(MatSnackBar);
-  loanService = inject(Loan);
+  loanService = inject(LoanService);
 
   loanId: string | null = null;
   loanData: any = null;

@@ -1,42 +1,61 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
-import { Auth } from './auth';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { AuthService } from './authService';
+
+export interface Scorecard {
+  _id?: string;
+  groupName?: string;
+  name?: string;
+  rating?: number;
+  slope?: number;
+  parInputString?: string;
+  pars?: number[];
+  par?: number;
+  hCapInputString?: string;
+  hCaps?: number[];
+  yardsInputString?: string;
+  yards?: number[];
+  scorecardsId?: string[];
+  scorecardId?: string;
+  user?: string;
+  courseTeeName?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 @Injectable({ providedIn: 'root' })
-export class Loan {
+export class ScorecardService {
   private http = inject(HttpClient);
-  private authService = inject(Auth);
-  private baseUrl = 'http://localhost:5001/api/loans';
+  private auth = inject(AuthService);
+  private baseUrl = 'http://localhost:5001/api/scorecards';
 
   private getHeaders() {
-    return { headers: new HttpHeaders({ Authorization: `Bearer ${this.authService.token()}` }) };
+    const token = this.auth.token();
+    return token
+      ? { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
+      : {};
   }
 
   private handleError(error: HttpErrorResponse) {
-    console.error('LoanService error:', error);
-
+    console.error('ScorecardService error:', error);
     let errorMsg = 'An unexpected error occurred. Please try again later.';
-
     if (error.error instanceof ErrorEvent) {
-      // Client-side / network error
       errorMsg = `Client error: ${error.error.message}`;
     } else {
-      // Backend error
       errorMsg = `Server error (${error.status}): ${error.error?.message || error.message}`;
     }
-
     return throwError(() => new Error(errorMsg));
+  }
+
+  create(scorecard: Scorecard): Observable<any> {
+    return this.http.post(this.baseUrl, scorecard, this.getHeaders())
+      .pipe(catchError(this.handleError));
   }
 
   getAll(): Observable<any> {
     return this.http.get(this.baseUrl, this.getHeaders())
-      .pipe(catchError(this.handleError));
-  }
-
-  getMyLoans(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/my`, this.getHeaders())
       .pipe(catchError(this.handleError));
   }
 
@@ -45,18 +64,8 @@ export class Loan {
       .pipe(catchError(this.handleError));
   }
 
-  create(data: any): Observable<any> {
-    return this.http.post(this.baseUrl, data, this.getHeaders())
-      .pipe(catchError(this.handleError));
-  }
-
-  update(id: string, data: any): Observable<any> {
-    return this.http.put(`${this.baseUrl}/${id}`, data, this.getHeaders())
-      .pipe(catchError(this.handleError));
-  }
-
-  updateStatus(id: string, status: string): Observable<any> {
-    return this.http.patch(`${this.baseUrl}/${id}/status`, { status }, this.getHeaders())
+  update(id: string, scorecard: Scorecard): Observable<any> {
+    return this.http.put(`${this.baseUrl}/${id}`, scorecard, this.getHeaders())
       .pipe(catchError(this.handleError));
   }
 

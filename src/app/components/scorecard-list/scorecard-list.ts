@@ -7,8 +7,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { ScorecardService, Scorecard } from '../../services/scorecard';
-import { Auth } from '../../services/auth';
+import { ScorecardService, Scorecard } from '../../services/scorecardService'; // Updated
+import { AuthService } from '../../services/authService'; // Updated
 
 @Component({
   selector: 'app-scorecard-list',
@@ -31,8 +31,8 @@ export class ScorecardListComponent implements OnInit {
   displayedColumns: string[] = ['name', 'rating', 'slope', 'par', 'user', 'actions'];
 
   constructor(
-    private scorecardService: ScorecardService,
-    private auth: Auth,
+    private scorecardService: ScorecardService, // Updated
+    private auth: AuthService,                  // Updated
     private router: Router,
     private snackBar: MatSnackBar
   ) {}

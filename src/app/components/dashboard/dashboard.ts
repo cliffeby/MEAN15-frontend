@@ -12,9 +12,11 @@ import { NgChartsModule } from 'ng2-charts';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 
-import { Auth } from '../../services/auth';
-import { Loan } from '../../services/loan';
-import { OffersService } from '../../services/offer';
+// Updated imports with Service suffix
+import { AuthService } from '../../services/authService';
+import { LoanService } from '../../services/loanService';
+import { OffersService } from '../../services/offerService';
+import { ScorecardService } from '../../services/scorecardService';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -22,7 +24,7 @@ import { Subscription } from 'rxjs';
   standalone: true,
   imports: [
     CommonModule, MatToolbarModule, MatButtonModule, MatCardModule, MatSnackBarModule,
-    MatTableModule, MatPaginatorModule, MatSortModule, NgChartsModule,MatFormFieldModule,  // <-- add this
+    MatTableModule, MatPaginatorModule, MatSortModule, NgChartsModule, MatFormFieldModule,
     MatInputModule
   ],
   templateUrl: './dashboard.html',
@@ -30,9 +32,10 @@ import { Subscription } from 'rxjs';
 })
 export class Dashboard implements AfterViewInit {
   router = inject(Router);
-  auth = inject(Auth);
-  OffersService = inject(OffersService);
-  loanService = inject(Loan);
+  auth = inject(AuthService);            // Updated
+  offerService = inject(OffersService);    // Updated  
+  loanService = inject(LoanService);      // Updated
+  scorecardService = inject(ScorecardService); // Updated
   snackBar = inject(MatSnackBar);
 
   totalCustomers = signal(0);
@@ -101,7 +104,7 @@ export class Dashboard implements AfterViewInit {
 
   loadAdminStats() {
     // Load Customers
-    this.OffersService.getOffers().subscribe({
+    this.offerService.getOffers().subscribe({
       next: (res: any) => {
         this.offersData = res;           // store the array of offers
         this.totalOffers.set(res.length); // set total count

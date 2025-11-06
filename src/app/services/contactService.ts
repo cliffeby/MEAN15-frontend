@@ -1,6 +1,8 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, catchError, throwError } from 'rxjs';
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { AuthService } from './authService';
 
 export interface ContactMessage {
   name: string;
@@ -11,8 +13,9 @@ export interface ContactMessage {
 @Injectable({
   providedIn: 'root'
 })
-export class Contact {
+export class ContactService {
   private http = inject(HttpClient);
+  private authService = inject(AuthService);
   private baseUrl = 'http://localhost:5001/api/contact';
 
   sendMessage(message: ContactMessage): Observable<{ message: string }> {

@@ -9,7 +9,7 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
-import { ScorecardService } from '../../services/scorecard';
+import { ScorecardService } from '../../services/scorecardService'; // Updated
 
 @Component({
   selector: 'app-scorecard-form',
@@ -36,7 +36,7 @@ export class ScorecardFormComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private scorecardService: ScorecardService,
+    private scorecardService: ScorecardService, // Updated
     private router: Router,
     private route: ActivatedRoute,
     private snackBar: MatSnackBar

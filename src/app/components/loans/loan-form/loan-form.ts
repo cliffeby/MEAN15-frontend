@@ -9,11 +9,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSelectModule } from '@angular/material/select';
 
-import { Loan } from '../../../services/loan';
-import { Auth } from '../../../services/auth';
+import { LoanService } from '../../../services/loanService';
+import { AuthService } from '../../../services/authService';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
-import { Customer } from '../../../services/customer';
+import { CustomerService } from '../../../services/customerService';
 
 @Component({
   selector: 'app-loan-form',
@@ -37,10 +37,10 @@ export class LoanForm implements OnInit {
   router = inject(Router);
   route = inject(ActivatedRoute);
   snackBar = inject(MatSnackBar);
-  loanService = inject(Loan);
-  auth = inject(Auth);
+  loanService = inject(LoanService);
+  auth = inject(AuthService);
   fb = inject(FormBuilder);
-  customerService = inject(Customer);
+  customerService = inject(CustomerService);
 
   loanForm!: FormGroup;
   loanId: string | null = null;

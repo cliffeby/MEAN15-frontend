@@ -6,10 +6,10 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Router } from '@angular/router';
-import { MemberService } from '../../services/member';
+import { MemberService } from '../../services/memberService';
 import { Member } from '../../models/member';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Auth } from '../../services/auth';
+import { AuthService } from '../../services/authService';
 
 @Component({
   selector: 'app-member-list',
@@ -33,10 +33,10 @@ export class MemberListComponent implements OnInit {
     private memberService: MemberService,
     private router: Router,
     private snackBar: MatSnackBar,
-    private auth: Auth
+    private authService: AuthService
   ) {}
   get isAdmin(): boolean {
-    return this.auth.role === 'admin';
+    return this.authService.role === 'admin';
   }
 
   ngOnInit() {

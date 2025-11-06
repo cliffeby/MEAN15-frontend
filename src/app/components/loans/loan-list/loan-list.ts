@@ -10,8 +10,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatToolbarModule } from '@angular/material/toolbar';
 
-import { Auth } from '../../../services/auth';
-import { Loan } from '../../../services/loan';
+import { AuthService } from '../../../services/authService';
+import { LoanService } from '../../../services/loanService';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 
@@ -27,8 +27,8 @@ import { MatIconModule } from '@angular/material/icon';
 })
 export class LoanList implements AfterViewInit {
   router = inject(Router);
-  auth = inject(Auth);
-  loanService = inject(Loan);
+  auth = inject(AuthService);
+  loanService = inject(LoanService);
   snackBar = inject(MatSnackBar);
 
   loansData: any[] = [];

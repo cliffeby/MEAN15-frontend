@@ -4,8 +4,8 @@ import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { UserService } from '../../services/user';
-import { Auth } from '../../services/auth';
+import { UserService } from '../../services/userService';
+import { AuthService } from '../../services/authService';
 
 @Component({
   selector: 'app-user-list',
@@ -21,11 +21,11 @@ export class UserListComponent implements OnInit {
   constructor(
     private userService: UserService,
     private snackBar: MatSnackBar,
-    private auth: Auth
+    private authService: AuthService
   ) {}
 
   get isAdmin() {
-    return this.auth.role === 'admin';
+    return this.authService.role === 'admin';
   }
 
   ngOnInit() {

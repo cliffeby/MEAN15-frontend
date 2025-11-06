@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { OffersService } from '../../services/offer';
+import { OffersService } from '../../services/offerService';
 import * as OffersActions from '../actions/offer.actions';
 import { mergeMap, map, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';

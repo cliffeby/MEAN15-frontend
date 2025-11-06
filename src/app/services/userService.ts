@@ -1,12 +1,17 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { Auth } from './auth';
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { AuthService } from './authService';
+
+export interface User {
+  // ... existing interface
+}
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
   private http = inject(HttpClient);
-  private auth = inject(Auth);
+  private auth = inject(AuthService);
   private baseUrl = 'http://localhost:5001/api/users';
 
   private getHeaders() {

@@ -1,16 +1,21 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Auth } from './auth';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { AuthService } from './authService';
+
+export interface Customer {
+  // ... existing interface
+}
 
 @Injectable({ providedIn: 'root' })
-export class Customer {
+export class CustomerService {
   private http = inject(HttpClient);
-  private authService = inject(Auth);
+  private auth = inject(AuthService);
   private baseUrl = 'http://localhost:5001/api/customers';
 
   private getHeaders() {
-    return { headers: new HttpHeaders({ Authorization: `Bearer ${this.authService.token()}` }) };
+    return { headers: new HttpHeaders({ Authorization: `Bearer ${this.auth.token()}` }) };
   }
 
   getAll(): Observable<any> {

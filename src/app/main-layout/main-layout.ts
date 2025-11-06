@@ -8,7 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatDividerModule } from '@angular/material/divider';
-import { Auth } from '../services/auth';
+import { AuthService } from '../services/authService';
 
 @Component({
   selector: 'app-main-layout',
@@ -28,7 +28,7 @@ import { Auth } from '../services/auth';
   styleUrls: ['./main-layout.scss']
 })
 export class MainLayoutComponent {
-  auth = inject(Auth);
+  auth = inject(AuthService);
   router = inject(Router);
 
   sidebarLinks = [

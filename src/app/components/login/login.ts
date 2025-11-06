@@ -5,7 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
-import { Auth } from '../../services/auth';
+import { AuthService } from '../../services/authService';
 import { CommonModule } from '@angular/common';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 
@@ -17,7 +17,7 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 })
 export class Login {
   fb = inject(FormBuilder);
-  authService = inject(Auth);
+  authService = inject(AuthService);
   router = inject(Router);
   snackBar = inject(MatSnackBar);
 
