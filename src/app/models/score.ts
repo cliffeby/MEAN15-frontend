@@ -1,0 +1,31 @@
+export interface Score {
+  id?: string;
+  _id?: string;
+  name: string;
+  score: number;
+  postedScore: number;
+  scores: number[];
+  scoresToPost: number[];
+  usgaIndex?: number;
+  usgaIndexForTodaysScore?: number;
+  handicap: number;
+  wonTwoBall?: boolean;
+  wonOneBall?: boolean;
+  wonIndo?: boolean;
+  isPaired?: boolean;
+  isScored?: boolean;
+  matchId?: string;
+  memberId?: string;
+  scorecardId?: string;
+  scSlope?: number;
+  scRating?: number;
+  scPars?: number[];
+  scHCaps?: number[];
+  scName?: string;
+  datePlayed?: string;
+  foursomeIds?: string[];
+  partnerIds?: string[];
+  user: string;
+  createdAt?: string;
+  updatedAt?: string;
+}

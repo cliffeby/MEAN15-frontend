@@ -1,0 +1,21 @@
+<div class="score-list">
+  <h2>Scores</h2>
+  <button mat-raised-button color="primary" (click)="addScore()">Add Score</button>
+  <mat-divider></mat-divider>
+  <mat-list *ngIf="scores.length">
+    <mat-list-item *ngFor="let score of scores">
+      <div matListItemTitle>{{ score.name }}</div>
+      <div matListItemLine>
+        <span>Score: {{ formatScore(score.score) }}</span>
+        <span> | Posted: {{ formatScore(score.postedScore) }}</span>
+        <span> | Date: {{ formatDate(score.datePlayed) }}</span>
+        <span *ngIf="score.scName"> | Course: {{ score.scName }}</span>
+      </div>
+      <span class="spacer"></span>
+      <button mat-button color="accent" (click)="editScore((score.id ?? score._id) || '')">Edit</button>
+      <button *ngIf="isAdmin" mat-button color="warn" (click)="deleteScore((score.id ?? score._id) || '')">Delete</button>
+    </mat-list-item>
+  </mat-list>
+  <div *ngIf="!scores.length && !loading">No scores found.</div>
+  <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+</div>

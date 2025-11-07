@@ -1,0 +1,38 @@
+.score-list {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+
+  h2 {
+    margin-bottom: 16px;
+    color: #333;
+  }
+
+  button {
+    margin-bottom: 16px;
+  }
+
+  mat-list-item {
+    border-bottom: 1px solid #eee;
+    
+    .spacer {
+      flex: 1 1 auto;
+    }
+
+    button {
+      margin-left: 8px;
+      margin-bottom: 0;
+    }
+  }
+
+  .no-scores {
+    text-align: center;
+    color: #666;
+    margin-top: 40px;
+    font-style: italic;
+  }
+
+  mat-progress-bar {
+    margin-top: 16px;
+  }
+}

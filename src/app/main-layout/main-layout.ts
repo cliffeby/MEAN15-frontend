@@ -37,8 +37,12 @@ export class MainLayoutComponent {
     { label: 'Offers CRUD + NgRX)', route: '/offers'},
     { label: 'Contact Us(Template)', route: '/contact'},
     { label: 'Offers (Parent + Child)', route: '/offers/dashboard' },
-  { label: 'Member List', route: '/members' },
-  { label: 'Add Member', route: '/members/add' },
+    { label: 'Member List', route: '/members' },
+    // { label: 'Add Member', route: '/members/add' },
+    { label: 'Scorecard List', route: '/scorecards' },        // Added
+    // { label: 'Add Scorecard', route: '/scorecards/add' },     // Added
+    { label: 'Score List', route: '/scores' },        // Added
+    // { label: 'Add Score', route: '/scores/add' },     // Added
     { label: 'API Details', route: '/apis' },
     { label: 'Read Me', route: '/read-me' },
     { label: 'Resume Notes', route: '/resume' }

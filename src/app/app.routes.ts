@@ -22,6 +22,9 @@ import { MemberListComponent } from './components/member-list/member-list';
 import { UserListComponent } from './components/user-list/user-list';
 import { ScorecardListComponent } from './components/scorecard-list/scorecard-list';
 import { ScorecardFormComponent } from './components/scorecard-form/scorecard-form';
+import { ScoreListComponent } from './components/score-list/score-list';
+import { ScoreFormComponent } from './components/score-form/score-form';
+import { ScoreEditComponent } from './components/score-edit/score-edit';
 
 export const routes: Routes = [
     // Public
@@ -57,6 +60,9 @@ export const routes: Routes = [
   { path: 'scorecards', component: ScorecardListComponent },
   { path: 'scorecards/add', component: ScorecardFormComponent },
   { path: 'scorecards/edit/:id', component: ScorecardFormComponent },
+  { path: 'scores', component: ScoreListComponent },
+  { path: 'scores/add', component: ScoreFormComponent },
+  { path: 'scores/edit/:id', component: ScoreEditComponent },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
       ]
     },

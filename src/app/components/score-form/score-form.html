@@ -1,0 +1,96 @@
+<form [formGroup]="scoreForm" (ngSubmit)="submit()" class="score-form">
+  <mat-form-field appearance="fill">
+    <mat-label>Name</mat-label>
+    <input matInput formControlName="name" required placeholder="Enter player name" title="Name" />
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Score</mat-label>
+    <input matInput formControlName="score" type="number" required placeholder="Enter score" title="Score" />
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Posted Score</mat-label>
+    <input matInput formControlName="postedScore" type="number" required placeholder="Enter posted score" title="Posted Score" />
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Handicap</mat-label>
+    <input matInput formControlName="handicap" type="number" required placeholder="Enter handicap" title="Handicap" />
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>USGA Index</mat-label>
+    <input matInput formControlName="usgaIndex" type="number" placeholder="Enter USGA Index" title="USGA Index" />
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>USGA Index for Today's Score</mat-label>
+    <input matInput formControlName="usgaIndexForTodaysScore" type="number" placeholder="Enter USGA Index for today" title="USGA Index for Today" />
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Course Name</mat-label>
+    <input matInput formControlName="scName" placeholder="Enter course name" title="Course Name" />
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Course Slope</mat-label>
+    <input matInput formControlName="scSlope" type="number" placeholder="Enter course slope" title="Course Slope" />
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Course Rating</mat-label>
+    <input matInput formControlName="scRating" type="number" placeholder="Enter course rating" title="Course Rating" />
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Date Played</mat-label>
+    <input matInput [matDatepicker]="picker" formControlName="datePlayed" placeholder="Select date played" title="Date Played" />
+    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+    <mat-datepicker #picker></mat-datepicker>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Member ID</mat-label>
+    <input matInput formControlName="memberId" placeholder="Enter member ID" title="Member ID" />
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Scorecard ID</mat-label>
+    <input matInput formControlName="scorecardId" placeholder="Enter scorecard ID" title="Scorecard ID" />
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>User</mat-label>
+    <input matInput formControlName="user" required placeholder="Enter user" title="User" />
+  </mat-form-field>
+
+  <div class="checkbox-group">
+    <mat-checkbox formControlName="wonTwoBall">Won Two Ball</mat-checkbox>
+    <mat-checkbox formControlName="wonOneBall">Won One Ball</mat-checkbox>
+    <mat-checkbox formControlName="wonIndo">Won Indo</mat-checkbox>
+    <mat-checkbox formControlName="isPaired">Is Paired</mat-checkbox>
+    <mat-checkbox formControlName="isScored">Is Scored</mat-checkbox>
+  </div>
+
+  <div class="array-section">
+    <h3>Individual Hole Scores</h3>
+    <div formArrayName="scores">
+      <div *ngFor="let scoreControl of scoresArray.controls; let i = index" class="array-item">
+        <mat-form-field appearance="fill">
+          <mat-label>Hole {{ i + 1 }}</mat-label>
+          <input matInput [formControlName]="i" type="number" placeholder="Enter score for hole {{ i + 1 }}" />
+        </mat-form-field>
+        <button mat-icon-button type="button" color="warn" (click)="removeScore(i)">
+          <span>×</span>
+        </button>
+      </div>
+    </div>
+    <button mat-button type="button" (click)="addScore()">Add Hole Score</button>
+  </div>
+
+  <button mat-raised-button color="primary" type="submit" [disabled]="loading || scoreForm.invalid">
+    {{ loading ? 'Saving...' : 'Save Score' }}
+  </button>
+</form>
