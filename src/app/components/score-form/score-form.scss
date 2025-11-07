@@ -16,6 +16,36 @@
     width: 100%;
   }
 
+  .course-info {
+    margin: 16px 0;
+
+    .course-details-card {
+      background: #f8f9fa;
+      border-left: 4px solid #2196f3;
+
+      .course-detail {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        padding: 4px 0;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        strong {
+          color: #333;
+          min-width: 120px;
+        }
+
+        span {
+          color: #666;
+          text-align: right;
+        }
+      }
+    }
+  }
+
   .checkbox-group {
     display: flex;
     flex-direction: column;

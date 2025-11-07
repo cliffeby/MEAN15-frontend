@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -7,8 +7,16 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
+import { Store } from '@ngrx/store';
+import { Observable, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { ScoreService } from '../../services/scoreService';
+import { Scorecard } from '../../services/scorecardService';
+import * as ScorecardActions from '../../store/actions/scorecard.actions';
+import * as ScorecardSelectors from '../../store/selectors/scorecard.selectors';
 
 @Component({
   selector: 'app-score-form',
@@ -24,18 +32,27 @@ import { ScoreService } from '../../services/scoreService';
     MatCheckboxModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatSelectModule,
+    MatCardModule,
     MatSnackBarModule
   ]
 })
-export class ScoreFormComponent {
+export class ScoreFormComponent implements OnInit, OnDestroy {
   scoreForm: FormGroup;
   loading = false;
+  scorecards$: Observable<Scorecard[]>;
+  scorecardsLoading$: Observable<boolean>;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
     private scoreService: ScoreService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private store: Store
   ) {
+    this.scorecards$ = this.store.select(ScorecardSelectors.selectAllScorecards);
+    this.scorecardsLoading$ = this.store.select(ScorecardSelectors.selectScorecardsLoading);
+    
     this.scoreForm = this.fb.group({
       name: ['', Validators.required],
       score: [null, [Validators.required, Validators.min(0)]],
@@ -110,5 +127,59 @@ export class ScoreFormComponent {
         this.loading = false;
       }
     });
+  }
+
+  ngOnInit(): void {
+    // Load scorecards for the dropdown
+    this.store.dispatch(ScorecardActions.loadScorecards());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  onScorecardChange(scorecardId: string): void {
+    if (scorecardId) {
+      // Auto-populate scorecard-related fields when a scorecard is selected
+      this.store.select(ScorecardSelectors.selectScorecardById(scorecardId))
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(scorecard => {
+          if (scorecard) {
+            this.scoreForm.patchValue({
+              scName: scorecard.name || scorecard.groupName || '',
+              scRating: scorecard.rating || null,
+              scSlope: scorecard.slope || null
+            });
+            
+            // If the scorecard has pars, populate the scPars array
+            if (scorecard.pars && scorecard.pars.length > 0) {
+              const scParsArray = this.scoreForm.get('scPars') as FormArray;
+              scParsArray.clear();
+              scorecard.pars.forEach(par => {
+                scParsArray.push(this.fb.control(par));
+              });
+            }
+            
+            // If the scorecard has handicaps, populate the scHCaps array
+            if (scorecard.hCaps && scorecard.hCaps.length > 0) {
+              const scHCapsArray = this.scoreForm.get('scHCaps') as FormArray;
+              scHCapsArray.clear();
+              scorecard.hCaps.forEach(hCap => {
+                scHCapsArray.push(this.fb.control(hCap));
+              });
+            }
+          }
+        });
+    } else {
+      // Clear scorecard-related fields when no scorecard is selected
+      this.scoreForm.patchValue({
+        scName: '',
+        scRating: null,
+        scSlope: null
+      });
+      (this.scoreForm.get('scPars') as FormArray).clear();
+      (this.scoreForm.get('scHCaps') as FormArray).clear();
+    }
   }
 }

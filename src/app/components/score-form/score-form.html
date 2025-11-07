@@ -30,19 +30,48 @@
   </mat-form-field>
 
   <mat-form-field appearance="fill">
-    <mat-label>Course Name</mat-label>
-    <input matInput formControlName="scName" placeholder="Enter course name" title="Course Name" />
+    <mat-label>Scorecard</mat-label>
+    <mat-select formControlName="scorecardId" placeholder="Select a scorecard" (selectionChange)="onScorecardChange($event.value)">
+      <mat-option value="">None</mat-option>
+      @for (scorecard of scorecards$ | async; track scorecard._id) {
+        <mat-option [value]="scorecard._id">
+          {{ scorecard.name || scorecard.groupName || 'Unnamed Scorecard' }}
+          @if (scorecard.rating || scorecard.slope) {
+            <span class="scorecard-details">
+              @if (scorecard.rating) { <span> - Rating: {{ scorecard.rating }}</span> }
+              @if (scorecard.slope) { <span> - Slope: {{ scorecard.slope }}</span> }
+            </span>
+          }
+        </mat-option>
+      }
+    </mat-select>
+    <mat-hint>Select a scorecard to auto-populate course details</mat-hint>
   </mat-form-field>
 
-  <mat-form-field appearance="fill">
-    <mat-label>Course Slope</mat-label>
-    <input matInput formControlName="scSlope" type="number" placeholder="Enter course slope" title="Course Slope" />
-  </mat-form-field>
-
-  <mat-form-field appearance="fill">
-    <mat-label>Course Rating</mat-label>
-    <input matInput formControlName="scRating" type="number" placeholder="Enter course rating" title="Course Rating" />
-  </mat-form-field>
+  <!-- Course Information (Auto-populated from Scorecard) -->
+  @if (scoreForm.get('scorecardId')?.value) {
+    <div class="course-info">
+    <mat-card class="course-details-card">
+      <mat-card-header>
+        <mat-card-title>Course Information</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="course-detail">
+          <strong>Course Name:</strong> 
+          <span>{{ scoreForm.get('scName')?.value || 'Not specified' }}</span>
+        </div>
+        <div class="course-detail">
+          <strong>Course Rating:</strong> 
+          <span>{{ scoreForm.get('scRating')?.value || 'Not specified' }}</span>
+        </div>
+        <div class="course-detail">
+          <strong>Course Slope:</strong> 
+          <span>{{ scoreForm.get('scSlope')?.value || 'Not specified' }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    </div>
+  }
 
   <mat-form-field appearance="fill">
     <mat-label>Date Played</mat-label>
@@ -77,15 +106,17 @@
   <div class="array-section">
     <h3>Individual Hole Scores</h3>
     <div formArrayName="scores">
-      <div *ngFor="let scoreControl of scoresArray.controls; let i = index" class="array-item">
-        <mat-form-field appearance="fill">
-          <mat-label>Hole {{ i + 1 }}</mat-label>
-          <input matInput [formControlName]="i" type="number" placeholder="Enter score for hole {{ i + 1 }}" />
-        </mat-form-field>
-        <button mat-icon-button type="button" color="warn" (click)="removeScore(i)">
-          <span>×</span>
-        </button>
-      </div>
+      @for (scoreControl of scoresArray.controls; track $index) {
+        <div class="array-item">
+          <mat-form-field appearance="fill">
+            <mat-label>Hole {{ $index + 1 }}</mat-label>
+            <input matInput [formControlName]="$index" type="number" placeholder="Enter score for hole {{ $index + 1 }}" />
+          </mat-form-field>
+          <button mat-icon-button type="button" color="warn" (click)="removeScore($index)">
+            <span>×</span>
+          </button>
+        </div>
+      }
     </div>
     <button mat-button type="button" (click)="addScore()">Add Hole Score</button>
   </div>

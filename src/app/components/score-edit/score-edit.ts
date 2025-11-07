@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -10,8 +10,16 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCardModule } from '@angular/material/card';
+import { Store } from '@ngrx/store';
+import { Observable, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { ScoreService } from '../../services/scoreService';
 import { Score } from '../../models/score';
+import { Scorecard } from '../../services/scorecardService';
+import * as ScorecardActions from '../../store/actions/scorecard.actions';
+import * as ScorecardSelectors from '../../store/selectors/scorecard.selectors';
 
 @Component({
   selector: 'app-score-edit',
@@ -27,21 +35,29 @@ import { Score } from '../../models/score';
     MatCheckboxModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatSelectModule,
+    MatCardModule,
     MatSnackBarModule
   ]
 })
-export class ScoreEditComponent implements OnInit {
+export class ScoreEditComponent implements OnInit, OnDestroy {
   scoreForm: FormGroup;
   loading = false;
   scoreId: string | null = null;
+  scorecards$: Observable<Scorecard[]>;
+  scorecardsLoading$: Observable<boolean>;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
     private scoreService: ScoreService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private store: Store
   ) {
+    this.scorecards$ = this.store.select(ScorecardSelectors.selectAllScorecards);
+    this.scorecardsLoading$ = this.store.select(ScorecardSelectors.selectScorecardsLoading);
     this.scoreForm = this.fb.group({
       name: ['', Validators.required],
       score: [null, [Validators.required, Validators.min(0)]],
@@ -80,6 +96,9 @@ export class ScoreEditComponent implements OnInit {
   }
 
   ngOnInit() {
+    // Load scorecards for the dropdown
+    this.store.dispatch(ScorecardActions.loadScorecards());
+    
     this.scoreId = this.route.snapshot.paramMap.get('id');
     if (this.scoreId) {
       this.loading = true;
@@ -175,5 +194,54 @@ export class ScoreEditComponent implements OnInit {
 
   cancel() {
     this.router.navigate(['/scores']);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  onScorecardChange(scorecardId: string): void {
+    if (scorecardId) {
+      // Auto-populate scorecard-related fields when a scorecard is selected
+      this.store.select(ScorecardSelectors.selectScorecardById(scorecardId))
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(scorecard => {
+          if (scorecard) {
+            this.scoreForm.patchValue({
+              scName: scorecard.name || scorecard.groupName || '',
+              scRating: scorecard.rating || null,
+              scSlope: scorecard.slope || null
+            });
+            
+            // If the scorecard has pars, populate the scPars array
+            if (scorecard.pars && scorecard.pars.length > 0) {
+              const scParsArray = this.scoreForm.get('scPars') as FormArray;
+              scParsArray.clear();
+              scorecard.pars.forEach(par => {
+                scParsArray.push(this.fb.control(par));
+              });
+            }
+            
+            // If the scorecard has handicaps, populate the scHCaps array
+            if (scorecard.hCaps && scorecard.hCaps.length > 0) {
+              const scHCapsArray = this.scoreForm.get('scHCaps') as FormArray;
+              scHCapsArray.clear();
+              scorecard.hCaps.forEach(hCap => {
+                scHCapsArray.push(this.fb.control(hCap));
+              });
+            }
+          }
+        });
+    } else {
+      // Clear scorecard-related fields when no scorecard is selected
+      this.scoreForm.patchValue({
+        scName: '',
+        scRating: null,
+        scSlope: null
+      });
+      (this.scoreForm.get('scPars') as FormArray).clear();
+      (this.scoreForm.get('scHCaps') as FormArray).clear();
+    }
   }
 }
