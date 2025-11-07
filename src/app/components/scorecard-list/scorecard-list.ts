@@ -7,8 +7,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { ScorecardService, Scorecard } from '../../services/scorecardService'; // Updated
-import { AuthService } from '../../services/authService'; // Updated
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
+import { Scorecard } from '../../services/scorecardService';
+import { AuthService } from '../../services/authService';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import * as ScorecardActions from '../../store/actions/scorecard.actions';
+import * as ScorecardSelectors from '../../store/selectors/scorecard.selectors';
 
 @Component({
   selector: 'app-scorecard-list',
@@ -26,37 +31,30 @@ import { AuthService } from '../../services/authService'; // Updated
   styleUrls: ['./scorecard-list.scss']
 })
 export class ScorecardListComponent implements OnInit {
-  scorecards: Scorecard[] = [];
-  loading = false;
+  scorecards$: Observable<Scorecard[]>;
+  loading$: Observable<boolean>;
+  error$: Observable<string | null>;
   displayedColumns: string[] = ['name', 'rating', 'slope', 'par', 'user', 'actions'];
 
   constructor(
-    private scorecardService: ScorecardService, // Updated
-    private auth: AuthService,                  // Updated
+    private store: Store,
+    private auth: AuthService,
     private router: Router,
-    private snackBar: MatSnackBar
-  ) {}
+    private snackBar: MatSnackBar,
+    private confirmDialog: ConfirmDialogService
+  ) {
+    this.scorecards$ = this.store.select(ScorecardSelectors.selectAllScorecards);
+    this.loading$ = this.store.select(ScorecardSelectors.selectScorecardsLoading);
+    this.error$ = this.store.select(ScorecardSelectors.selectScorecardsError);
+  }
 
   ngOnInit(): void {
-    this.loadScorecards();
+    // Dispatch action to load scorecards
+    this.store.dispatch(ScorecardActions.loadScorecards());
   }
 
   get isAdmin(): boolean {
     return this.auth.role === 'admin';
-  }
-
-  loadScorecards(): void {
-    this.loading = true;
-    this.scorecardService.getAll().subscribe({
-      next: (response) => {
-        this.scorecards = response.scorecards || response;
-        this.loading = false;
-      },
-      error: (error) => {
-        this.snackBar.open('Error loading scorecards: ' + error.message, 'Close', { duration: 3000 });
-        this.loading = false;
-      }
-    });
   }
 
   addScorecard(): void {
@@ -73,16 +71,18 @@ export class ScorecardListComponent implements OnInit {
       return;
     }
 
-    if (confirm('Are you sure you want to delete this scorecard?')) {
-      this.scorecardService.delete(id).subscribe({
-        next: () => {
-          this.snackBar.open('Scorecard deleted successfully!', 'Close', { duration: 3000 });
-          this.loadScorecards();
-        },
-        error: (error) => {
-          this.snackBar.open('Error deleting scorecard: ' + error.message, 'Close', { duration: 3000 });
-        }
-      });
-    }
+    // Get the scorecard details for the confirmation dialog
+    this.store.select(ScorecardSelectors.selectScorecardById(id)).subscribe(scorecard => {
+      if (scorecard) {
+        const scorecardName = scorecard.name || scorecard.groupName || 'Unnamed Scorecard';
+        
+        this.confirmDialog.confirmDelete(scorecardName, 'scorecard').subscribe(confirmed => {
+          if (confirmed) {
+            // Dispatch delete action - effects will handle the API call and notifications
+            this.store.dispatch(ScorecardActions.deleteScorecard({ id }));
+          }
+        });
+      }
+    });
   }
 }

@@ -43,6 +43,8 @@ export class MainLayoutComponent {
     // { label: 'Add Scorecard', route: '/scorecards/add' },     // Added
     { label: 'Score List', route: '/scores' },        // Added
     // { label: 'Add Score', route: '/scores/add' },     // Added
+    { label: 'Match List', route: '/matches' },        // Added
+    // { label: 'Add Match', route: '/matches/add' },     // Added
     { label: 'API Details', route: '/apis' },
     { label: 'Read Me', route: '/read-me' },
     { label: 'Resume Notes', route: '/resume' }

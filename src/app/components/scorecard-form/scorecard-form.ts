@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -9,7 +9,12 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
-import { ScorecardService } from '../../services/scorecardService'; // Updated
+import { Store } from '@ngrx/store';
+import { Observable, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { Scorecard } from '../../services/scorecardService';
+import * as ScorecardActions from '../../store/actions/scorecard.actions';
+import * as ScorecardSelectors from '../../store/selectors/scorecard.selectors';
 
 @Component({
   selector: 'app-scorecard-form',
@@ -28,15 +33,17 @@ import { ScorecardService } from '../../services/scorecardService'; // Updated
   templateUrl: './scorecard-form.html',
   styleUrls: ['./scorecard-form.scss']
 })
-export class ScorecardFormComponent implements OnInit {
+export class ScorecardFormComponent implements OnInit, OnDestroy {
   scorecardForm: FormGroup;
   isEditMode = false;
   scorecardId: string | null = null;
-  loading = false;
+  loading$: Observable<boolean>;
+  currentScorecard$: Observable<Scorecard | null>;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
-    private scorecardService: ScorecardService, // Updated
+    private store: Store,
     private router: Router,
     private route: ActivatedRoute,
     private snackBar: MatSnackBar
@@ -52,6 +59,9 @@ export class ScorecardFormComponent implements OnInit {
       hCapInputString: [''],
       yardsInputString: ['']
     });
+
+    this.loading$ = this.store.select(ScorecardSelectors.selectScorecardsLoading);
+    this.currentScorecard$ = this.store.select(ScorecardSelectors.selectCurrentScorecard);
   }
 
   ngOnInit(): void {
@@ -59,38 +69,36 @@ export class ScorecardFormComponent implements OnInit {
     this.isEditMode = !!this.scorecardId;
 
     if (this.isEditMode && this.scorecardId) {
-      this.loadScorecard(this.scorecardId);
+      // Dispatch action to load scorecard
+      this.store.dispatch(ScorecardActions.loadScorecard({ id: this.scorecardId }));
+      
+      // Subscribe to current scorecard and populate form when it changes
+      this.currentScorecard$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(scorecard => {
+          if (scorecard) {
+            this.populateForm(scorecard);
+          }
+        });
     }
   }
 
-  loadScorecard(id: string): void {
-    this.loading = true;
-    this.scorecardService.getById(id).subscribe({
-      next: (response) => {
-        const scorecard = response.scorecard || response;
-        this.scorecardForm.patchValue({
-          groupName: scorecard.groupName,
-          name: scorecard.name,
-          rating: scorecard.rating,
-          slope: scorecard.slope,
-          par: scorecard.par,
-          user: scorecard.user,
-          parInputString: scorecard.pars ? scorecard.pars.join(',') : '',
-          hCapInputString: scorecard.hCaps ? scorecard.hCaps.join(',') : '',
-          yardsInputString: scorecard.yards ? scorecard.yards.join(',') : ''
-        });
-        this.loading = false;
-      },
-      error: (error) => {
-        this.snackBar.open('Error loading scorecard: ' + error.message, 'Close', { duration: 3000 });
-        this.loading = false;
-      }
+  populateForm(scorecard: Scorecard): void {
+    this.scorecardForm.patchValue({
+      groupName: scorecard.groupName,
+      name: scorecard.name,
+      rating: scorecard.rating,
+      slope: scorecard.slope,
+      par: scorecard.par,
+      user: scorecard.user,
+      parInputString: scorecard.pars ? scorecard.pars.join(',') : '',
+      hCapInputString: scorecard.hCaps ? scorecard.hCaps.join(',') : '',
+      yardsInputString: scorecard.yards ? scorecard.yards.join(',') : ''
     });
   }
 
   onSubmit(): void {
     if (this.scorecardForm.valid) {
-      this.loading = true;
       const formData = { ...this.scorecardForm.value };
       
       // Parse input strings into arrays
@@ -105,40 +113,26 @@ export class ScorecardFormComponent implements OnInit {
       }
 
       if (this.isEditMode && this.scorecardId) {
-        this.updateScorecard(formData);
+        // Dispatch update action
+        this.store.dispatch(ScorecardActions.updateScorecard({ 
+          id: this.scorecardId, 
+          scorecard: formData 
+        }));
       } else {
-        this.createScorecard(formData);
+        // Dispatch create action
+        this.store.dispatch(ScorecardActions.createScorecard({ scorecard: formData }));
       }
     }
   }
 
-  createScorecard(formData: any): void {
-    this.scorecardService.create(formData).subscribe({
-      next: (response) => {
-        this.snackBar.open('Scorecard created successfully!', 'Close', { duration: 3000 });
-        this.router.navigate(['/scorecards']);
-      },
-      error: (error) => {
-        this.snackBar.open('Error creating scorecard: ' + error.message, 'Close', { duration: 3000 });
-        this.loading = false;
-      }
-    });
-  }
-
-  updateScorecard(formData: any): void {
-    this.scorecardService.update(this.scorecardId!, formData).subscribe({
-      next: (response) => {
-        this.snackBar.open('Scorecard updated successfully!', 'Close', { duration: 3000 });
-        this.router.navigate(['/scorecards']);
-      },
-      error: (error) => {
-        this.snackBar.open('Error updating scorecard: ' + error.message, 'Close', { duration: 3000 });
-        this.loading = false;
-      }
-    });
-  }
-
   onCancel(): void {
     this.router.navigate(['/scorecards']);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    // Clear current scorecard when leaving the form
+    this.store.dispatch(ScorecardActions.clearCurrentScorecard());
   }
 }

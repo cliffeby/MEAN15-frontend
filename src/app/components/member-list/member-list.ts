@@ -10,6 +10,7 @@ import { MemberService } from '../../services/memberService';
 import { Member } from '../../models/member';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../services/authService';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 
 @Component({
   selector: 'app-member-list',
@@ -33,7 +34,8 @@ export class MemberListComponent implements OnInit {
     private memberService: MemberService,
     private router: Router,
     private snackBar: MatSnackBar,
-    private authService: AuthService
+    private authService: AuthService,
+    private confirmDialog: ConfirmDialogService
   ) {}
   get isAdmin(): boolean {
     return this.authService.role === 'admin';
@@ -72,20 +74,27 @@ export class MemberListComponent implements OnInit {
       this.snackBar.open('You are not authorized to delete members.', 'Close', { duration: 2500 });
       return;
     }
-    if (confirm('Are you sure you want to delete this member?')) {
-      this.memberService.delete(id).subscribe({
-        next: () => {
-          this.snackBar.open('Member deleted', 'Close', { duration: 2000 });
-          this.loadMembers();
-        },
-        error: (err) => {
-          if (err.status === 403 || err.status === 401) {
-            this.snackBar.open('You are not authorized to delete members.', 'Close', { duration: 2500 });
-          } else {
-            this.snackBar.open('Error deleting member', 'Close', { duration: 2000 });
+
+    // Find the member to get their name for the confirmation dialog
+    const member = this.members.find(m => m._id === id);
+    const memberName = member ? `${member.firstName} ${member.lastName}`.trim() : `Member ${id}`;
+    
+    this.confirmDialog.confirmDelete(memberName, 'member').subscribe(confirmed => {
+      if (confirmed) {
+        this.memberService.delete(id).subscribe({
+          next: () => {
+            this.snackBar.open('Member deleted', 'Close', { duration: 2000 });
+            this.loadMembers();
+          },
+          error: (err) => {
+            if (err.status === 403 || err.status === 401) {
+              this.snackBar.open('You are not authorized to delete members.', 'Close', { duration: 2500 });
+            } else {
+              this.snackBar.open('Error deleting member', 'Close', { duration: 2000 });
+            }
           }
-        }
-      });
-    }
+        });
+      }
+    });
   }
 }

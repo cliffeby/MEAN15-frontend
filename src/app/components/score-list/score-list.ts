@@ -10,6 +10,7 @@ import { ScoreService } from '../../services/scoreService';
 import { Score } from '../../models/score';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../services/authService';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 
 @Component({
   selector: 'app-score-list',
@@ -33,7 +34,8 @@ export class ScoreListComponent implements OnInit {
     private scoreService: ScoreService,
     private router: Router,
     private snackBar: MatSnackBar,
-    private authService: AuthService
+    private authService: AuthService,
+    private confirmDialog: ConfirmDialogService
   ) {}
 
   get isAdmin(): boolean {
@@ -73,21 +75,28 @@ export class ScoreListComponent implements OnInit {
       this.snackBar.open('You are not authorized to delete scores.', 'Close', { duration: 2500 });
       return;
     }
-    if (confirm('Are you sure you want to delete this score?')) {
-      this.scoreService.delete(id).subscribe({
-        next: () => {
-          this.snackBar.open('Score deleted', 'Close', { duration: 2000 });
-          this.loadScores();
-        },
-        error: (err) => {
-          if (err.status === 403 || err.status === 401) {
-            this.snackBar.open('You are not authorized to delete scores.', 'Close', { duration: 2500 });
-          } else {
-            this.snackBar.open('Error deleting score', 'Close', { duration: 2000 });
+
+    // Find the score to get its name for the confirmation dialog
+    const score = this.scores.find(s => s._id === id);
+    const scoreName = score?.name || `Score ${id}`;
+    
+    this.confirmDialog.confirmDelete(scoreName, 'score').subscribe(confirmed => {
+      if (confirmed) {
+        this.scoreService.delete(id).subscribe({
+          next: () => {
+            this.snackBar.open('Score deleted', 'Close', { duration: 2000 });
+            this.loadScores();
+          },
+          error: (err) => {
+            if (err.status === 403 || err.status === 401) {
+              this.snackBar.open('You are not authorized to delete scores.', 'Close', { duration: 2500 });
+            } else {
+              this.snackBar.open('Error deleting score', 'Close', { duration: 2000 });
+            }
           }
-        }
-      });
-    }
+        });
+      }
+    });
   }
 
   formatDate(dateString?: string): string {

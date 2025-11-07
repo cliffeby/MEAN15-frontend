@@ -101,15 +101,15 @@
           <button mat-raised-button 
                   color="primary" 
                   type="submit" 
-                  [disabled]="!scorecardForm.valid || loading">
+                  [disabled]="!scorecardForm.valid || (loading$ | async)">
             <mat-icon>{{ isEditMode ? 'save' : 'add' }}</mat-icon>
-            {{ isEditMode ? 'Update Scorecard' : 'Create Scorecard' }}
+            {{ (loading$ | async) ? 'Saving...' : (isEditMode ? 'Update Scorecard' : 'Create Scorecard') }}
           </button>
           
           <button mat-stroked-button 
                   type="button" 
                   (click)="onCancel()"
-                  [disabled]="loading">
+                  [disabled]="loading$ | async">
             <mat-icon>cancel</mat-icon>
             Cancel
           </button>

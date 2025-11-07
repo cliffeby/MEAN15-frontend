@@ -1,0 +1,58 @@
+<div class="match-list">
+  <h2>Matches</h2>
+  
+  <!-- Action buttons -->
+  <div class="action-bar">
+    <button mat-raised-button color="primary" (click)="addMatch()">Add Match</button>
+    <button mat-button (click)="refreshMatches()">Refresh</button>
+    <button mat-button (click)="loadAllMatches()">All</button>
+    <button mat-button (click)="loadMatchesByStatus('open')">Open</button>
+    <button mat-button (click)="loadMatchesByStatus('completed')">Completed</button>
+  </div>
+
+  <!-- Stats (optional) -->
+  <div class="stats" *ngIf="stats$ | async as stats">
+    <mat-chip-set>
+      <mat-chip>Total: {{ stats.total }}</mat-chip>
+      <mat-chip color="primary" selected>Open: {{ stats.open }}</mat-chip>
+      <mat-chip color="accent" selected>Completed: {{ stats.completed }}</mat-chip>
+    </mat-chip-set>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Loading indicator -->
+  <mat-progress-bar *ngIf="loading$ | async" mode="indeterminate"></mat-progress-bar>
+
+  <!-- Error display -->
+  <div *ngIf="error$ | async as error" class="error-message">
+    <mat-chip color="warn" selected>Error: {{ error.message || 'Something went wrong' }}</mat-chip>
+  </div>
+
+  <!-- Matches list -->
+  <mat-list *ngIf="matches$ | async as matches">
+    <div *ngIf="matches.length === 0 && !(loading$ | async)" class="no-matches">
+      No matches found.
+    </div>
+    <mat-list-item *ngFor="let match of matches">
+      <div matListItemTitle>{{ match.name }}</div>
+      <div matListItemLine>
+        <span *ngIf="match.scGroupName">Course: {{ match.scGroupName }}</span>
+        <span *ngIf="match.players"> | Players: {{ match.players }}</span>
+        <span> | Date: {{ formatDate(match.datePlayed) }}</span>
+      </div>
+      <div matListItemLine>
+        <mat-chip [color]="getStatusColor(match.status)" selected>
+          {{ match.status | titlecase }}
+        </mat-chip>
+      </div>
+      <span class="spacer"></span>
+      <div class="button-group">
+        <button mat-button color="accent" (click)="editMatch((match.id ?? match._id) || '')">Edit</button>
+        <button mat-button color="primary" (click)="updateStatus((match.id ?? match._id) || '', 'completed')" 
+                *ngIf="match.status !== 'completed'">Complete</button>
+        <button *ngIf="isAdmin" mat-button color="warn" (click)="deleteMatch((match.id ?? match._id) || '')">Delete</button>
+      </div>
+    </mat-list-item>
+  </mat-list>
+</div>

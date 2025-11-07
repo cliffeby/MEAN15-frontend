@@ -25,6 +25,9 @@ import { ScorecardFormComponent } from './components/scorecard-form/scorecard-fo
 import { ScoreListComponent } from './components/score-list/score-list';
 import { ScoreFormComponent } from './components/score-form/score-form';
 import { ScoreEditComponent } from './components/score-edit/score-edit';
+import { MatchListComponent } from './components/match-list/match-list';
+import { MatchFormComponent } from './components/match-form/match-form';
+import { MatchEditComponent } from './components/match-edit/match-edit';
 
 export const routes: Routes = [
     // Public
@@ -63,6 +66,9 @@ export const routes: Routes = [
   { path: 'scores', component: ScoreListComponent },
   { path: 'scores/add', component: ScoreFormComponent },
   { path: 'scores/edit/:id', component: ScoreEditComponent },
+  { path: 'matches', component: MatchListComponent },
+  { path: 'matches/add', component: MatchFormComponent },
+  { path: 'matches/edit/:id', component: MatchEditComponent },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
       ]
     },
