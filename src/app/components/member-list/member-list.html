@@ -15,6 +15,37 @@
       <mat-icon matSuffix>search</mat-icon>
     </mat-form-field>
 
+    <!-- Column Visibility Menu -->
+    <button mat-icon-button [matMenuTriggerFor]="columnMenu" matTooltip="Show/Hide Columns ({{ getVisibleColumnsCount() }} visible)">
+      <mat-icon>view_column</mat-icon>
+    </button>
+    <mat-menu #columnMenu="matMenu" class="column-menu">
+      <div class="menu-header">
+        <strong>Show/Hide Columns</strong>
+        <small *ngIf="hasCustomPreferences()" class="preferences-indicator">
+          • Customized
+        </small>
+      </div>
+      <div *ngFor="let column of allColumns" class="column-menu-item">
+        <mat-checkbox 
+          [checked]="column.visible" 
+          [disabled]="column.fixed"
+          (change)="toggleColumnVisibility(column.key)"
+          class="column-checkbox">
+          {{ column.label }}
+        </mat-checkbox>
+      </div>
+      <mat-divider></mat-divider>
+      <button mat-menu-item (click)="resetColumns()">
+        <mat-icon>refresh</mat-icon>
+        <span>Show All Columns</span>
+      </button>
+      <button mat-menu-item (click)="clearAllPreferences()">
+        <mat-icon>clear_all</mat-icon>
+        <span>Reset All Preferences</span>
+      </button>
+    </mat-menu>
+
     <div class="sort-info">
       <mat-icon>info</mat-icon>
       <span>Click column headers to sort</span>
@@ -48,7 +79,7 @@
       <ng-container matColumnDef="usgaIndex">
         <th mat-header-cell *matHeaderCellDef mat-sort-header="usgaIndex">USGA Index</th>
         <td mat-cell *matCellDef="let member">
-          {{ member.usgaIndex !== undefined ? member.usgaIndex : '-' }}
+          {{ member.usgaIndex !== undefined ? (member.usgaIndex | number:'1.1-1') : '-' }}
         </td>
       </ng-container>
 

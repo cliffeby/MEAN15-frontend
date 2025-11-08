@@ -116,6 +116,66 @@
   flex: 1 1 auto;
 }
 
+// Column visibility menu styles
+.column-menu {
+  min-width: 200px;
+  
+  .menu-header {
+    padding: 12px 16px 8px;
+    font-weight: 600;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 4px;
+    color: #333;
+    font-size: 0.95rem;
+    
+    .preferences-indicator {
+      display: block;
+      font-weight: normal;
+      font-size: 0.8rem;
+      color: #1976d2;
+      margin-top: 2px;
+    }
+  }
+
+  .column-menu-item {
+    padding: 2px 16px;
+    
+    .column-checkbox {
+      width: 100%;
+      
+      .mat-checkbox-label {
+        width: 100%;
+        margin-left: 8px;
+        font-size: 0.9rem;
+      }
+      
+      &.mat-checkbox-disabled {
+        opacity: 0.6;
+        
+        .mat-checkbox-label {
+          color: #666;
+          font-style: italic;
+        }
+      }
+    }
+  }
+
+  .mat-divider {
+    margin: 8px 0;
+  }
+
+  .mat-menu-item {
+    .mat-icon {
+      margin-right: 12px;
+      color: #666;
+    }
+    
+    span {
+      font-size: 0.9rem;
+    }
+  }
+}
+
 // Responsive design
 @media (max-width: 768px) {
   .filter-container {

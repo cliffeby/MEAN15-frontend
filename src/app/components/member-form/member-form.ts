@@ -31,7 +31,7 @@ export class MemberFormComponent {
     this.memberForm = this.fb.group({
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
-      usgaIndex: [null],
+      usgaIndex: [null, [Validators.min(-10), Validators.max(54)]],
       lastDatePlayed: [''],
       email: ['', [Validators.required, Validators.email]],
       user: [''],

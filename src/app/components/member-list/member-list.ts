@@ -11,6 +11,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MemberService } from '../../services/memberService';
@@ -18,6 +21,7 @@ import { Member } from '../../models/member';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../services/authService';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { UserPreferencesService, ColumnPreference } from '../../services/user-preferences.service';
 
 @Component({
   selector: 'app-member-list',
@@ -37,6 +41,9 @@ import { ConfirmDialogService } from '../../services/confirm-dialog.service';
     MatFormFieldModule,
     MatSelectModule,
     MatIconModule,
+    MatMenuModule,
+    MatCheckboxModule,
+    MatTooltipModule,
     FormsModule
   ]
 })
@@ -51,21 +58,50 @@ export class MemberListComponent implements OnInit {
   sortDirection: 'asc' | 'desc' = 'asc';
   
   // Table configuration
-  displayedColumns: string[] = ['fullName', 'email', 'usgaIndex', 'lastDatePlayed', 'actions'];
+  allColumns: Array<{ key: string; label: string; visible: boolean; fixed?: boolean }> = [];
+
+  get displayedColumns(): string[] {
+    return this.allColumns.filter(col => col.visible).map(col => col.key);
+  }
 
   constructor(
     private memberService: MemberService,
     private router: Router,
     private snackBar: MatSnackBar,
     private authService: AuthService,
-    private confirmDialog: ConfirmDialogService
+    private confirmDialog: ConfirmDialogService,
+    private preferencesService: UserPreferencesService
   ) {}
   get isAdmin(): boolean {
     return this.authService.role === 'admin';
   }
 
   ngOnInit() {
+    this.initializeColumns();
     this.loadMembers();
+  }
+
+  private initializeColumns() {
+    // Load saved preferences
+    const savedPreferences = this.preferencesService.getMemberListColumnPreferences();
+    
+    // Create default column configuration
+    const defaultColumns = [
+      { key: 'fullName', label: 'Name', visible: true },
+      { key: 'email', label: 'Email', visible: true },
+      { key: 'usgaIndex', label: 'USGA Index', visible: true },
+      { key: 'lastDatePlayed', label: 'Last Played', visible: true },
+      { key: 'actions', label: 'Actions', visible: true, fixed: true }
+    ];
+
+    // Merge saved preferences with default columns
+    this.allColumns = defaultColumns.map(defaultCol => {
+      const savedCol = savedPreferences.find(saved => saved.key === defaultCol.key);
+      return {
+        ...defaultCol,
+        visible: defaultCol.fixed ? true : (savedCol ? savedCol.visible : defaultCol.visible)
+      };
+    });
   }
 
   loadMembers() {
@@ -176,6 +212,75 @@ export class MemberListComponent implements OnInit {
             }
           }
         });
+      }
+    });
+  }
+
+  toggleColumnVisibility(columnKey: string) {
+    const column = this.allColumns.find(col => col.key === columnKey);
+    if (column && !column.fixed) {
+      // Prevent hiding all data columns (keep at least one visible)
+      const visibleDataColumns = this.allColumns.filter(col => col.visible && !col.fixed).length;
+      if (column.visible && visibleDataColumns <= 1) {
+        this.snackBar.open('At least one data column must remain visible', 'Close', { duration: 2000 });
+        return;
+      }
+      column.visible = !column.visible;
+      this.saveColumnPreferences();
+    }
+  }
+
+  isColumnVisible(columnKey: string): boolean {
+    const column = this.allColumns.find(col => col.key === columnKey);
+    return column ? column.visible : false;
+  }
+
+  getVisibleColumnsCount(): number {
+    return this.allColumns.filter(col => col.visible).length;
+  }
+
+  hasCustomPreferences(): boolean {
+    // Check if current settings differ from defaults
+    const defaultColumns = [
+      { key: 'fullName', visible: true },
+      { key: 'email', visible: true },
+      { key: 'usgaIndex', visible: true },
+      { key: 'lastDatePlayed', visible: true }
+    ];
+
+    return defaultColumns.some(defaultCol => {
+      const currentCol = this.allColumns.find(col => col.key === defaultCol.key);
+      return currentCol && currentCol.visible !== defaultCol.visible;
+    });
+  }
+
+  resetColumns() {
+    this.allColumns.forEach(column => {
+      column.visible = true;
+    });
+    this.saveColumnPreferences();
+  }
+
+  private saveColumnPreferences() {
+    // Only save preferences for non-fixed columns
+    const preferences: ColumnPreference[] = this.allColumns
+      .filter(col => !col.fixed)
+      .map(col => ({ key: col.key, visible: col.visible }));
+    
+    this.preferencesService.saveMemberListColumnPreferences(preferences);
+  }
+
+  clearAllPreferences() {
+    this.confirmDialog.confirmAction(
+      'Reset All Preferences', 
+      'This will reset all your column preferences to default settings. Are you sure?',
+      'Reset',
+      'Cancel'
+    ).subscribe(confirmed => {
+      if (confirmed) {
+        this.preferencesService.clearUserPreferences();
+        this.initializeColumns(); // Reload with defaults
+        this.snackBar.open('All preferences have been reset to defaults', 'Close', { duration: 3000 });
       }
     });
   }
