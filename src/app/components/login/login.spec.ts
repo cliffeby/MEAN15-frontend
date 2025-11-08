@@ -40,6 +40,6 @@ describe('Login', () => {
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     console.log(compiled);
-    expect(compiled.querySelector('h1')?.textContent).toContain('Welcome to ARCTutorials - Login');
+    expect(compiled.querySelector('h1')?.textContent).toContain('Welcome to Rochester - Login');
   });
 });

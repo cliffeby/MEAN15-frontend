@@ -1,0 +1,163 @@
+.member-selection-dialog {
+  width: 100%;
+  max-width: 500px;
+
+  .dialog-content {
+    max-height: 60vh;
+    padding: 0;
+    margin: 0;
+
+    .search-section {
+      padding: 16px;
+      border-bottom: 1px solid #e0e0e0;
+      background: #fafafa;
+
+      .search-field {
+        width: 100%;
+        margin: 0;
+      }
+    }
+
+    .members-list {
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 8px 0;
+
+      .member-list {
+        padding: 0;
+
+        .member-option {
+          display: flex;
+          align-items: center;
+          padding: 12px 16px;
+          border-bottom: 1px solid #f0f0f0;
+          cursor: pointer;
+          
+          &:hover {
+            background-color: #f5f5f5;
+          }
+
+          &.selected {
+            background-color: #e3f2fd;
+            border-left: 4px solid #1976d2;
+          }
+
+          .checkbox-container {
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+          }
+
+          .member-info {
+            width: 100%;
+
+            .member-name {
+              font-weight: 500;
+              font-size: 16px;
+              color: #333;
+              margin-bottom: 4px;
+              display: flex;
+              align-items: center;
+              gap: 8px;
+
+              .lineup-indicator {
+                font-size: 12px;
+                color: #1976d2;
+                background: #e3f2fd;
+                padding: 2px 8px;
+                border-radius: 12px;
+                font-weight: 500;
+              }
+            }
+
+            .member-details {
+              font-size: 14px;
+              color: #666;
+              display: flex;
+              align-items: center;
+              gap: 8px;
+
+              .email {
+                color: #555;
+              }
+
+              .index {
+                color: #1976d2;
+                font-weight: 500;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .no-members {
+      text-align: center;
+      padding: 40px 20px;
+      color: #666;
+
+      mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        margin-bottom: 16px;
+        color: #ccc;
+      }
+
+      p {
+        margin: 0;
+        font-size: 16px;
+      }
+    }
+  }
+
+  .dialog-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-top: 1px solid #e0e0e0;
+    background: #fafafa;
+
+    .selection-summary {
+      .selected-count {
+        font-size: 14px;
+        color: #666;
+        font-weight: 500;
+      }
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+
+      button {
+        min-width: auto;
+
+        &[mat-raised-button] {
+          font-weight: 500;
+        }
+      }
+    }
+  }
+}
+
+// Custom scrollbar for the members list
+.members-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.members-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.members-list::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.members-list::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

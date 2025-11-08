@@ -1,15 +1,90 @@
 <div class="member-list">
-  <h2>Members</h2>
-  <button mat-raised-button color="primary" (click)="addMember()">Add Member</button>
+  <div class="header">
+    <h2>Members</h2>
+    <button mat-raised-button color="primary" (click)="addMember()">
+      <mat-icon>add</mat-icon>
+      Add Member
+    </button>
+  </div>
+
+  <!-- Filter Controls -->
+  <div class="filter-container">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search members...</mat-label>
+      <input matInput [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()" placeholder="Search by name or email">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <div class="sort-info">
+      <mat-icon>info</mat-icon>
+      <span>Click column headers to sort</span>
+    </div>
+  </div>
+
   <mat-divider></mat-divider>
-  <mat-list *ngIf="members.length">
-    <mat-list-item *ngFor="let member of members">
-      <span>{{ member.fullName || member.firstName + ' ' + member.lastName }}</span>
-      <span class="spacer"></span>
-      <button mat-button color="accent" (click)="editMember((member.id ?? member._id) || '')">Edit</button>
-  <button *ngIf="isAdmin" mat-button color="warn" (click)="deleteMember((member.id ?? member._id) || '')">Delete</button>
-    </mat-list-item>
-  </mat-list>
-  <div *ngIf="!members.length && !loading">No members found.</div>
+
+  <!-- Progress Bar -->
   <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+
+  <!-- Members Table -->
+  <div class="table-container" *ngIf="!loading">
+    <table mat-table [dataSource]="filteredMembers" matSort (matSortChange)="sortData($event)" class="members-table">
+      
+      <!-- Name Column -->
+      <ng-container matColumnDef="fullName">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="fullName">Name</th>
+        <td mat-cell *matCellDef="let member">
+          {{ member.fullName || member.firstName + ' ' + (member.lastName || '') }}
+        </td>
+      </ng-container>
+
+      <!-- Email Column -->
+      <ng-container matColumnDef="email">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="email">Email</th>
+        <td mat-cell *matCellDef="let member">{{ member.email }}</td>
+      </ng-container>
+
+      <!-- USGA Index Column -->
+      <ng-container matColumnDef="usgaIndex">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="usgaIndex">USGA Index</th>
+        <td mat-cell *matCellDef="let member">
+          {{ member.usgaIndex !== undefined ? member.usgaIndex : '-' }}
+        </td>
+      </ng-container>
+
+      <!-- Last Date Played Column -->
+      <ng-container matColumnDef="lastDatePlayed">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="lastDatePlayed">Last Played</th>
+        <td mat-cell *matCellDef="let member">
+          {{ member.lastDatePlayed ? (member.lastDatePlayed | date:'short') : '-' }}
+        </td>
+      </ng-container>
+
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let member" class="actions-cell">
+          <div class="action-buttons">
+            <button mat-icon-button color="accent" (click)="editMember((member.id ?? member._id) || '')" matTooltip="Edit Member">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button *ngIf="isAdmin" mat-icon-button color="warn" (click)="deleteMember((member.id ?? member._id) || '')" matTooltip="Delete Member">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Table Header and Rows -->
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="member-row"></tr>
+    </table>
+
+    <!-- No Data Message -->
+    <div *ngIf="!filteredMembers.length && !loading" class="no-data">
+      <mat-icon>person_off</mat-icon>
+      <p>{{ searchTerm ? 'No members match your search criteria.' : 'No members found.' }}</p>
+      <button *ngIf="searchTerm" mat-button (click)="searchTerm = ''; onSearchChange()">Clear Search</button>
+    </div>
+  </div>
 </div>

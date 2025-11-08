@@ -7,9 +7,8 @@
     <h3>Project Overview</h3>
     <p>
       This system is a full-featured platform for administrators and customers, 
-      enabling management of loans, offers, users, dashboards, and contact submissions. 
-      It provides secure authentication, dynamic dashboards, CRUD operations for loans and offers, 
-      and a template-driven contact form.
+      enabling management of loans, offers, users, and dashboards. 
+      It provides secure authentication, dynamic dashboards, and CRUD operations for loans and offers.
     </p>
 
     <h3>Tech Stack & Backend Setup</h3>
@@ -19,7 +18,7 @@
       <li><strong>Database:</strong> MongoDB using Mongoose ODM</li>
       <li><strong>Authentication:</strong> JWT token-based authentication</li>
       <li><strong>Password Security:</strong> bcrypt for password hashing</li>
-      <li><strong>API Endpoints:</strong> RESTful endpoints for loans, offers, contact submissions, and authentication</li>
+      <li><strong>API Endpoints:</strong> RESTful endpoints for loans, offers, and authentication</li>
       <li><strong>Middleware:</strong> Helmet for security headers, CORS, rate limiting, compression, and error handling</li>
       <li><strong>Logging:</strong> Morgan for request logging (development and production modes)</li>
       <li><strong>Deployment Ready:</strong> Modular route and controller structure with production-ready error handling</li>
@@ -34,13 +33,13 @@
       <li>Direct access to loan and offer lists from the dashboard.</li>
     </ul>
 
-    <h4>Loan Management (CRUD)</h4>
+    <h4>Golf Management (CRUD)</h4>
     <ul>
-      <li><strong>Create Loan:</strong> Admins can add new loans with amount, term, interest rate, and status.</li>
-      <li><strong>Read/List Loans:</strong> View all loans in searchable, sortable, paginated tables.</li>
-      <li><strong>Update Loan:</strong> Edit loan details or status seamlessly.</li>
-      <li><strong>Delete Loan:</strong> Remove loans with confirmation prompts.</li>
-      <li><strong>Loan Detail Page:</strong> View all loan information including customer details.</li>
+      <li><strong>Create Golf Entry:</strong> Admins can add new golf entries with amount, term, interest rate, and status.</li>
+      <li><strong>Read/List Golf Entries:</strong> View all golf entries in searchable, sortable, paginated tables.</li>
+      <li><strong>Update Golf Entry:</strong> Edit golf entry details or status seamlessly.</li>
+      <li><strong>Delete Golf Entry:</strong> Remove golf entries with confirmation prompts.</li>
+      <li><strong>Golf Entry Detail Page:</strong> View all golf entry information including customer details.</li>
     </ul>
 
     <h4>Offer Management (CRUD with NgRx)</h4>
@@ -50,14 +49,6 @@
       <li><strong>Update Offer:</strong> Edit existing offers; state management handled by NgRx store and effects.</li>
       <li><strong>Delete Offer:</strong> Remove offers with confirmation; NgRx updates state automatically.</li>
       <li><strong>State Management:</strong> Offers CRUD fully integrated with NgRx actions, reducers, selectors, and effects.</li>
-    </ul>
-
-    <h4>Contact Us (Template-Driven Form)</h4>
-    <ul>
-      <li>Simple contact form for users to submit inquiries.</li>
-      <li>Template-driven validation for required fields (name, email, message).</li>
-      <li>Submissions handled via a backend API endpoint.</li>
-      <li>Responsive design with Angular Material card and form styling.</li>
     </ul>
 
     <h4>Authentication & User Management</h4>
@@ -71,7 +62,6 @@
     <h4>Form Handling & Validation</h4>
     <ul>
       <li>Reactive forms for offers and loans with real-time validation and feedback.</li>
-      <li>Template-driven forms for contact us with validation messages.</li>
       <li>Error messages and notifications for invalid input or failed actions.</li>
     </ul>
 
@@ -100,7 +90,6 @@
       <li>All components are responsive and enterprise-ready.</li>
       <li>Supports scaling with additional modules like Reports, Analytics, and Notifications.</li>
       <li>Seamless integration between CRUD operations and state management via NgRx.</li>
-      <li>Template-driven forms ensure quick and simple user interactions for contact requests.</li>
       <li>Backend is production-ready with secure authentication, proper error handling, and modular design.</li>
     </ul>
   </mat-card-content>

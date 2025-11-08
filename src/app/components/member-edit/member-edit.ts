@@ -52,8 +52,8 @@ export class MemberEditComponent implements OnInit {
     if (this.memberId) {
       this.loading = true;
       this.memberService.getById(this.memberId).subscribe({
-        next: (res) => {
-          this.memberForm.patchValue(res.member || res);
+        next: (member) => {
+          this.memberForm.patchValue(member);
           this.loading = false;
         },
         error: () => {

@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, shareReplay, tap } from 'rxjs/operators';
 import { AuthService } from './authService';
 import { Score } from '../models/score';
 
@@ -10,6 +10,16 @@ export class ScoreService {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
   private baseUrl = 'http://localhost:5001/api/scores';
+  
+  // Cache for scores data
+  private scoresCache$: Observable<any> | null = null;
+  private cacheTimestamp = 0;
+  private readonly CACHE_DURATION = 3 * 60 * 1000; // 3 minutes
+
+  private clearCache(): void {
+    this.scoresCache$ = null;
+    this.cacheTimestamp = 0;
+  }
 
   private getHeaders() {
     const token = this.auth.token();
@@ -31,12 +41,29 @@ export class ScoreService {
 
   create(score: Score): Observable<any> {
     return this.http.post(this.baseUrl, score, this.getHeaders())
-      .pipe(catchError(this.handleError));
+      .pipe(
+        tap(() => this.clearCache()), // Clear cache after creating
+        catchError(this.handleError)
+      );
   }
 
   getAll(): Observable<any> {
-    return this.http.get(this.baseUrl, this.getHeaders())
-      .pipe(catchError(this.handleError));
+    const now = Date.now();
+    
+    // Return cached data if it's still valid
+    if (this.scoresCache$ && (now - this.cacheTimestamp) < this.CACHE_DURATION) {
+      return this.scoresCache$;
+    }
+    
+    // Make fresh request and cache it
+    this.scoresCache$ = this.http.get(this.baseUrl, this.getHeaders())
+      .pipe(
+        tap(() => this.cacheTimestamp = now), // Update cache timestamp
+        shareReplay(1), // Share the result with multiple subscribers
+        catchError(this.handleError)
+      );
+    
+    return this.scoresCache$;
   }
 
   getById(id: string): Observable<any> {
@@ -46,12 +73,18 @@ export class ScoreService {
 
   update(id: string, score: Score): Observable<any> {
     return this.http.put(`${this.baseUrl}/${id}`, score, this.getHeaders())
-      .pipe(catchError(this.handleError));
+      .pipe(
+        tap(() => this.clearCache()), // Clear cache after updating
+        catchError(this.handleError)
+      );
   }
 
   delete(id: string): Observable<any> {
     return this.http.delete(`${this.baseUrl}/${id}`, this.getHeaders())
-      .pipe(catchError(this.handleError));
+      .pipe(
+        tap(() => this.clearCache()), // Clear cache after deleting
+        catchError(this.handleError)
+      );
   }
 
   // Additional methods specific to scores

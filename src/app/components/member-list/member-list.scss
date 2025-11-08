@@ -1,18 +1,149 @@
 .member-list {
-  max-width: 600px;
+  max-width: 1200px;
   margin: 2rem auto;
   padding: 1rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  h2 {
+    margin: 0;
+  }
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+.filter-container {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+
+  .search-field {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .sort-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+    font-size: 0.9rem;
+    white-space: nowrap;
+
+    mat-icon {
+      font-size: 1.2rem;
+      width: 1.2rem;
+      height: 1.2rem;
+    }
+  }
+}
+
+.table-container {
+  margin-top: 1rem;
+}
+
+.members-table {
+  width: 100%;
+  margin-top: 1rem;
+
+  .mat-mdc-header-cell {
+    font-weight: 600;
+    color: #333;
+  }
+
+  .member-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #f5f5f5;
+    }
+  }
+
+  .actions-cell {
+    width: 120px;
+    text-align: center;
+    white-space: nowrap;
+
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 40px;
+      flex-shrink: 0;
+    }
+  }
+}
+
+.no-data {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #666;
+
+  mat-icon {
+    font-size: 3rem;
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  p {
+    margin: 1rem 0;
+    font-size: 1rem;
+  }
 }
 
 .spacer {
   flex: 1 1 auto;
 }
 
-mat-list-item {
-  display: flex;
-  align-items: center;
-}
+// Responsive design
+@media (max-width: 768px) {
+  .filter-container {
+    flex-direction: column;
+    align-items: stretch;
 
-button {
-  margin-left: 1rem;
+    .search-field {
+      flex: none;
+      width: 100%;
+    }
+
+    .sort-info {
+      justify-content: center;
+      margin-top: 0.5rem;
+    }
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .members-table {
+    .mat-mdc-cell,
+    .mat-mdc-header-cell {
+      padding: 0.5rem;
+      font-size: 0.9rem;
+    }
+  }
 }

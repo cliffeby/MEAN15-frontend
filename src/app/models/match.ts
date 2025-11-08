@@ -6,7 +6,7 @@ export interface Match {
   scGroupName?: string;
   players?: number;
   status: string;
-  lineUps?: any;
+  lineUps?: string[]; // Array of member IDs
   datePlayed?: string;
   user: string;
   createdAt?: string;

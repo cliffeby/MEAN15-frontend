@@ -59,12 +59,19 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "liveReload": true,
+            "hmr": false,
+            "host": "localhost",
+            "port": 4200
+          },
           "configurations": {
             "production": {
               "buildTarget": "autoquote-ui:build:production"
             },
             "development": {
-              "buildTarget": "autoquote-ui:build:development"
+              "buildTarget": "autoquote-ui:build:development",
+              "liveReload": true
             }
           },
           "defaultConfiguration": "development"

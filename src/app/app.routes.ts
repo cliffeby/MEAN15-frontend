@@ -9,11 +9,9 @@ import { LoanForm } from './components/loans/loan-form/loan-form';
 import { LoanList } from './components/loans/loan-list/loan-list';
 import { MainLayoutComponent } from './main-layout/main-layout';
 import { ReadMe } from './read-me/read-me';
-import { ResumeNotes } from './resume-notes/resume-notes';
 import { API } from './apis/apis';
 import { OfferListComponent } from './components/offers-list/offers-list';
 import { OffersForm } from './components/offers-form/offer-form';
-import { ContactUsComponent } from './components/contact/contact';
 import { OffersDashboard } from './components/offers-dashboard/offers-dashboard';
 import { OfferStats } from './components/offer-stats/offer-stats';
 import { MemberFormComponent } from './components/member-form/member-form';
@@ -47,7 +45,6 @@ export const routes: Routes = [
         { path: 'loans/edit/:id', component: LoanForm },
         { path: 'loans/:id', component: LoanDetail },    
         { path: 'read-me', component: ReadMe },  
-        { path: 'resume', component: ResumeNotes },  
         { path: 'apis', component: API },  
         { path: 'offers', component: OfferListComponent },
         { path: 'offers/create', component: OffersForm },
@@ -55,7 +52,6 @@ export const routes: Routes = [
         { path: 'offers/stats', component: OfferStats },
         { path: 'offers/create', component: OffersForm },
         { path: 'offers/edit/:id', component: OffersForm },
-         { path: 'contact', component: ContactUsComponent },
          { path: 'members', component: MemberListComponent },
          { path: 'members/add', component: MemberFormComponent },
   { path: 'members/edit/:id', component: MemberEditComponent },

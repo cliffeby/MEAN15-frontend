@@ -5,6 +5,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTableModule } from '@angular/material/table';
+import { MatSortModule, Sort } from '@angular/material/sort';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MemberService } from '../../services/memberService';
 import { Member } from '../../models/member';
@@ -23,12 +30,28 @@ import { ConfirmDialogService } from '../../services/confirm-dialog.service';
     MatButtonModule,
     MatSnackBarModule,
     MatDividerModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    MatTableModule,
+    MatSortModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatIconModule,
+    FormsModule
   ]
 })
 export class MemberListComponent implements OnInit {
   members: Member[] = [];
+  filteredMembers: Member[] = [];
   loading = false;
+  
+  // Filter properties
+  searchTerm = '';
+  sortField = 'firstName';
+  sortDirection: 'asc' | 'desc' = 'asc';
+  
+  // Table configuration
+  displayedColumns: string[] = ['fullName', 'email', 'usgaIndex', 'lastDatePlayed', 'actions'];
 
   constructor(
     private memberService: MemberService,
@@ -48,9 +71,10 @@ export class MemberListComponent implements OnInit {
   loadMembers() {
     this.loading = true;
     this.memberService.getAll().subscribe({
-      next: (res) => {
-        console.log('Members loaded:', res);    
-        this.members = res.members || res;
+      next: (members) => {
+        console.log('Members loaded:', members);    
+        this.members = members;
+        this.applyFilter();
         this.loading = false;
       },
       error: () => {
@@ -58,6 +82,64 @@ export class MemberListComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  applyFilter() {
+    let filtered = [...this.members];
+
+    // Apply search filter
+    if (this.searchTerm.trim()) {
+      const searchLower = this.searchTerm.toLowerCase().trim();
+      filtered = filtered.filter(member => {
+        const fullName = (member.fullName || `${member.firstName} ${member.lastName || ''}`.trim()).toLowerCase();
+        const email = (member.email || '').toLowerCase();
+        return fullName.includes(searchLower) || email.includes(searchLower);
+      });
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (this.sortField) {
+        case 'fullName':
+          aValue = (a.fullName || `${a.firstName} ${a.lastName || ''}`.trim()).toLowerCase();
+          bValue = (b.fullName || `${b.firstName} ${b.lastName || ''}`.trim()).toLowerCase();
+          break;
+        case 'email':
+          aValue = (a.email || '').toLowerCase();
+          bValue = (b.email || '').toLowerCase();
+          break;
+        case 'usgaIndex':
+          aValue = a.usgaIndex || 0;
+          bValue = b.usgaIndex || 0;
+          break;
+        case 'lastDatePlayed':
+          aValue = a.lastDatePlayed ? new Date(a.lastDatePlayed) : new Date(0);
+          bValue = b.lastDatePlayed ? new Date(b.lastDatePlayed) : new Date(0);
+          break;
+        default:
+          aValue = a.firstName.toLowerCase();
+          bValue = b.firstName.toLowerCase();
+      }
+
+      if (aValue < bValue) return this.sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return this.sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    this.filteredMembers = filtered;
+  }
+
+  onSearchChange() {
+    this.applyFilter();
+  }
+
+  sortData(sort: Sort) {
+    this.sortField = sort.active;
+    this.sortDirection = sort.direction as 'asc' | 'desc' || 'asc';
+    this.applyFilter();
   }
 
   editMember(id: string) {
