@@ -179,10 +179,18 @@ export class MemberListComponent implements OnInit {
   }
 
   editMember(id: string) {
+    if (!this.isAdmin) {
+      this.snackBar.open('You are not authorized to edit members.', 'Close', { duration: 2500 });
+      return;
+    }
     this.router.navigate(['/members/edit', id]);
   }
 
   addMember() {
+    if (!this.isAdmin) {
+      this.snackBar.open('You are not authorized to add members.', 'Close', { duration: 2500 });
+      return;
+    }
     this.router.navigate(['/members/add']);
   }
 

@@ -1,7 +1,7 @@
 <div class="member-list">
   <div class="header">
     <h2>Members</h2>
-    <button mat-raised-button color="primary" (click)="addMember()">
+    <button *ngIf="isAdmin" mat-raised-button color="primary" (click)="addMember()">
       <mat-icon>add</mat-icon>
       Add Member
     </button>
@@ -96,7 +96,7 @@
         <th mat-header-cell *matHeaderCellDef>Actions</th>
         <td mat-cell *matCellDef="let member" class="actions-cell">
           <div class="action-buttons">
-            <button mat-icon-button color="accent" (click)="editMember((member.id ?? member._id) || '')" matTooltip="Edit Member">
+            <button *ngIf="isAdmin" mat-icon-button color="accent" (click)="editMember((member.id ?? member._id) || '')" matTooltip="Edit Member">
               <mat-icon>edit</mat-icon>
             </button>
             <button *ngIf="isAdmin" mat-icon-button color="warn" (click)="deleteMember((member.id ?? member._id) || '')" matTooltip="Delete Member">

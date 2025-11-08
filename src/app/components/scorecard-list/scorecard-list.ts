@@ -58,10 +58,18 @@ export class ScorecardListComponent implements OnInit {
   }
 
   addScorecard(): void {
+    if (!this.isAdmin) {
+      this.snackBar.open('You are not authorized to add scorecards.', 'Close', { duration: 3000 });
+      return;
+    }
     this.router.navigate(['/scorecards/add']);
   }
 
   editScorecard(id: string): void {
+    if (!this.isAdmin) {
+      this.snackBar.open('You are not authorized to edit scorecards.', 'Close', { duration: 3000 });
+      return;
+    }
     this.router.navigate(['/scorecards/edit', id]);
   }
 

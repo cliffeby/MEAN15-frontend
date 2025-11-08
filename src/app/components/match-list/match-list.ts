@@ -72,10 +72,18 @@ export class MatchListComponent implements OnInit, OnDestroy {
   }
 
   editMatch(id: string) {
+    if (!this.isAdmin) {
+      // Could add snackbar notification here if needed
+      return;
+    }
     this.router.navigate(['/matches/edit', id]);
   }
 
   addMatch() {
+    if (!this.isAdmin) {
+      // Could add snackbar notification here if needed
+      return;
+    }
     this.router.navigate(['/matches/add']);
   }
 

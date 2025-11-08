@@ -3,7 +3,7 @@
   
   <!-- Action buttons -->
   <div class="action-bar">
-    <button mat-raised-button color="primary" (click)="addMatch()">Add Match</button>
+    <button *ngIf="isAdmin" mat-raised-button color="primary" (click)="addMatch()">Add Match</button>
     <button mat-button (click)="refreshMatches()">Refresh</button>
     <button mat-button (click)="loadAllMatches()">All</button>
     <button mat-button (click)="loadMatchesByStatus('open')">Open</button>
@@ -48,7 +48,7 @@
       </div>
       <span class="spacer"></span>
       <div class="button-group">
-        <button mat-button color="accent" (click)="editMatch((match.id ?? match._id) || '')">Edit</button>
+        <button *ngIf="isAdmin" mat-button color="accent" (click)="editMatch((match.id ?? match._id) || '')">Edit</button>
         <button mat-button color="primary" (click)="updateStatus((match.id ?? match._id) || '', 'completed')" 
                 *ngIf="match.status !== 'completed'">Complete</button>
         <button *ngIf="isAdmin" mat-button color="warn" (click)="deleteMatch((match.id ?? match._id) || '')">Delete</button>
