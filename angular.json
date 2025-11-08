@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "autoquote-ui": {
+    "rochester-golf": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -67,10 +67,10 @@
           },
           "configurations": {
             "production": {
-              "buildTarget": "autoquote-ui:build:production"
+              "buildTarget": "rochester-golf:build:production"
             },
             "development": {
-              "buildTarget": "autoquote-ui:build:development",
+              "buildTarget": "rochester-golf:build:development",
               "liveReload": true
             }
           },
