@@ -18,10 +18,10 @@
   <mat-form-field appearance="fill">
     <mat-label>USGA Index</mat-label>
   <input matInput formControlName="usgaIndex" type="number" step="0.1" min="-10" max="54" placeholder="Enter USGA index (e.g. 12.5)" />
-    <mat-error *ngIf="memberForm.get('usgaIndex')?.hasError('min') && memberForm.get('usgaIndex')?.touched">
+    <mat-error *ngIf="isUsgaIndexMinError">
       USGA Index cannot be less than -10.0
     </mat-error>
-    <mat-error *ngIf="memberForm.get('usgaIndex')?.hasError('max') && memberForm.get('usgaIndex')?.touched">
+    <mat-error *ngIf="isUsgaIndexMaxError">
       USGA Index cannot be greater than 54.0
     </mat-error>
   </mat-form-field>

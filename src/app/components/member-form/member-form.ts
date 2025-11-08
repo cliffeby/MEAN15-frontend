@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,6 +13,7 @@ import { MemberService } from '../../services/memberService';
   styleUrls: ['./member-form.scss'],
   standalone: true,
   imports: [
+    CommonModule,
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
@@ -37,6 +39,19 @@ export class MemberFormComponent {
       user: [''],
       scorecardsId: [[]]
     });
+  }
+
+  // Getter methods for form validation
+  get usgaIndexControl() {
+    return this.memberForm.get('usgaIndex');
+  }
+
+  get isUsgaIndexMinError(): boolean {
+    return !!(this.usgaIndexControl?.hasError('min') && this.usgaIndexControl?.touched);
+  }
+
+  get isUsgaIndexMaxError(): boolean {
+    return !!(this.usgaIndexControl?.hasError('max') && this.usgaIndexControl?.touched);
   }
 
   submit() {

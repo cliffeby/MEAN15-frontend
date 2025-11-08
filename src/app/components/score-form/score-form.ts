@@ -106,6 +106,31 @@ export class ScoreFormComponent implements OnInit, OnDestroy {
     this.scoresToPostArray.removeAt(index);
   }
 
+  // Getter methods for form validation
+  get usgaIndexControl() {
+    return this.scoreForm.get('usgaIndex');
+  }
+
+  get usgaIndexForTodaysScoreControl() {
+    return this.scoreForm.get('usgaIndexForTodaysScore');
+  }
+
+  get isUsgaIndexMinError(): boolean {
+    return !!(this.usgaIndexControl?.hasError('min') && this.usgaIndexControl?.touched);
+  }
+
+  get isUsgaIndexMaxError(): boolean {
+    return !!(this.usgaIndexControl?.hasError('max') && this.usgaIndexControl?.touched);
+  }
+
+  get isUsgaIndexForTodaysScoreMinError(): boolean {
+    return !!(this.usgaIndexForTodaysScoreControl?.hasError('min') && this.usgaIndexForTodaysScoreControl?.touched);
+  }
+
+  get isUsgaIndexForTodaysScoreMaxError(): boolean {
+    return !!(this.usgaIndexForTodaysScoreControl?.hasError('max') && this.usgaIndexForTodaysScoreControl?.touched);
+  }
+
   submit() {
     if (this.scoreForm.invalid) return;
     this.loading = true;

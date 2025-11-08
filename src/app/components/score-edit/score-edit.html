@@ -24,10 +24,10 @@
   <mat-form-field appearance="fill">
     <mat-label>USGA Index</mat-label>
     <input matInput formControlName="usgaIndex" type="number" step="0.1" min="-10" max="54" placeholder="Enter USGA Index (e.g. 12.5)" title="USGA Index" />
-    <mat-error *ngIf="scoreForm.get('usgaIndex')?.hasError('min') && scoreForm.get('usgaIndex')?.touched">
+    <mat-error *ngIf="isUsgaIndexMinError">
       USGA Index cannot be less than -10.0
     </mat-error>
-    <mat-error *ngIf="scoreForm.get('usgaIndex')?.hasError('max') && scoreForm.get('usgaIndex')?.touched">
+    <mat-error *ngIf="isUsgaIndexMaxError">
       USGA Index cannot be greater than 54.0
     </mat-error>
   </mat-form-field>
@@ -35,10 +35,10 @@
   <mat-form-field appearance="fill">
     <mat-label>USGA Index for Today's Score</mat-label>
     <input matInput formControlName="usgaIndexForTodaysScore" type="number" step="0.1" min="-10" max="54" placeholder="Enter USGA Index for today (e.g. 12.5)" title="USGA Index for Today" />
-    <mat-error *ngIf="scoreForm.get('usgaIndexForTodaysScore')?.hasError('min') && scoreForm.get('usgaIndexForTodaysScore')?.touched">
+    <mat-error *ngIf="isUsgaIndexForTodaysScoreMinError">
       USGA Index cannot be less than -10.0
     </mat-error>
-    <mat-error *ngIf="scoreForm.get('usgaIndexForTodaysScore')?.hasError('max') && scoreForm.get('usgaIndexForTodaysScore')?.touched">
+    <mat-error *ngIf="isUsgaIndexForTodaysScoreMaxError">
       USGA Index cannot be greater than 54.0
     </mat-error>
   </mat-form-field>

@@ -64,6 +64,19 @@ export class MemberEditComponent implements OnInit {
     }
   }
 
+  // Getter methods for form validation
+  get usgaIndexControl() {
+    return this.memberForm.get('usgaIndex');
+  }
+
+  get isUsgaIndexMinError(): boolean {
+    return !!(this.usgaIndexControl?.hasError('min') && this.usgaIndexControl?.touched);
+  }
+
+  get isUsgaIndexMaxError(): boolean {
+    return !!(this.usgaIndexControl?.hasError('max') && this.usgaIndexControl?.touched);
+  }
+
   submit() {
     if (this.memberForm.invalid || !this.memberId) return;
     this.loading = true;
