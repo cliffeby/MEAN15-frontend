@@ -94,7 +94,7 @@ export class MatchFormComponent implements OnInit, OnDestroy {
     });
     this.matchForm = this.fb.group({
       name: ['', Validators.required],
-      scorecardId: [''],
+      scorecardId: ['', Validators.required],
       scGroupName: [''],
       status: ['open', Validators.required],
       lineUps: this.fb.array([]),

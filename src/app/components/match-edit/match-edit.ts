@@ -79,7 +79,7 @@ export class MatchEditComponent implements OnInit, OnDestroy {
   ) {
     this.matchForm = this.fb.group({
       name: ['', Validators.required],
-      scorecardId: [''],
+      scorecardId: ['', Validators.required],
       scGroupName: [''],
       status: ['open', Validators.required],
       lineUps: this.fb.array([]),
@@ -112,29 +112,33 @@ export class MatchEditComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Load scorecards
+    console.log('Match Edit ngOnInit started');
+    
+    // Immediately try to load scorecards from service
+    this.loadScorecardsDirectly();
+    
+    // Also dispatch store action as backup
     this.store.dispatch(ScorecardActions.loadScorecards());
     
     // Load scorecard data and store in component property
     this.scorecards$.pipe(takeUntil(this.destroy$)).subscribe({
       next: (scorecards) => {
-        this.scorecards = scorecards || [];
+        console.log('Scorecards loaded from store:', scorecards);
+        if (scorecards && scorecards.length > 0) {
+          this.scorecards = scorecards;
+          console.log('Using store scorecards:', this.scorecards);
+        }
       },
-      error: (error) => console.error('Error loading scorecards:', error)
+      error: (error) => console.error('Error loading scorecards from store:', error)
     });
 
-    // Fallback: Load scorecards directly from service if store is empty
+    // Additional fallback after 1 second
     setTimeout(() => {
+      console.log('Fallback check - scorecards length:', this.scorecards.length);
       if (this.scorecards.length === 0) {
-        this.scorecardService.getAll().pipe(takeUntil(this.destroy$)).subscribe({
-          next: (response) => {
-            const scorecards = response?.scorecards || response || [];
-            this.scorecards = scorecards;
-          },
-          error: (error) => console.error('Error loading scorecards directly:', error)
-        });
+        this.loadScorecardsDirectly();
       }
-    }, 2000);
+    }, 1000);
     
     this.matchId = this.route.snapshot.paramMap.get('id');
     
@@ -156,6 +160,29 @@ export class MatchEditComponent implements OnInit, OnDestroy {
   private getCurrentUserEmail(): string {
     const user = this.authService.user;
     return user?.email || user?.username || 'unknown';
+  }
+
+  private loadScorecardsDirectly(): void {
+    console.log('Loading scorecards directly from service...');
+    this.scorecardService.getAll().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (response) => {
+        console.log('Direct service response:', response);
+        if (response?.scorecards && Array.isArray(response.scorecards)) {
+          this.scorecards = response.scorecards;
+          console.log('Successfully loaded scorecards:', this.scorecards);
+        } else if (Array.isArray(response)) {
+          this.scorecards = response;
+          console.log('Response was array, using directly:', this.scorecards);
+        } else {
+          console.warn('Unexpected response format:', response);
+          this.scorecards = [];
+        }
+      },
+      error: (error) => {
+        console.error('Error loading scorecards directly:', error);
+        this.scorecards = [];
+      }
+    });
   }
 
   populateForm(match: Match) {

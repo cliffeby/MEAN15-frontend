@@ -1,0 +1,370 @@
+.score-entry-container {
+  padding: 20px;
+  max-width: 100%;
+  overflow-x: auto;
+
+  mat-card {
+    max-width: none;
+    width: 100%;
+  }
+
+  mat-card-header {
+    margin-bottom: 20px;
+
+    mat-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.5rem;
+    }
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px;
+
+  mat-spinner {
+    margin-bottom: 16px;
+  }
+}
+
+.course-info {
+  margin-bottom: 16px;
+
+  .info-chips {
+    mat-chip-set {
+      mat-chip {
+        background-color: #e1f5fe;
+        color: #01579b;
+      }
+    }
+  }
+}
+
+.score-table-container {
+  overflow-x: auto;
+  margin: 16px 0;
+  
+  .score-table {
+    width: 100%;
+    min-width: 1200px; // Ensure table doesn't get too cramped
+    border-collapse: separate;
+    border-spacing: 1px;
+
+    th, td {
+      text-align: center;
+      vertical-align: middle;
+      padding: 8px 4px;
+      border: 1px solid #e0e0e0;
+      background-color: #fff;
+    }
+
+    th {
+      background-color: #f5f5f5;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .player-column {
+      min-width: 150px;
+      text-align: left;
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      background-color: #fff;
+      border-right: 2px solid #ccc;
+
+      .player-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        small {
+          color: #666;
+          font-size: 0.75rem;
+        }
+      }
+    }
+
+    .handicap-column {
+      min-width: 60px;
+      position: sticky;
+      left: 150px;
+      z-index: 2;
+      background-color: #fff;
+      border-right: 2px solid #ccc;
+      font-weight: 600;
+    }
+
+    .hole-column {
+      width: 50px;
+      min-width: 50px;
+      
+      // Hole 10 - first hole of back nine, add left border for visual separation
+      &:nth-child(13) {
+        border-left: 3px solid #2196f3;
+      }
+      
+      .hole-input {
+        width: 45px;
+        
+        ::ng-deep {
+          .mat-mdc-form-field-subscript-wrapper {
+            display: none;
+          }
+          
+          .mat-mdc-form-field-infix {
+            min-height: 32px;
+            padding: 4px 0;
+          }
+          
+          .mat-mdc-text-field-wrapper {
+            height: 40px;
+            
+            .mat-mdc-form-field-flex {
+              height: 100%;
+            }
+          }
+          
+          input {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+            
+            &:focus {
+              background-color: #fff3e0;
+              outline: 2px solid #ff9800;
+              border-radius: 3px;
+            }
+          }
+        }
+      }
+    }
+
+    .total-column {
+      min-width: 60px;
+      font-weight: 600;
+      background-color: #f9f9f9;
+      border-left: 2px solid #ddd;
+      
+      // Front nine total - appears after hole 9
+      &:nth-child(12) {
+        background-color: #e8f5e8;
+        border-left: 3px solid #4caf50;
+        border-right: 3px solid #4caf50;
+      }
+      
+      // Back nine total - appears after hole 18  
+      &:nth-child(22) {
+        background-color: #e3f2fd;
+        border-left: 3px solid #2196f3;
+        border-right: 3px solid #2196f3;
+      }
+
+      &:last-child {
+        background-color: #e8f5e8;
+      }
+
+      .net-score {
+        color: #2e7d32;
+      }
+    }
+
+    // Par row styling
+    .par-row-data {
+      background-color: #f0f8ff;
+      
+      td {
+        background-color: #f0f8ff;
+        font-weight: 600;
+        color: #1565c0;
+      }
+    }
+
+    // Score coloring
+    .under-par {
+      color: #2e7d32;
+      background-color: #e8f5e8;
+    }
+
+    .over-par {
+      color: #d32f2f;
+      background-color: #ffebee;
+    }
+
+    // Hole number headers
+    tbody tr:first-child td.hole-column {
+      font-weight: 600;
+      background-color: #f5f5f5;
+    }
+  }
+}
+
+.par-row {
+  margin-bottom: 16px;
+  
+  .score-table {
+    thead th {
+      background-color: #1976d2;
+      color: white;
+    }
+    
+    .par-row-data {
+      background-color: #e3f2fd;
+      font-weight: 600;
+    }
+    
+    .handicap-row-data {
+      background-color: #f3e5f5;
+      font-weight: 500;
+      font-size: 0.9em;
+      
+      td {
+        padding: 4px 8px;
+      }
+    }
+  }
+}
+
+.scores-section {
+  .score-table {
+    tbody tr {
+      &:nth-child(even) {
+        background-color: #fafafa;
+        
+        td {
+          background-color: #fafafa;
+        }
+        
+        td.player-column,
+        td.handicap-column {
+          background-color: #fafafa;
+        }
+        
+        td.total-column {
+          background-color: #f5f5f5;
+        }
+      }
+      
+      &:hover {
+        background-color: #e3f2fd;
+        
+        td {
+          background-color: #e3f2fd;
+        }
+        
+        td.player-column,
+        td.handicap-column {
+          background-color: #e3f2fd;
+        }
+      }
+    }
+  }
+}
+
+.no-players,
+.no-scorecard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px;
+  text-align: center;
+  color: #666;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+    color: #999;
+  }
+
+  h3 {
+    margin: 0 0 8px 0;
+    color: #333;
+  }
+
+  button {
+    margin-top: 16px;
+  }
+}
+
+.no-scorecard {
+  mat-icon {
+    color: #ff9800;
+  }
+  
+  h3 {
+    color: #ff9800;
+  }
+}
+
+mat-card-actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 24px;
+  
+  button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+// Responsive design
+@media (max-width: 1400px) {
+  .score-table-container {
+    .score-table {
+      min-width: 1000px;
+      
+      .hole-column {
+        width: 45px;
+        min-width: 45px;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .score-entry-container {
+    padding: 10px;
+  }
+  
+  .score-table-container {
+    .score-table {
+      min-width: 800px;
+      
+      .player-column {
+        min-width: 120px;
+      }
+      
+      .handicap-column {
+        left: 120px;
+      }
+      
+      .hole-column {
+        width: 40px;
+        min-width: 40px;
+        
+        .hole-input {
+          width: 35px;
+        }
+      }
+    }
+  }
+  
+  mat-card-actions {
+    flex-direction: column;
+    gap: 12px;
+    
+    button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}

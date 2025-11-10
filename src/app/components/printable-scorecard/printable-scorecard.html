@@ -1,0 +1,56 @@
+<div class="printable-scorecard-container">
+  <!-- Screen-only controls -->
+  <div class="screen-only controls">
+    <!-- Loading indicator -->
+    @if (loading) {
+      <div class="loading-container">
+        <mat-spinner></mat-spinner>
+        <p>Loading scorecard data...</p>
+      </div>
+    }
+
+    <!-- Error state -->
+    @if (!loading && (!match || !scorecard || players.length === 0)) {
+      <div class="error-state">
+        <mat-icon color="warn">warning</mat-icon>
+        <h3>Cannot Generate Scorecard</h3>
+        @if (!match) {
+          <p>Match not found</p>
+        }
+        @if (match && !scorecard) {
+          <p>No scorecard assigned to this match</p>
+        }
+        @if (match && scorecard && players.length === 0) {
+          <p>No players assigned to this match</p>
+        }
+        <p>Please ensure the match has a scorecard and players assigned.</p>
+        
+        <button mat-button (click)="goBack()">
+          <mat-icon>arrow_back</mat-icon>
+          Back to Matches
+        </button>
+      </div>
+    }
+
+    <!-- Scorecard Generation -->
+    @if (!loading && match && scorecard && players.length > 0) {
+      <div class="print-ready">
+        <div class="button-group">
+          <button mat-raised-button color="primary" (click)="generateScorecard()">
+            <mat-icon>picture_as_pdf</mat-icon>
+            Generate Scorecard
+          </button>
+        </div>
+        
+        <p class="help-text">
+          Creates professional tournament scorecard with Download, Email, and Print options.
+        </p>
+        
+        <button mat-button (click)="goBack()">
+          <mat-icon>arrow_back</mat-icon>
+          Back to Matches
+        </button>
+      </div>
+    }
+  </div>
+</div>

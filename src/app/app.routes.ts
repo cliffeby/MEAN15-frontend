@@ -26,6 +26,8 @@ import { ScoreEditComponent } from './components/score-edit/score-edit';
 import { MatchListComponent } from './components/match-list/match-list';
 import { MatchFormComponent } from './components/match-form/match-form';
 import { MatchEditComponent } from './components/match-edit/match-edit';
+import { ScoreEntryComponent } from './components/score-entry/score-entry';
+import { PrintableScorecardComponent } from './components/printable-scorecard/printable-scorecard';
 
 export const routes: Routes = [
     // Public
@@ -65,6 +67,8 @@ export const routes: Routes = [
   { path: 'matches', component: MatchListComponent },
   { path: 'matches/add', component: MatchFormComponent, canActivate: [roleGuard], data: { role: 'admin' } },
   { path: 'matches/edit/:id', component: MatchEditComponent, canActivate: [roleGuard], data: { role: 'admin' } },
+  { path: 'matches/:id/score-entry', component: ScoreEntryComponent, canActivate: [roleGuard], data: { role: 'admin' } },
+  { path: 'matches/:id/printable-scorecard', component: PrintableScorecardComponent },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
       ]
     },

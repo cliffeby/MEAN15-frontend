@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, shareReplay, tap } from 'rxjs/operators';
+import { catchError, shareReplay, tap, retryWhen, delay, take } from 'rxjs/operators';
 import { AuthService } from './authService';
 import { Score } from '../models/score';
 
@@ -42,6 +42,12 @@ export class ScoreService {
   create(score: Score): Observable<any> {
     return this.http.post(this.baseUrl, score, this.getHeaders())
       .pipe(
+        retryWhen(errors => 
+          errors.pipe(
+            delay(1000), // Wait 1 second before retry
+            take(2) // Only retry twice
+          )
+        ),
         tap(() => this.clearCache()), // Clear cache after creating
         catchError(this.handleError)
       );
@@ -74,6 +80,12 @@ export class ScoreService {
   update(id: string, score: Score): Observable<any> {
     return this.http.put(`${this.baseUrl}/${id}`, score, this.getHeaders())
       .pipe(
+        retryWhen(errors => 
+          errors.pipe(
+            delay(1000), // Wait 1 second before retry
+            take(2) // Only retry twice
+          )
+        ),
         tap(() => this.clearCache()), // Clear cache after updating
         catchError(this.handleError)
       );
@@ -90,6 +102,11 @@ export class ScoreService {
   // Additional methods specific to scores
   getScoresByMember(memberId: string): Observable<any> {
     return this.http.get(`${this.baseUrl}/member/${memberId}`, this.getHeaders())
+      .pipe(catchError(this.handleError));
+  }
+
+  getScoresByMatch(matchId: string): Observable<{success: boolean; count: number; scores: any[]}> {
+    return this.http.get<{success: boolean; count: number; scores: any[]}>(`${this.baseUrl}/match/${matchId}`, this.getHeaders())
       .pipe(catchError(this.handleError));
   }
 

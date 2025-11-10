@@ -1,0 +1,230 @@
+<div class="score-entry-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>scorecard</mat-icon>
+        Score Entry
+      </mat-card-title>
+      <mat-card-subtitle *ngIf="match && scorecard">
+        {{ match.name }} - {{ scorecard.name }}
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Loading indicator -->
+      <div *ngIf="loading" class="loading-container">
+        <mat-spinner></mat-spinner>
+        <p>Loading match data...</p>
+      </div>
+
+      <!-- No scorecard message -->
+      <div *ngIf="!loading && match && !match.scorecardId" class="no-scorecard">
+        <mat-icon>warning</mat-icon>
+        <h3>No Scorecard Assigned</h3>
+        <p>This match doesn't have a scorecard assigned. You need to add a scorecard before entering scores.</p>
+        <button mat-raised-button color="primary" (click)="editMatch()">
+          <mat-icon>edit</mat-icon>
+          Edit Match to Add Scorecard
+        </button>
+      </div>
+
+      <!-- Score entry form -->
+      <form [formGroup]="scoreForm" *ngIf="!loading && playerScores.length > 0">
+        
+        <!-- Course info -->
+        <div class="course-info" *ngIf="scorecard">
+          <div class="info-chips">
+            <mat-chip-set>
+              <mat-chip>Par: {{ getCoursePar() }}</mat-chip>
+              <mat-chip>Rating: {{ scorecard.rating }}</mat-chip>
+              <mat-chip>Slope: {{ scorecard.slope }}</mat-chip>
+            </mat-chip-set>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Par row -->
+        <div class="par-row" *ngIf="scorecard?.pars">
+          <div class="score-table-container">
+            <table class="score-table">
+              <thead>
+                <tr>
+                  <th class="player-column">Hole</th>
+                  <th class="handicap-column">Par</th>
+                  <!-- Holes 1-9 -->
+                  <th *ngFor="let i of [0,1,2,3,4,5,6,7,8]" class="hole-column">
+                    {{ i + 1 }}
+                  </th>
+                  <th class="total-column">Front</th>
+                  <!-- Holes 10-18 -->
+                  <th *ngFor="let i of [9,10,11,12,13,14,15,16,17]" class="hole-column">
+                    {{ i + 1 }}
+                  </th>
+                  <th class="total-column">Back</th>
+                  <th class="total-column">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="par-row-data">
+                  <td class="player-column"><strong>Par</strong></td>
+                  <td class="handicap-column">{{ getCoursePar() }}</td>
+                  <!-- Holes 1-9 pars -->
+                  <td *ngFor="let i of [0,1,2,3,4,5,6,7,8]" class="hole-column">
+                    {{ getParForHole(i) }}
+                  </td>
+                  <td class="total-column"><strong>{{ getFrontNinePar() }}</strong></td>
+                  <!-- Holes 10-18 pars -->
+                  <td *ngFor="let i of [9,10,11,12,13,14,15,16,17]" class="hole-column">
+                    {{ getParForHole(i) }}
+                  </td>
+                  <td class="total-column"><strong>{{ getBackNinePar() }}</strong></td>
+                  <td class="total-column"><strong>{{ getCoursePar() }}</strong></td>
+                </tr>
+                <tr class="handicap-row-data" *ngIf="scorecard?.hCaps">
+                  <td class="player-column"><strong>HCP</strong></td>
+                  <td class="handicap-column">-</td>
+                  <!-- Holes 1-9 handicaps -->
+                  <td *ngFor="let i of [0,1,2,3,4,5,6,7,8]" class="hole-column">
+                    {{ getHoleHandicapFromScorecard(i) }}
+                  </td>
+                  <td class="total-column">-</td>
+                  <!-- Holes 10-18 handicaps -->
+                  <td *ngFor="let i of [9,10,11,12,13,14,15,16,17]" class="hole-column">
+                    {{ getHoleHandicapFromScorecard(i) }}
+                  </td>
+                  <td class="total-column">-</td>
+                  <td class="total-column">-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Player scores -->
+        <div class="scores-section" formArrayName="players">
+          <div class="score-table-container">
+            <table class="score-table">
+              <thead>
+                <tr>
+                  <th class="player-column">Player</th>
+                  <th class="handicap-column">HCP</th>
+                  <!-- Holes 1-9 -->
+                  <th *ngFor="let i of [0,1,2,3,4,5,6,7,8]" class="hole-column">
+                    {{ i + 1 }}
+                  </th>
+                  <th class="total-column">Front</th>
+                  <!-- Holes 10-18 -->
+                  <th *ngFor="let i of [9,10,11,12,13,14,15,16,17]" class="hole-column">
+                    {{ i + 1 }}
+                  </th>
+                  <th class="total-column">Back</th>
+                  <th class="total-column">Total</th>
+                  <th class="total-column">Net</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let player of playerScores; let playerIndex = index" [formGroupName]="playerIndex">
+                  <!-- Player name and handicap -->
+                  <td class="player-column">
+                    <div class="player-info">
+                      <strong>{{ player.member.firstName }} {{ player.member.lastName }}</strong>
+                      <small *ngIf="player.member.usgaIndex">USGA: {{ player.member.usgaIndex | number:'1.1-1' }}</small>
+                    </div>
+                  </td>
+                  <td class="handicap-column">
+                    {{ getHoleHandicap(playerIndex) }}
+                  </td>
+
+                  <!-- Holes 1-9 scores -->
+                  <td *ngFor="let holeIndex of [0,1,2,3,4,5,6,7,8]" class="hole-column" formArrayName="holes">
+                    <mat-form-field appearance="outline" class="hole-input">
+                      <input matInput 
+                             type="text" 
+                             maxlength="2"
+                             [formControlName]="holeIndex"
+                             (input)="onScoreChange(playerIndex, holeIndex, $event)"
+                             (keydown)="onKeyDown($event, playerIndex, holeIndex)"
+                             (blur)="onScoreChange(playerIndex, holeIndex, $event)"
+                             [id]="'score-' + playerIndex + '-' + holeIndex"
+                             placeholder="0">
+                    </mat-form-field>
+                  </td>
+
+                  <!-- Front nine total -->
+                  <td class="total-column">
+                    <strong [class.under-par]="player.frontNine < getFrontNinePar()" 
+                           [class.over-par]="player.frontNine > getFrontNinePar()">
+                      {{ player.frontNine || '-' }}
+                    </strong>
+                  </td>
+
+                  <!-- Holes 10-18 scores -->
+                  <td *ngFor="let holeIndex of [9,10,11,12,13,14,15,16,17]" class="hole-column" formArrayName="holes">
+                    <mat-form-field appearance="outline" class="hole-input">
+                      <input matInput 
+                             type="text" 
+                             maxlength="2"
+                             [formControlName]="holeIndex"
+                             (input)="onScoreChange(playerIndex, holeIndex, $event)"
+                             (keydown)="onKeyDown($event, playerIndex, holeIndex)"
+                             (blur)="onScoreChange(playerIndex, holeIndex, $event)"
+                             [id]="'score-' + playerIndex + '-' + holeIndex"
+                             placeholder="0">
+                    </mat-form-field>
+                  </td>
+
+                  <!-- Back nine total -->
+                  <td class="total-column">
+                    <strong [class.under-par]="player.backNine < getBackNinePar()" 
+                           [class.over-par]="player.backNine > getBackNinePar()">
+                      {{ player.backNine || '-' }}
+                    </strong>
+                  </td>
+
+                  <!-- Overall total -->
+                  <td class="total-column">
+                    <strong [class.under-par]="player.total < getCoursePar()" 
+                           [class.over-par]="player.total > getCoursePar()">
+                      {{ player.total || '-' }}
+                    </strong>
+                  </td>
+
+                  <!-- Net score -->
+                  <td class="total-column">
+                    <strong class="net-score">{{ player.netScore || '-' }}</strong>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- No players message -->
+        <div *ngIf="!loading && playerScores.length === 0" class="no-players">
+          <mat-icon>person_off</mat-icon>
+          <h3>No players found</h3>
+          <p>This match has no players assigned. Please add players to the match first.</p>
+        </div>
+
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions>
+      <button mat-button (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+        Back to Matches
+      </button>
+      
+      <button mat-raised-button 
+              color="primary" 
+              (click)="saveScores()"
+              [disabled]="!canSave()"
+              *ngIf="playerScores.length > 0">
+        <mat-icon *ngIf="!saving">save</mat-icon>
+        <mat-spinner *ngIf="saving" diameter="20"></mat-spinner>
+        {{ saving ? 'Saving...' : 'Save Scores' }}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

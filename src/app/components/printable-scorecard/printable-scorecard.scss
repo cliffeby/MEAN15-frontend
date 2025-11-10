@@ -1,0 +1,558 @@
+// Screen-only styles
+.screen-only {
+  @media print {
+    display: none !important;
+  }
+}
+
+// Targeted print styles - hide sidebar specifically
+@media print {
+  // Reset page margins and body
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+  }
+  
+  // Specifically target and hide sidebar elements
+  mat-sidenav-container .mat-drawer-side,
+  .mat-sidenav-container .mat-drawer-side,
+  mat-sidenav,
+  .mat-sidenav,
+  .mat-drawer.mat-drawer-side,
+  app-main-layout .sidenav,
+  .main-layout .sidebar,
+  .mat-sidenav-container .mat-sidenav {
+    display: none !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+  }
+  
+  // Force content to use full width
+  .mat-sidenav-content,
+  mat-sidenav-content,
+  .mat-drawer-content {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100vw !important;
+  }
+  
+  // Hide navigation and toolbar elements
+  .mat-toolbar,
+  mat-toolbar,
+  app-main-layout nav,
+  .navigation,
+  .header {
+    display: none !important;
+  }
+  
+  // Ensure scorecard container takes full space
+  .printable-scorecard-container {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 9999 !important;
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+.printable-scorecard-container {
+  padding: 0;
+  margin: 0;
+  
+  .controls {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: white;
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+    
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+
+      mat-spinner {
+        margin-bottom: 16px;
+      }
+    }
+    
+    .error-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      text-align: center;
+      
+      mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        margin-bottom: 16px;
+      }
+      
+      h3 {
+        margin: 0 0 16px 0;
+        color: #d32f2f;
+      }
+      
+      p {
+        margin: 8px 0;
+        color: #666;
+      }
+    }
+    
+    .print-ready {
+      text-align: center;
+      padding: 15px;
+      max-width: 300px;
+      
+      p {
+        margin: 0 0 10px 0;
+        font-size: 14px;
+      }
+      
+      .button-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      
+      .help-text {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 15px;
+      }
+    }
+  }
+}
+
+// Print-specific styles for two scorecards per page
+@media print {
+  .screen-only {
+    display: none !important;
+  }
+  
+  .printable-content {
+    display: block !important;
+    margin: 0; // Let PDF generation handle margins
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    background: white;
+    color: black;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.1;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+  }
+
+  .scorecard-sheet {
+    width: 100%;
+    height: calc(50% - 0.25in); // Each scorecard gets half height minus gap space
+    margin: 0;
+    margin-bottom: 0.5in; // 1/2" gap between scorecards
+    padding: 0.1in; // Small internal padding
+    box-sizing: border-box;
+    page-break-inside: avoid;
+    
+    &:last-child {
+      margin-bottom: 0; // No margin after last scorecard
+    }
+    
+    .course-header {
+      text-align: center;
+      margin-bottom: 2px;
+      border-bottom: 1px solid black;
+      padding-bottom: 2px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      font-size: 10px;
+      
+      .course-name {
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+      
+      .separator {
+        font-weight: bold;
+        color: #666;
+      }
+      
+      .tees, .par, .yardage, .match-info, .date {
+        font-weight: normal;
+      }
+    }
+
+    .scorecard-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0;
+      font-size: 10px;
+      
+      th, td {
+        border: 1px solid black;
+        text-align: center;
+        vertical-align: middle;
+        padding: 1px;
+        height: 20px; // Reduced to fit in smaller space
+        font-size: 9px; // Slightly smaller font
+        line-height: 1.0;
+      }
+      
+      thead {
+        .hole-row th {
+          background-color: #333 !important;
+          color: white !important;
+          font-weight: bold;
+          font-size: 9px;
+          print-color-adjust: exact;
+          -webkit-print-color-adjust: exact;
+        }
+        
+        .par-row th, .hcp-row th {
+          background-color: #f0f0f0 !important;
+          font-weight: bold;
+          print-color-adjust: exact;
+          -webkit-print-color-adjust: exact;
+        }
+      }
+      
+      .player-cell {
+        width: 80px;
+        text-align: left;
+        font-weight: bold;
+        background-color: #f5f5f5 !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+      
+      .hole-cell {
+        width: 18px;
+        font-weight: bold;
+      }
+      
+      .total-cell {
+        width: 20px;
+        font-weight: bold;
+        background-color: #e8e8e8 !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+      
+      tbody {
+        .player-row {
+          .player-name {
+            text-align: left;
+            padding-left: 3px;
+            font-weight: normal;
+            font-size: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 75px;
+          }
+          
+          .score-cell {
+            height: 16px; // Reduced to fit in smaller space
+            border: 1px solid black;
+            background: white;
+          }
+          
+          &.empty-row {
+            .player-name {
+              font-style: italic;
+              color: #666;
+              font-size: 9px;
+            }
+          }
+        }
+        
+        .spacer-row {
+          height: 4px; // Increased by 30% from 3px
+          
+          .spacer-cell {
+            border: none;
+            background: transparent;
+          }
+        }
+        
+        .match-spacer-row {
+          height: 14px; // Reduced to fit in smaller space
+          
+          .match-spacer-cell {
+            border: none;
+            background: #f9f9f9;
+            font-size: 9px;
+            font-style: italic;
+            text-align: center;
+            padding: 2px;
+            color: #666;
+          }
+          
+          &.one-ball-row {
+            .match-label {
+              font-weight: bold;
+            }
+          }
+          
+          .match-label {
+            background: #f0f0f0;
+            font-size: 9px;
+            font-weight: bold;
+            text-align: center;
+            padding: 2px;
+            border: 1px solid black;
+            color: #000;
+          }
+          
+          .match-score-cell {
+            border: 1px solid black;
+            background: white;
+            height: 14px; // Reduced to fit in smaller space
+            font-size: 8px; // Slightly smaller font
+          }
+        }
+      }
+    }
+  }
+  
+  .page-break {
+    page-break-before: always;
+    height: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  // Page setup for letter size with proper margins and gap
+  @page {
+    margin: 0.25in;
+    size: letter landscape;
+  }
+  
+  * {
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+  
+  // Force specific colors in print
+  .scorecard-table thead .hole-row th {
+    background: #333 !important;
+    color: white !important;
+  }
+  
+  .scorecard-table thead .par-row th,
+  .scorecard-table thead .hcp-row th {
+    background: #f0f0f0 !important;
+  }
+  
+  .scorecard-table .player-cell {
+    background: #f5f5f5 !important;
+  }
+  
+  .scorecard-table .total-cell {
+    background: #e8e8e8 !important;
+  }
+}
+
+// Screen preview styles - simplified for print-focused view
+@media screen {
+  .printable-content {
+    display: block;
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+    background: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    
+    .scorecard-sheet {
+      margin: 0;
+      padding: 8px;
+      border: none;
+      height: 49vh;
+      
+      .course-header {
+        text-align: center;
+        margin-bottom: 15px;
+        border-bottom: 2px solid black;
+        padding-bottom: 8px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        
+        .course-name {
+          font-weight: bold;
+          text-transform: uppercase;
+        }
+        
+        .separator {
+          font-weight: bold;
+          color: #666;
+        }
+        
+        .tees, .par, .yardage, .match-info, .date {
+          font-weight: normal;
+        }
+      }
+
+      .scorecard-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+        font-size: 12px;
+        
+        th, td {
+          border: 1px solid black;
+          text-align: center;
+          vertical-align: middle;
+          padding: 4px 2px;
+          height: 33px; // Increased by 30% from 25px
+          font-size: 12px;
+        }
+        
+        thead {
+          .hole-row th {
+            background-color: #333;
+            color: white;
+            font-weight: bold;
+          }
+          
+          .par-row th, .hcp-row th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+          }
+        }
+        
+        .player-cell {
+          width: 85px;
+          text-align: left;
+          font-weight: bold;
+          background-color: #f5f5f5;
+        }
+        
+        .hole-cell {
+          width: 20px;
+          font-weight: bold;
+        }
+        
+        .total-cell {
+          width: 25px;
+          font-weight: bold;
+          background-color: #e8e8e8;
+        }
+        
+        tbody {
+          .player-row {
+            .player-name {
+              text-align: left;
+              padding-left: 5px;
+              font-weight: normal;
+              font-size: 12px;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              max-width: 80px;
+            }
+            
+            .score-cell {
+              height: 26px; // Increased by 30% from 20px
+              border: 1px solid black;
+              background: white;
+            }
+            
+            &.empty-row {
+              .player-name {
+                font-style: italic;
+                color: #666;
+              }
+            }
+          }
+          
+          .spacer-row {
+            height: 10px; // Increased by 30% from 8px
+            
+            .spacer-cell {
+              border: none;
+              background: transparent;
+            }
+          }
+          
+          .match-spacer-row {
+            height: 23px; // Increased by 30% from 18px
+            
+            .match-spacer-cell {
+              border: none;
+              background: #f9f9f9;
+              font-size: 12px;
+              font-style: italic;
+              text-align: center;
+              padding: 4px;
+              color: #666;
+            }
+            
+            &.one-ball-row {
+              .match-label {
+                font-weight: bold;
+              }
+            }
+            
+            .match-label {
+              background: #f0f0f0;
+              font-size: 12px;
+              font-weight: bold;
+              text-align: center;
+              padding: 3px;
+              border: 1px solid black;
+              color: #000;
+            }
+            
+            .match-score-cell {
+              border: 1px solid black;
+              background: white;
+              height: 23px; // Increased by 30% from 18px
+              font-size: 12px;
+            }
+          }
+        }
+      }
+    }
+    
+    .page-break {
+      border-top: 2px dashed #ccc;
+      margin: 20px 0;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #666;
+      
+      &::after {
+        content: "Page Break";
+        background: white;
+        padding: 0 10px;
+      }
+    }
+  }
+}
