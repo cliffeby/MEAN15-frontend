@@ -52,6 +52,7 @@ export const routes: Routes = [
   { path: 'matches/add', component: MatchFormComponent, canActivate: [roleGuard], data: { role: 'admin' } },
   { path: 'matches/edit/:id', component: MatchEditComponent, canActivate: [roleGuard], data: { role: 'admin' } },
   { path: 'matches/:id/score-entry', component: ScoreEntryComponent, canActivate: [roleGuard], data: { role: 'admin' } },
+  { path: 'matches/:id/scoreentry', component: ScoreEntryComponent, canActivate: [roleGuard], data: { role: 'admin' } },
   { path: 'matches/:id/printable-scorecard', component: PrintableScorecardComponent },
   { path: 'admin/configuration', component: AdminConfigurationComponent, canActivate: [roleGuard], data: { role: 'admin' } },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' }

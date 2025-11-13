@@ -17,6 +17,26 @@
         <p>Loading match data...</p>
       </div>
 
+      <!-- Match completed warning -->
+      <div *ngIf="!loading && isMatchCompleted" class="match-completed-warning">
+        <mat-card class="warning-card">
+          <mat-card-content>
+            <div class="warning-content">
+              <mat-icon class="warning-icon">lock</mat-icon>
+              <div class="warning-text">
+                <strong>Match Completed - Scores Locked</strong>
+                <p>This match "{{ match?.name }}" is completed. Scores cannot be modified. 
+                   To enable score editing, change the match status from "completed" to "open".</p>
+                <button mat-raised-button color="primary" (click)="editMatch()" class="edit-match-btn">
+                  <mat-icon>edit</mat-icon>
+                  Edit Match Status
+                </button>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
       <!-- No scorecard message -->
       <div *ngIf="!loading && match && !match.scorecardId" class="no-scorecard">
         <mat-icon>warning</mat-icon>
@@ -143,6 +163,7 @@
                              type="text" 
                              maxlength="2"
                              [formControlName]="holeIndex"
+                             [readonly]="isMatchCompleted"
                              (input)="onScoreChange(playerIndex, holeIndex, $event)"
                              (keydown)="onKeyDown($event, playerIndex, holeIndex)"
                              (blur)="onScoreChange(playerIndex, holeIndex, $event)"
@@ -166,6 +187,7 @@
                              type="text" 
                              maxlength="2"
                              [formControlName]="holeIndex"
+                             [readonly]="isMatchCompleted"
                              (input)="onScoreChange(playerIndex, holeIndex, $event)"
                              (keydown)="onKeyDown($event, playerIndex, holeIndex)"
                              (blur)="onScoreChange(playerIndex, holeIndex, $event)"
@@ -223,7 +245,7 @@
               *ngIf="playerScores.length > 0">
         <mat-icon *ngIf="!saving">save</mat-icon>
         <mat-spinner *ngIf="saving" diameter="20"></mat-spinner>
-        {{ saving ? 'Saving...' : 'Save Scores' }}
+        {{ saving ? 'Saving...' : (isMatchCompleted ? 'Match Completed - Cannot Save' : 'Save Scores') }}
       </button>
     </mat-card-actions>
   </mat-card>

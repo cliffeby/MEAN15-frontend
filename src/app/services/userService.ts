@@ -23,6 +23,10 @@ export class UserService {
     return this.http.get(this.baseUrl, this.getHeaders());
   }
 
+  getById(id: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/${id}`, this.getHeaders());
+  }
+
   delete(id: string): Observable<any> {
     return this.http.delete(`${this.baseUrl}/${id}`, this.getHeaders());
   }

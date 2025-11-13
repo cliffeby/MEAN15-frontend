@@ -1,6 +1,24 @@
 <form [formGroup]="scoreForm" (ngSubmit)="submit()" class="score-edit">
   <h2>Edit Score</h2>
   
+  <!-- Match Status Warning -->
+  @if (isMatchCompleted) {
+    <div class="match-locked-warning">
+      <mat-card class="warning-card">
+        <mat-card-content>
+          <div class="warning-content">
+            <mat-icon class="warning-icon">lock</mat-icon>
+            <div class="warning-text">
+              <strong>Match Completed - Scores Locked</strong>
+              <p>This score cannot be edited because the match "{{ matchName }}" is completed. 
+                 To edit scores, first change the match status from "completed" to "open".</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  }
+  
   <mat-form-field appearance="fill">
     <mat-label>Name</mat-label>
     <input matInput formControlName="name" required placeholder="Enter player name" title="Name" />
@@ -76,11 +94,6 @@
   </mat-form-field>
 
   <mat-form-field appearance="fill">
-    <mat-label>Member ID</mat-label>
-    <input matInput formControlName="memberId" placeholder="Enter member ID" title="Member ID" />
-  </mat-form-field>
-
-  <mat-form-field appearance="fill">
     <mat-label>Scorecard</mat-label>
     <mat-select formControlName="scorecardId" (selectionChange)="onScorecardChange($event.value)" 
                 [disabled]="(scorecardsLoading$ | async) === true">
@@ -96,10 +109,15 @@
     }
   </mat-form-field>
 
-  <mat-form-field appearance="fill">
-    <mat-label>User</mat-label>
-    <input matInput formControlName="user" required placeholder="Enter user" title="User" />
-  </mat-form-field>
+  <!-- User Information -->
+  @if (userName) {
+    <div class="user-info">
+      <mat-form-field appearance="fill">
+        <mat-label>User</mat-label>
+        <input matInput [value]="userName" readonly placeholder="User name will appear here" title="User Name" />
+      </mat-form-field>
+    </div>
+  }
 
   <div class="checkbox-group">
     <mat-checkbox formControlName="wonTwoBall">Won Two Ball</mat-checkbox>
@@ -128,8 +146,9 @@
   </div>
 
   <div class="button-group">
-    <button mat-raised-button color="primary" type="submit" [disabled]="loading || scoreForm.invalid">
-      {{ loading ? 'Updating...' : 'Update Score' }}
+    <button mat-raised-button color="primary" type="submit" 
+            [disabled]="loading || scoreForm.invalid || isMatchCompleted">
+      {{ loading ? 'Updating...' : (isMatchCompleted ? 'Match Completed' : 'Update Score') }}
     </button>
     <button mat-button type="button" (click)="cancel()">Cancel</button>
   </div>

@@ -78,8 +78,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   scoreForm!: FormGroup;
   loading = false;
   saving = false;
-  private lastKeyTime = 0;
-  private lastKeyCode = 0;
+  isMatchCompleted = false;  // Default to false to allow editing initially
   private saveSubject = new Subject<void>();
   private lastSaveTime = 0;
   private readonly SAVE_COOLDOWN = 2000; // 2 seconds between saves
@@ -88,10 +87,14 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   holeColumns: string[] = [];
 
   ngOnInit(): void {
+    console.log('🚀 ScoreEntryComponent ngOnInit called');
     this.matchId = this.route.snapshot.params['id'];
-    console.log('Score entry initialized for match ID:', this.matchId);
-    console.log('Route params:', this.route.snapshot.params);
-    console.log('Route URL:', this.route.snapshot.url);
+    console.log('🔥 Score entry initialized:', {
+      matchId: this.matchId,
+      routeParams: this.route.snapshot.params,
+      routeURL: this.route.snapshot.url,
+      timestamp: new Date().toISOString()
+    });
     
     this.initializeForm();
     this.setupDebouncedSaving();
@@ -161,6 +164,44 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
         console.log('Match scorecardId truthy:', !!match.scorecardId);
         
         this.match = match;
+        
+        // Check match status to determine if scores are locked
+        console.log('Match status debug:', {
+          status: match.status,
+          statusType: typeof match.status,
+          isCompleted: match.status === 'completed',
+          matchData: match
+        });
+        
+        // Set match completion status with proper fallback and validation
+        const matchStatus = match?.status;
+        if (matchStatus === 'completed') {
+          this.isMatchCompleted = true;
+        } else {
+          this.isMatchCompleted = false; // Explicitly set to false for any other status
+        }
+        
+        // Extra safety check - ensure isMatchCompleted is always boolean
+        if (typeof this.isMatchCompleted !== 'boolean') {
+          console.warn('⚠️ isMatchCompleted was not boolean, forcing to false:', this.isMatchCompleted);
+          this.isMatchCompleted = false;
+        }
+        
+        console.log('Final isMatchCompleted value:', this.isMatchCompleted, '(type:', typeof this.isMatchCompleted, ')');
+        
+        if (this.isMatchCompleted) {
+          console.log('Match is completed - disabling score entry');
+          this.snackBar.open(
+            `Match "${match.name}" is completed. Scores cannot be modified. Change match status to enable editing.`, 
+            'Close', 
+            { duration: 8000, panelClass: ['warning-snackbar'] }
+          );
+        } else {
+          console.log('Match is not completed - score entry enabled');
+        }
+        
+        // Update form control states based on match completion status
+        this.updateFormControlStates();
         
         // Check for scorecardId - handle both string and object cases
         const scorecardId = match.scorecardId;
@@ -302,6 +343,9 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       this.playerScores.map(() => this.createPlayerFormGroup())
     );
     this.scoreForm.setControl('players', playersFormArray);
+    
+    // Update form control states based on match completion status
+    this.updateFormControlStates();
   }
 
   private createPlayerFormGroup(): FormGroup {
@@ -315,12 +359,18 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   }
 
   private loadExistingScores(): void {
-    if (!this.match?._id) {
+    // Get match ID - handle both _id and id cases
+    const matchId = this.match?._id || this.match?.id || this.matchId;
+    
+    if (!matchId) {
+      console.log('No match ID available for loading scores');
       this.loading = false;
       return;
     }
 
-    this.scoreService.getScoresByMatch(this.match._id).pipe(
+    console.log('Loading existing scores for match ID:', matchId);
+
+    this.scoreService.getScoresByMatch(matchId).pipe(
       retryWhen(errors => 
         errors.pipe(
           delay(500),
@@ -330,14 +380,53 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (response: ScoresApiResponse) => {
         console.log('Scores API response:', response);
+        console.log('Response structure:', {
+          success: response.success,
+          count: response.count,
+          scores: response.scores,
+          scoresLength: response.scores?.length
+        });
+        
         const scores = response.scores || [];
+        console.log('Found', scores.length, 'scores for match');
+        
+        if (scores.length === 0) {
+          console.log('No existing scores found for this match');
+          this.loading = false;
+          return;
+        }
+        
+        // Log all player member IDs for debugging
+        console.log('Available players:', this.playerScores.map(ps => ({
+          name: `${ps.member.firstName} ${ps.member.lastName || ''}`.trim(),
+          id: ps.member._id,
+          memberId: ps.member.id
+        })));
         
         // Match existing scores with players
-        scores.forEach((score: any) => {
+        scores.forEach((score: any, scoreIndex: number) => {
+          console.log(`Processing score ${scoreIndex + 1}:`, {
+            scoreId: score._id,
+            memberId: score.memberId,
+            memberIdType: typeof score.memberId,
+            scoreLength: score.scores?.length,
+            scores: score.scores
+          });
+          
+          // Try to find player by memberId (handle both string and object cases)
+          let memberIdToMatch = score.memberId;
+          if (typeof score.memberId === 'object' && score.memberId !== null) {
+            memberIdToMatch = score.memberId._id || score.memberId.id;
+          }
+          
           const playerIndex = this.playerScores.findIndex(
-            ps => ps.member._id === score.memberId
+            ps => ps.member._id === memberIdToMatch || ps.member.id === memberIdToMatch
           );
+          
+          console.log(`Looking for member ID: ${memberIdToMatch}, found at index: ${playerIndex}`);
+          
           if (playerIndex >= 0 && score.scores) {
+            console.log(`Updating player ${playerIndex} with scores:`, score.scores);
             this.playerScores[playerIndex].scores = [...score.scores];
             this.playerScores[playerIndex].existingScoreId = score._id;
             
@@ -351,12 +440,27 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
             });
             
             this.calculatePlayerTotals(playerIndex);
+          } else {
+            console.warn(`Could not find player for score with memberId: ${memberIdToMatch}`);
           }
         });
         this.loading = false;
       },
       error: (error: any) => {
         console.error('Error loading existing scores:', error);
+        console.error('Match ID used for score loading:', this.match?._id || this.match?.id || this.matchId);
+        console.error('Error details:', {
+          status: error.status,
+          message: error.message,
+          url: error.url
+        });
+        
+        if (error.status === 404) {
+          console.log('No scores found for this match (404)');
+        } else if (error.status === 0) {
+          console.error('Network error - cannot connect to server');
+        }
+        
         this.loading = false;
       }
     });
@@ -372,7 +476,49 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
     return playerFormGroup.get('holes') as FormArray;
   }
 
+  private updateFormControlStates(): void {
+    console.log('Updating form control states, isMatchCompleted:', this.isMatchCompleted);
+    
+    const playersFormArray = this.scoreForm.get('players') as FormArray;
+    
+    playersFormArray.controls.forEach((playerControl, playerIndex) => {
+      const holesFormArray = playerControl.get('holes') as FormArray;
+      
+      holesFormArray.controls.forEach((holeControl, holeIndex) => {
+        if (this.isMatchCompleted) {
+          holeControl.disable();
+          console.log(`Disabled form control for player ${playerIndex}, hole ${holeIndex}`);
+        } else {
+          holeControl.enable();
+          console.log(`Enabled form control for player ${playerIndex}, hole ${holeIndex}`);
+        }
+      });
+    });
+  }
+
   onScoreChange(playerIndex: number, holeIndex: number, event: any): void {
+    console.log('🔥 onScoreChange called:', { 
+      playerIndex, 
+      holeIndex, 
+      isMatchCompleted: this.isMatchCompleted,
+      value: event.target.value,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Prevent score changes if match is completed - HARD STOP
+    if (this.isMatchCompleted) {
+      console.log('🚫 Blocking score change - match is completed');
+      event.preventDefault();
+      event.target.value = this.playerScores[playerIndex]?.scores[holeIndex] || '';
+      this.snackBar.open('Cannot modify scores - match is completed. Change match status to enable editing.', 'Close', { 
+        duration: 5000,
+        panelClass: ['warning-snackbar']
+      });
+      return;
+    }
+
+    console.log('✅ Score change allowed - processing...');
+
     const inputValue = event.target.value.trim();
     let score: number | null = null;
     
@@ -457,51 +603,35 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
 
   onKeyDown(event: KeyboardEvent, playerIndex: number, holeIndex: number): void {
     const target = event.target as HTMLInputElement;
-    const currentTime = Date.now();
     
-    // Prevent key repeat - ignore if this is a repeated keydown event
-    if (event.repeat) {
+    // Only process if match is not completed
+    if (this.isMatchCompleted) {
       event.preventDefault();
       return;
     }
     
-    // Additional protection against rapid key presses of the same key
-    if (event.keyCode === this.lastKeyCode && (currentTime - this.lastKeyTime) < 100) {
-      event.preventDefault();
-      return;
+    // Allow normal backspace, delete, tab, escape, enter, arrow keys
+    if ([8, 9, 27, 13, 46, 37, 38, 39, 40].includes(event.keyCode)) {
+      return; // Let these keys work normally
     }
     
-    this.lastKeyCode = event.keyCode;
-    this.lastKeyTime = currentTime;
-    
-    // Allow backspace, delete, tab, escape, enter
-    if ([8, 9, 27, 13, 46].includes(event.keyCode)) {
-      return;
-    }
-    
-    // Allow digits 1-9 and 0
+    // Allow digits 0-9 for scores
     if (event.keyCode >= 48 && event.keyCode <= 57) {
+      // For single-digit golf scores, replace the current value
       const digit = event.key;
       
-      // Clear the field first to ensure single digit entry
-      target.value = '';
-      
-      // Set the new digit value and update form
-      setTimeout(() => {
-        target.value = digit;
-        // Trigger the input event to update the form
-        target.dispatchEvent(new Event('input', { bubbles: true }));
-        
-        // Auto-advance to next cell after entering a digit
-        this.moveToNextCell(playerIndex, holeIndex);
-      }, 10);
-      
-      // Prevent default to avoid double entry
-      event.preventDefault();
-      return;
+      // Only replace if the current value is empty or this creates a valid 1-2 digit number
+      if (target.value === '' || target.value.length === 1) {
+        // Let the normal typing behavior work, but limit to 2 characters via maxlength
+        return; // Don't preventDefault - let normal input handling work
+      } else {
+        // If already 2 digits, prevent additional digits
+        event.preventDefault();
+        return;
+      }
     }
     
-    // Prevent all other keys
+    // Prevent all other keys (letters, symbols, etc.)
     event.preventDefault();
   }
 
@@ -520,10 +650,6 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       return;
     }
     
-    // Reset key tracking when moving to next cell
-    this.lastKeyCode = 0;
-    this.lastKeyTime = 0;
-    
     // Focus the next input
     const nextInput = document.getElementById(`score-${nextPlayerIndex}-${nextHoleIndex}`);
     if (nextInput) {
@@ -532,6 +658,35 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   }
 
   async saveScores(): Promise<void> {
+    console.log('🔥 saveScores called:', {
+      isMatchCompleted: this.isMatchCompleted,
+      canSave: this.canSave(),
+      loading: this.loading,
+      saving: this.saving,
+      timestamp: new Date().toISOString()
+    });
+    
+    // ABSOLUTE PREVENTION - Multiple checks for match completion
+    if (this.isMatchCompleted) {
+      console.log('🚫 SAVE BLOCKED - match is completed');
+      this.snackBar.open('Cannot save scores - match is completed. Change match status to enable saving.', 'Close', { 
+        duration: 5000,
+        panelClass: ['warning-snackbar']
+      });
+      return;
+    }
+
+    // Additional check - if canSave returns false, don't proceed
+    if (!this.canSave()) {
+      console.log('🚫 SAVE BLOCKED - canSave() returned false');
+      this.snackBar.open('Cannot save at this time', 'Close', { 
+        duration: 3000
+      });
+      return;
+    }
+
+    console.log('✅ Save checks passed - proceeding...');
+
     // Rate limiting - prevent rapid successive saves
     const now = Date.now();
     if (now - this.lastSaveTime < this.SAVE_COOLDOWN) {
@@ -627,7 +782,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   }
 
   canSave(): boolean {
-    return !this.loading && !this.saving && this.playerScores.length > 0;
+    return !this.loading && !this.saving && !this.isMatchCompleted && this.playerScores.length > 0;
   }
 
   editMatch(): void {
@@ -641,5 +796,73 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // Clean up subscriptions to prevent memory leaks
     this.saveSubject.complete();
+  }
+
+  // DEBUG METHODS - Remove in production
+  debugEventBinding() {
+    console.log('🔍 Debug Event Binding Check');
+    console.log('Component state:', {
+      loading: this.loading,
+      saving: this.saving,
+      isMatchCompleted: this.isMatchCompleted,
+      playerScores: this.playerScores?.length,
+      canSave: this.canSave()
+    });
+    
+    console.log('Methods available:', {
+      onScoreChange: typeof this.onScoreChange,
+      saveScores: typeof this.saveScores,
+      canSave: typeof this.canSave
+    });
+  }
+
+  debugOnScoreChange() {
+    console.log('🔍 Testing onScoreChange manually');
+    
+    if (!this.playerScores || this.playerScores.length === 0) {
+      console.error('❌ No player scores available');
+      return;
+    }
+    
+    const mockEvent = {
+      target: { value: '4' },
+      preventDefault: () => console.log('preventDefault called')
+    };
+    
+    try {
+      this.onScoreChange(0, 0, mockEvent);
+      console.log('✅ onScoreChange executed');
+    } catch (error) {
+      console.error('❌ onScoreChange failed:', error);
+    }
+  }
+
+  debugSaveScores() {
+    console.log('🔍 Testing saveScores manually');
+    
+    try {
+      this.saveScores();
+      console.log('✅ saveScores executed');
+    } catch (error) {
+      console.error('❌ saveScores failed:', error);
+    }
+  }
+
+  debugFormState() {
+    console.log('🔍 Form State Debug');
+    console.log('Form object:', this.scoreForm);
+    console.log('Form valid:', this.scoreForm?.valid);
+    console.log('Form value:', this.scoreForm?.value);
+    
+    const playersArray = this.scoreForm?.get('players') as FormArray;
+    console.log('Players array:', {
+      exists: !!playersArray,
+      length: playersArray?.length,
+      controls: playersArray?.controls?.length
+    });
+    
+    if (playersArray && playersArray.length > 0) {
+      console.log('First player form:', playersArray.at(0)?.value);
+    }
   }
 }

@@ -12,10 +12,13 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 import { Store } from '@ngrx/store';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ScoreService } from '../../services/scoreService';
+import { UserService } from '../../services/userService';
+import { MatchService } from '../../services/matchService';
 import { Score } from '../../models/score';
 import { Scorecard } from '../../services/scorecardService';
 import * as ScorecardActions from '../../store/actions/scorecard.actions';
@@ -37,13 +40,19 @@ import * as ScorecardSelectors from '../../store/selectors/scorecard.selectors';
     MatNativeDateModule,
     MatSelectModule,
     MatCardModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatIconModule
   ]
 })
 export class ScoreEditComponent implements OnInit, OnDestroy {
   scoreForm: FormGroup;
   loading = false;
   scoreId: string | null = null;
+  userName = '';
+  userId = ''; // Store the userId for saving
+  matchStatus = '';
+  matchName = '';
+  isMatchCompleted = false;
   scorecards$: Observable<Scorecard[]>;
   scorecardsLoading$: Observable<boolean>;
   private destroy$ = new Subject<void>();
@@ -53,6 +62,8 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private scoreService: ScoreService,
+    private userService: UserService,
+    private matchService: MatchService,
     private snackBar: MatSnackBar,
     private store: Store
   ) {
@@ -73,7 +84,7 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
       isPaired: [false],
       isScored: [false],
       matchId: [''],
-      memberId: [''],
+      memberId: [''], // Keep for saving, but don't display
       scorecardId: [''],
       scSlope: [null],
       scRating: [null],
@@ -82,8 +93,7 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
       scName: [''],
       datePlayed: [new Date()],
       foursomeIds: this.fb.array([]),
-      partnerIds: this.fb.array([]),
-      user: ['', Validators.required]
+      partnerIds: this.fb.array([])
     });
   }
 
@@ -121,6 +131,44 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
     this.scoresArray.clear();
     this.scoresToPostArray.clear();
 
+    // Store userId for saving and load user name for display
+    if (score.user) {
+      this.userId = score.user;
+      this.userService.getById(score.user).subscribe({
+        next: (user) => {
+          this.userName = user.name || 'Unknown User';
+        },
+        error: (err) => {
+          console.error('Error loading user:', err);
+          this.userName = 'Unknown User';
+        }
+      });
+    }
+
+    // Check match status to determine if scores are locked
+    if (score.matchId) {
+      const matchId = typeof score.matchId === 'string' ? score.matchId : score.matchId._id || score.matchId.id;
+      if (matchId) {
+        this.matchService.getById(matchId).subscribe({
+          next: (match) => {
+            this.matchStatus = match.status;
+            this.matchName = match.name;
+            this.isMatchCompleted = match.status === 'completed';
+            
+            // Disable form if match is completed
+            if (this.isMatchCompleted) {
+              this.scoreForm.disable();
+            }
+          },
+          error: (err) => {
+            console.error('Error loading match:', err);
+            this.matchStatus = 'unknown';
+            this.matchName = 'Unknown Match';
+          }
+        });
+      }
+    }
+
     // Populate form with score data
     this.scoreForm.patchValue({
       name: score.name,
@@ -135,13 +183,12 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
       isPaired: score.isPaired,
       isScored: score.isScored,
       matchId: score.matchId,
-      memberId: score.memberId,
+      memberId: typeof score.memberId === 'string' ? score.memberId : (score.memberId?._id || score.memberId?.id || ''),
       scorecardId: score.scorecardId,
       scSlope: score.scSlope,
       scRating: score.scRating,
       scName: score.scName,
-      datePlayed: score.datePlayed ? new Date(score.datePlayed) : new Date(),
-      user: score.user
+      datePlayed: score.datePlayed ? new Date(score.datePlayed) : new Date()
     });
 
     // Populate arrays
@@ -196,12 +243,27 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
 
   submit() {
     if (this.scoreForm.invalid || !this.scoreId) return;
+    
+    // Prevent submission if match is completed
+    if (this.isMatchCompleted) {
+      this.snackBar.open('Cannot edit scores for completed matches. Please change match status first.', 'Close', { 
+        duration: 4000,
+        panelClass: ['warning-snackbar']
+      });
+      return;
+    }
+    
     this.loading = true;
     
     const formValue = { ...this.scoreForm.value };
     // Convert date to ISO string if it's a Date object
     if (formValue.datePlayed instanceof Date) {
       formValue.datePlayed = formValue.datePlayed.toISOString();
+    }
+    
+    // Include the userId for saving
+    if (this.userId) {
+      formValue.user = this.userId;
     }
 
     this.scoreService.update(this.scoreId, formValue).subscribe({
