@@ -1,0 +1,145 @@
+<div class="admin-configuration">
+  <div class="header">
+    <h1>
+      <mat-icon>settings</mat-icon>
+      Application Configuration
+    </h1>
+    <p class="subtitle">Configure application behavior and appearance</p>
+  </div>
+
+  <div class="actions-bar">
+    <button mat-button color="warn" (click)="resetAllToDefaults()" 
+            matTooltip="Reset all settings to default values">
+      <mat-icon>restore</mat-icon>
+      Reset All
+    </button>
+    
+    <button mat-button color="primary" (click)="exportConfiguration()" 
+            matTooltip="Export current configuration">
+      <mat-icon>download</mat-icon>
+      Export
+    </button>
+    
+    <button mat-button color="primary" (click)="importConfiguration()" 
+            matTooltip="Import configuration from file">
+      <mat-icon>upload</mat-icon>
+      Import
+    </button>
+  </div>
+
+  <mat-tab-group class="config-tabs" [selectedIndex]="selectedTab" (selectedTabChange)="onTabChange($event)">
+    <mat-tab *ngFor="let section of configSections" [label]="section.title">
+      <ng-template matTabContent>
+        <div class="tab-content">
+          <div class="section-header">
+            <mat-icon>{{ section.icon }}</mat-icon>
+            <div>
+              <h2>{{ section.title }}</h2>
+              <p class="section-description">{{ section.description }}</p>
+            </div>
+            <button mat-icon-button color="warn" 
+                    (click)="resetSectionToDefaults(section.key)"
+                    matTooltip="Reset this section to defaults">
+              <mat-icon>restore</mat-icon>
+            </button>
+          </div>
+
+          <div class="fields-grid">
+            <mat-card *ngFor="let field of getFieldsForSection(section.key)" class="field-card">
+              <mat-card-content>
+                <div class="field-header">
+                  <label class="field-label">{{ field.label }}</label>
+                  <mat-icon *ngIf="field.description" 
+                           class="info-icon" 
+                           [matTooltip]="field.description">
+                    info_outline
+                  </mat-icon>
+                </div>
+
+                <!-- Number Input -->
+                <mat-form-field *ngIf="field.type === 'number'" appearance="outline" class="field-input">
+                  <input matInput 
+                         type="number" 
+                         [formControlName]="getFieldControlName(section.key, field.key)"
+                         [attr.min]="field.validation?.min || null"
+                         [attr.max]="field.validation?.max || null"
+                         [attr.aria-label]="field.label"
+                         [attr.title]="field.label">
+                  <mat-error *ngIf="getFieldControl(section.key, field.key)?.hasError('required')">
+                    This field is required
+                  </mat-error>
+                  <mat-error *ngIf="getFieldControl(section.key, field.key)?.hasError('min')">
+                    Minimum value is {{ field.validation?.min }}
+                  </mat-error>
+                  <mat-error *ngIf="getFieldControl(section.key, field.key)?.hasError('max')">
+                    Maximum value is {{ field.validation?.max }}
+                  </mat-error>
+                </mat-form-field>
+
+                <!-- Boolean Toggle -->
+                <div *ngIf="field.type === 'boolean'" class="boolean-field">
+                  <mat-slide-toggle [formControlName]="getFieldControlName(section.key, field.key)">
+                    {{ getFieldControl(section.key, field.key)?.value ? 'Enabled' : 'Disabled' }}
+                  </mat-slide-toggle>
+                </div>
+
+                <!-- String Input -->
+                <mat-form-field *ngIf="field.type === 'string'" appearance="outline" class="field-input">
+                  <input matInput 
+                         [formControlName]="getFieldControlName(section.key, field.key)"
+                         [attr.aria-label]="field.label"
+                         [attr.title]="field.label">
+                  <mat-error *ngIf="getFieldControl(section.key, field.key)?.hasError('required')">
+                    This field is required
+                  </mat-error>
+                </mat-form-field>
+
+                <!-- Select Dropdown -->
+                <mat-form-field *ngIf="field.type === 'select'" appearance="outline" class="field-input">
+                  <mat-select [formControlName]="getFieldControlName(section.key, field.key)">
+                    <mat-option *ngFor="let option of field.options" [value]="option.value">
+                      {{ option.label }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <div class="field-actions" *ngIf="hasFieldChanged(section.key, field.key)">
+                  <button mat-icon-button 
+                          color="primary" 
+                          (click)="saveField(section.key, field.key)"
+                          matTooltip="Save this setting">
+                    <mat-icon>save</mat-icon>
+                  </button>
+                  <button mat-icon-button 
+                          color="warn" 
+                          (click)="resetField(section.key, field.key, field.defaultValue)"
+                          matTooltip="Reset to default">
+                    <mat-icon>undo</mat-icon>
+                  </button>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
+      </ng-template>
+    </mat-tab>
+  </mat-tab-group>
+
+  <!-- Auto-save indicator -->
+  <div class="auto-save-status" *ngIf="autoSaveEnabled">
+    <mat-progress-bar *ngIf="isSaving" mode="indeterminate"></mat-progress-bar>
+    <span class="save-indicator" [class.saving]="isSaving">
+      <mat-icon>{{ isSaving ? 'sync' : 'cloud_done' }}</mat-icon>
+      {{ isSaving ? 'Saving...' : 'Auto-saved' }}
+    </span>
+  </div>
+</div>
+
+<!-- Hidden file input for import -->
+<input #fileInput 
+       type="file" 
+       accept=".json" 
+       (change)="onFileSelected($event)" 
+       class="hidden-file-input"
+       aria-label="Import configuration file"
+       title="Select configuration file to import">
