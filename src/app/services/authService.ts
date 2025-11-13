@@ -95,7 +95,13 @@ export class AuthService {
   }
 
   get user(): any {
-    return this.payload();
+    const payload = this.payload();
+    if (!payload) return null;
+    // If defaultLeague is present in JWT, expose it
+    return {
+      ...payload,
+      defaultLeague: payload.defaultLeague || undefined
+    };
   }
 
   get role(): string | null {

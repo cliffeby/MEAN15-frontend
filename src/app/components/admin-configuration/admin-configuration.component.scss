@@ -1,3 +1,23 @@
+/* Default name input section styles */
+.admin-default-name-section {
+  margin: 2em 0;
+}
+.admin-default-name-section .default-name-form-field {
+  min-width: 250px;
+}
+.admin-default-name-section .default-name-current {
+  margin-top: 1em;
+}
+/* League management section styles */
+.admin-league-section {
+  margin: 2em 0;
+}
+.admin-league-section .league-form-field {
+  min-width: 250px;
+}
+.admin-league-section .league-current {
+  margin-top: 1em;
+}
 .admin-configuration {
   padding: 24px;
   max-width: 1200px;

@@ -5,7 +5,11 @@ import { catchError } from 'rxjs/operators';
 import { AuthService } from './authService';
 
 export interface User {
-  // ... existing interface
+  id?: string;
+  name?: string;
+  email?: string;
+  role?: string;
+  defaultLeague?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -29,5 +33,9 @@ export class UserService {
 
   delete(id: string): Observable<any> {
     return this.http.delete(`${this.baseUrl}/${id}`, this.getHeaders());
+  }
+
+  updateLeague(id: string, defaultLeague: string): Observable<any> {
+    return this.http.patch(`${this.baseUrl}/${id}/league`, { defaultLeague }, this.getHeaders());
   }
 }

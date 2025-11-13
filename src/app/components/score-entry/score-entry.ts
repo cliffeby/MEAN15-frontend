@@ -8,11 +8,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatChipsModule } from '@angular/material/chips';
 import { forkJoin, Observable, of, Subject } from 'rxjs';
 import { map, catchError, debounceTime, distinctUntilChanged, switchMap, retryWhen, delay, take } from 'rxjs/operators';
+import { lastValueFrom } from 'rxjs';
 
 interface ScoresApiResponse {
   success: boolean;
@@ -64,6 +66,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private snackBar = inject(MatSnackBar);
+  private confirmDialog = inject(ConfirmDialogService);
   private matchService = inject(MatchService);
   private memberService = inject(MemberService);
   private scoreService = inject(ScoreService);
@@ -128,8 +131,24 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
     console.log('Match ID type:', typeof this.matchId);
     console.log('Match ID valid:', !!this.matchId);
     
-    if (!this.matchId) {
-      console.error('No match ID provided');
+      if (this.match && this.match.status === 'open') {
+        // Update match status to 'needs_review' via MatchService
+        if (typeof this.match._id === 'string') {
+          this.matchService.updateMatchStatus(this.match._id, 'needs_review').subscribe({
+            next: (res) => {
+              if (this.match) {
+                this.match.status = 'needs_review';
+              }
+              console.log('Match status updated to needs_review:', res);
+            },
+            error: (err) => {
+              console.error('Failed to update match status:', err);
+              this.snackBar.open('Failed to update match status', 'Close', { duration: 4000, panelClass: ['warning-snackbar'] });
+            }
+          });
+        } else {
+          console.error('Match _id is not a string:', this.match._id);
+        }
       this.snackBar.open('Invalid match ID', 'Close', { duration: 3000 });
       this.router.navigate(['/matches']);
       this.loading = false;
@@ -617,18 +636,13 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
     
     // Allow digits 0-9 for scores
     if (event.keyCode >= 48 && event.keyCode <= 57) {
-      // For single-digit golf scores, replace the current value
-      const digit = event.key;
-      
-      // Only replace if the current value is empty or this creates a valid 1-2 digit number
-      if (target.value === '' || target.value.length === 1) {
-        // Let the normal typing behavior work, but limit to 2 characters via maxlength
-        return; // Don't preventDefault - let normal input handling work
-      } else {
-        // If already 2 digits, prevent additional digits
-        event.preventDefault();
-        return;
+      // Always clear the field before entering a digit if value is 0 or single digit
+      if (target.value === '0' || target.value.length === 1) {
+        target.value = '';
       }
+      // Let the normal typing behavior work, but limit to 2 characters via maxlength
+      setTimeout(() => this.moveToNextCell(playerIndex, holeIndex), 0);
+      return; // Don't preventDefault - let normal input handling work
     }
     
     // Prevent all other keys (letters, symbols, etc.)
@@ -676,31 +690,54 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Check for any score entry containing a 0
+    let hasZero = false;
+    for (const playerScore of this.playerScores) {
+      if (playerScore.scores.some(s => s === 0)) {
+        hasZero = true;
+        break;
+      }
+    }
+    if (hasZero) {
+      const confirmed = await this.confirmDialog.confirm({
+        title: 'Zero Score Detected',
+        message: 'One or more scores are 0. Do you want to save anyway? (Status will be set to Needs Review)',
+        confirmText: 'Save Anyway',
+        cancelText: 'Cancel',
+        icon: 'warning',
+        color: 'warn'
+      }).toPromise();
+      if (!confirmed) {
+        this.snackBar.open('Save cancelled. Please update scores.', 'Close', { duration: 4000, panelClass: ['warning-snackbar'] });
+        return;
+      }
+          if (
+            this.match &&
+            typeof this.match._id === 'string' &&
+            this.match._id &&
+            this.match.status === 'open'
+          ) {
+            this.matchService.updateMatchStatus(this.match._id, 'needs_review').subscribe({
+              next: (res) => {
+                if (this.match) {
+                  this.match.status = 'needs_review';
+                }
+                console.log('Match status updated to needs_review:', res);
+              },
+              error: (err) => {
+                console.error('Failed to update match status:', err);
+                this.snackBar.open('Failed to update match status', 'Close', { duration: 4000, panelClass: ['warning-snackbar'] });
+              }
+            });
+          }
+    }
+
     // Additional check - if canSave returns false, don't proceed
     if (!this.canSave()) {
       console.log('🚫 SAVE BLOCKED - canSave() returned false');
       this.snackBar.open('Cannot save at this time', 'Close', { 
         duration: 3000
       });
-      return;
-    }
-
-    console.log('✅ Save checks passed - proceeding...');
-
-    // Rate limiting - prevent rapid successive saves
-    const now = Date.now();
-    if (now - this.lastSaveTime < this.SAVE_COOLDOWN) {
-      this.snackBar.open('Please wait before saving again', 'Close', { duration: 2000 });
-      return;
-    }
-    
-    this.lastSaveTime = now;
-    this.saveSubject.next();
-  }
-
-  private async performSave(): Promise<void> {
-    if (!this.match || !this.scorecard) {
-      this.snackBar.open('Missing match or scorecard data', 'Close', { duration: 3000 });
       return;
     }
 
@@ -717,7 +754,6 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       this.snackBar.open('Scores saved successfully!', 'Close', { duration: 3000 });
       this.router.navigate(['/matches']);
     } catch (error) {
-      console.error('Error saving scores:', error);
       this.snackBar.open('Error saving scores. Please try again.', 'Close', { duration: 3000 });
     } finally {
       this.saving = false;
@@ -756,24 +792,28 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
     try {
       if (playerScore.existingScoreId) {
         // Update existing score with retry logic
-        await this.scoreService.update(playerScore.existingScoreId, scoreData as Score).pipe(
-          retryWhen(errors => 
-            errors.pipe(
-              delay(500),
-              take(2) // Retry up to 2 times for updates
+        await lastValueFrom(
+          this.scoreService.update(playerScore.existingScoreId, scoreData as Score).pipe(
+            retryWhen(errors => 
+              errors.pipe(
+                delay(500),
+                take(2) // Retry up to 2 times for updates
+              )
             )
           )
-        ).toPromise();
+        );
       } else {
         // Create new score with retry logic
-        await this.scoreService.create(scoreData as Score).pipe(
-          retryWhen(errors => 
-            errors.pipe(
-              delay(500),
-              take(2) // Retry up to 2 times for creates
+        await lastValueFrom(
+          this.scoreService.create(scoreData as Score).pipe(
+            retryWhen(errors => 
+              errors.pipe(
+                delay(500),
+                take(2) // Retry up to 2 times for creates
+              )
             )
           )
-        ).toPromise();
+        );
       }
     } catch (error) {
       console.error(`Error saving score for ${playerScore.member.firstName}:`, error);
@@ -863,6 +903,28 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
     
     if (playersArray && playersArray.length > 0) {
       console.log('First player form:', playersArray.at(0)?.value);
+    }
+  }
+
+  private async performSave(): Promise<void> {
+    if (!this.match || !this.scorecard) {
+      this.snackBar.open('Missing match or scorecard data', 'Close', { duration: 3000 });
+      return;
+    }
+    this.saving = true;
+    try {
+      // Save scores sequentially to avoid overwhelming the server
+      for (const playerScore of this.playerScores) {
+        await this.savePlayerScore(playerScore);
+        // Small delay between saves to further reduce server load
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      this.snackBar.open('Scores saved successfully!', 'Close', { duration: 3000 });
+      this.router.navigate(['/matches']);
+    } catch (error) {
+      this.snackBar.open('Error saving scores. Please try again.', 'Close', { duration: 3000 });
+    } finally {
+      this.saving = false;
     }
   }
 }

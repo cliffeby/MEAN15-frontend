@@ -133,6 +133,46 @@
       {{ isSaving ? 'Saving...' : 'Auto-saved' }}
     </span>
   </div>
+
+  <!-- User League Management Section -->
+  <div class="admin-league-section">
+    <h2><mat-icon>group</mat-icon> User League Management</h2>
+    <mat-form-field appearance="outline" class="league-form-field">
+      <mat-label>Select User</mat-label>
+      <mat-select [(ngModel)]="selectedUser" (selectionChange)="selectUser($event.value)">
+        <mat-option *ngFor="let user of users" [value]="user">
+          {{ user.name }} ({{ user.email }})
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div *ngIf="selectedUser">
+      <mat-form-field appearance="outline" class="league-form-field">
+        <mat-label>League</mat-label>
+        <mat-select [(ngModel)]="selectedUser.defaultLeague" (selectionChange)="updateLeague($event.value)">
+          <mat-option *ngFor="let option of leagueOptions" [value]="option.value">
+            {{ option.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-progress-bar *ngIf="isUpdatingLeague" mode="indeterminate"></mat-progress-bar>
+      <div class="league-current">
+        <span>Current League: <strong>{{ selectedUser.defaultLeague }}</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Default Name for Match Creation Section -->
+  <div class="admin-default-name-section">
+    <h2><mat-icon>person</mat-icon> Default Name for Match Creation</h2>
+    <mat-form-field appearance="outline" class="default-name-form-field">
+      <mat-label>Default Name</mat-label>
+      <input matInput [(ngModel)]="defaultName" (ngModelChange)="saveDefaultName($event)" placeholder="Enter default name">
+    </mat-form-field>
+    <div class="default-name-current">
+      <span>Current Default Name: <strong>{{ defaultName }}</strong></span>
+    </div>
+  </div>
 </div>
 
 <!-- Hidden file input for import -->

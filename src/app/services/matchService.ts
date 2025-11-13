@@ -147,6 +147,7 @@ export class MatchService {
     }
   
     updateMatchStatus(id: string, status: string): Observable<any> {
+      this.clearCache(); // Clear cache so match list reloads with updated status
       return this.http.patch(`${this.baseUrl}/${id}/status`, { status }, this.getHeaders())
         .pipe(catchError(this.handleError));
     }

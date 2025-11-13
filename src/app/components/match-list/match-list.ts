@@ -53,6 +53,7 @@ import {
   ]
 })
 export class MatchListComponent implements OnInit, OnDestroy {
+  // Removed auto-refresh subscription
   matches$: Observable<Match[]>;
   loading$: Observable<boolean>;
   error$: Observable<any>;
@@ -288,6 +289,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
       case 'open': return 'primary';
       case 'closed': return 'accent';
       case 'completed': return 'warn';
+      case 'needs_review': return 'warn';
       default: return '';
     }
   }

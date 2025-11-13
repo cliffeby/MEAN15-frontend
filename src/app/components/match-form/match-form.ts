@@ -44,6 +44,7 @@ import { ScorecardService } from '../../services/scorecardService';
   ]
 })
 export class MatchFormComponent implements OnInit, OnDestroy {
+  defaultName: string = '';
   matchForm: FormGroup;
   loading$: Observable<boolean>;
   error$: Observable<string | null>;
@@ -104,6 +105,15 @@ export class MatchFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+  // Load default name from localStorage
+  this.defaultName = localStorage.getItem('defaultMatchName') || '';
+
+  // Generate proposed match name
+  const now = new Date();
+  const month = now.toLocaleString('en-US', { month: 'short' });
+  const day = String(now.getDate()).padStart(2, '0');
+  const proposedName = `${this.defaultName}${this.defaultName ? '_' : ''}${month}${day}`;
+  this.matchForm.get('name')?.setValue(proposedName);
     // Dispatch action to load scorecards
     this.store.dispatch(ScorecardActions.loadScorecards());
     

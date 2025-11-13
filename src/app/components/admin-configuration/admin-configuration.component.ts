@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormGroup, FormBuilder, Validators, FormsModule } from '@angular/forms';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -17,6 +17,7 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
 
 import { ConfigurationService } from '../../services/configuration.service';
 import { AppConfig, ConfigSection, ConfigField } from '../../models/app-config.interface';
+import { UserService, User } from '../../services/userService';
 
 @Component({
   selector: 'app-admin-configuration',
@@ -24,6 +25,7 @@ import { AppConfig, ConfigSection, ConfigField } from '../../models/app-config.i
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     MatTabsModule,
     MatFormFieldModule,
     MatInputModule,
@@ -41,6 +43,15 @@ import { AppConfig, ConfigSection, ConfigField } from '../../models/app-config.i
   styleUrls: ['./admin-configuration.component.scss']
 })
 export class AdminConfigurationComponent implements OnInit, OnDestroy {
+  defaultName: string = '';
+  users: User[] = [];
+  selectedUser: User | null = null;
+  leagueOptions = [
+    { value: 'Premier', label: 'Premier' },
+    { value: 'Championship', label: 'Championship' },
+    { value: 'League One', label: 'League One' }
+  ];
+  isUpdatingLeague = false;
   configForm!: FormGroup;
   selectedTab = 0;
   autoSaveEnabled = true;
@@ -52,7 +63,8 @@ export class AdminConfigurationComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private configService: ConfigurationService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private userService: UserService
   ) {
     this.originalConfig = this.configService.getCurrentConfig();
   }
@@ -64,6 +76,49 @@ export class AdminConfigurationComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.buildForm();
     this.setupAutoSave();
+    this.loadUsers();
+    this.loadDefaultName();
+  }
+
+  loadDefaultName(): void {
+    const stored = localStorage.getItem('defaultMatchName');
+    this.defaultName = stored || '';
+  }
+
+  saveDefaultName(name: string): void {
+    this.defaultName = name;
+    localStorage.setItem('defaultMatchName', name);
+  }
+
+  loadUsers(): void {
+    this.userService.getAll().subscribe({
+      next: (res) => {
+        this.users = res.users || [];
+      },
+      error: () => {
+        this.snackBar.open('Failed to load users', 'Close', { duration: 3000 });
+      }
+    });
+  }
+
+  selectUser(user: User): void {
+    this.selectedUser = user;
+  }
+
+  updateLeague(league: string): void {
+    if (!this.selectedUser?.id) return;
+    this.isUpdatingLeague = true;
+    this.userService.updateLeague(this.selectedUser.id, league).subscribe({
+      next: (res) => {
+        this.selectedUser = res.user;
+        this.isUpdatingLeague = false;
+        this.snackBar.open('League updated', 'Close', { duration: 2000 });
+      },
+      error: () => {
+        this.isUpdatingLeague = false;
+        this.snackBar.open('Failed to update league', 'Close', { duration: 3000 });
+      }
+    });
   }
 
   ngOnDestroy(): void {
