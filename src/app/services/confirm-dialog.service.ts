@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../components/shared/confirm-dialog/confirm-dialog.component';
+import { ConflictDialogComponent, ConflictDialogData, ConflictDialogResult } from '../components/shared/conflict-dialog/conflict-dialog.component';
 
 @Injectable({
   providedIn: 'root'
@@ -64,5 +65,21 @@ export class ConfirmDialogService {
       icon: 'help_outline',
       color: 'primary'
     });
+  }
+
+  /**
+   * Opens a conflict resolution dialog for handling orphan records
+   * @param conflictData Data about the conflict
+   * @returns Observable<ConflictDialogResult> - the chosen action
+   */
+  resolveConflict(conflictData: ConflictDialogData): Observable<ConflictDialogResult | undefined> {
+    const dialogRef = this.dialog.open(ConflictDialogComponent, {
+      width: '600px',
+      maxWidth: '90vw',
+      disableClose: false,
+      data: conflictData
+    });
+
+    return dialogRef.afterClosed();
   }
 }

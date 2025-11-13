@@ -36,6 +36,8 @@ export const updateMatchStatusFailure = createAction('[Match] Update Match Statu
 export const deleteMatch = createAction('[Match] Delete Match', props<{ id: string }>());
 export const deleteMatchSuccess = createAction('[Match] Delete Match Success', props<{ id: string }>());
 export const deleteMatchFailure = createAction('[Match] Delete Match Failure', props<{ error: any }>());
+export const deleteMatchConflict = createAction('[Match] Delete Match Conflict', props<{ id: string; conflict: any }>());
+export const deleteMatchWithAction = createAction('[Match] Delete Match With Action', props<{ id: string; action: 'nullify' | 'delete' }>());
 
 // Load matches by user
 export const loadMatchesByUser = createAction('[Match] Load Matches By User', props<{ userId: string }>());

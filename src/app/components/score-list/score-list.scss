@@ -1,38 +1,267 @@
 .score-list {
-  padding: 20px;
-  max-width: 800px;
+  padding: 15px;
+  max-width: 1200px;
   margin: 0 auto;
 
-  h2 {
-    margin-bottom: 16px;
-    color: #333;
-  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
 
-  button {
-    margin-bottom: 16px;
-  }
-
-  mat-list-item {
-    border-bottom: 1px solid #eee;
-    
-    .spacer {
-      flex: 1 1 auto;
+    h2 {
+      margin: 0;
+      color: #333;
     }
 
-    button {
-      margin-left: 8px;
-      margin-bottom: 0;
+    .header-buttons {
+      display: flex;
+      gap: 8px;
+      align-items: center;
     }
   }
 
-  .no-scores {
+  .grouped-scores {
+    margin-top: 15px;
+
+    .match-group {
+      margin-bottom: 8px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+      &.orphaned-group {
+        border-left: 4px solid #f59e0b;
+        background-color: #fffbeb;
+        
+        mat-expansion-panel-header {
+          background-color: #fef3c7;
+        }
+      }
+
+      mat-expansion-panel-header {
+        background-color: #f5f5f5;
+        border-radius: 8px 8px 0 0;
+
+        .group-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          .match-name {
+            font-weight: 500;
+            color: #333;
+
+            &.orphaned-text {
+              color: #d97706;
+              font-weight: 600;
+            }
+          }
+
+          .score-count {
+            font-size: 0.875rem;
+            color: #666;
+            background: #e3f2fd;
+            padding: 2px 6px;
+            border-radius: 12px;
+          }
+
+          .warning-icon {
+            color: #f59e0b;
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+          }
+        }
+      }
+
+      &.mat-expanded {
+        mat-expansion-panel-header {
+          border-radius: 8px 8px 0 0;
+        }
+      }
+
+      .scores-table-container {
+        padding: 0;
+        
+        .scores-table {
+          width: 100%;
+
+          th {
+            background-color: #fafafa;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+            border-right: 1px solid #e8e8e8;
+            padding: 2px 8px;
+            height: 24px;
+
+            &:last-child {
+              border-right: none;
+            }
+          }
+
+          td {
+            border-bottom: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+            padding: 2px 8px;
+            height: 20px;
+            line-height: 1.2;
+
+            &:last-child {
+              border-right: none;
+            }
+
+            &.action-cell {
+              display: flex;
+              gap: 2px;
+              align-items: center;
+              height: 24px;
+              border-right: none;
+
+              button {
+                min-width: auto;
+                padding: 2px 6px;
+                font-size: 0.8rem;
+                height: 20px;
+                line-height: 1;
+
+                mat-icon {
+                  margin-right: 2px;
+                  font-size: 12px;
+                  width: 12px;
+                  height: 12px;
+                }
+              }
+            }
+          }
+
+          .mat-mdc-row {
+            height: 20px !important;
+            min-height: 20px !important;
+          }
+
+          .mat-mdc-header-row {
+            height: 24px !important;
+            min-height: 24px !important;
+            background-color: #fafafa;
+          }
+
+          tr:hover {
+            background-color: #dbeafe !important;
+          }
+
+          .mat-mdc-header-row {
+            background-color: #fafafa;
+          }
+
+          .mat-mdc-row {
+            &:nth-child(odd) {
+              background-color: #ffffff;
+            }
+            
+            &:nth-child(even) {
+              background-color: #f0f4f8;
+            }
+            
+            &:hover {
+              background-color: #dbeafe !important;
+            }
+
+            &.orphaned-row {
+              background-color: #fef3c7 !important;
+              border-left: 3px solid #f59e0b;
+              
+              &:hover {
+                background-color: #fde68a !important;
+              }
+            }
+            
+            height: 20px !important;
+            min-height: 20px !important;
+          }
+
+          .orphaned-cell {
+            color: #d97706;
+            font-weight: 500;
+            
+            .warning-icon-small {
+              font-size: 14px;
+              width: 14px;
+              height: 14px;
+              color: #f59e0b;
+              margin-left: 4px;
+              vertical-align: middle;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .no-data {
     text-align: center;
     color: #666;
     margin-top: 40px;
     font-style: italic;
+    padding: 40px 20px;
   }
 
   mat-progress-bar {
     margin-top: 16px;
+  }
+
+  // Responsive design
+  @media (max-width: 768px) {
+    padding: 8px;
+    
+    .scores-table {
+      font-size: 0.75rem;
+      
+      th, td {
+        padding: 1px 4px;
+        height: 18px;
+        line-height: 1.1;
+      }
+
+      .mat-mdc-row {
+        height: 18px !important;
+        min-height: 18px !important;
+        
+        &:nth-child(odd) {
+          background-color: #ffffff;
+        }
+        
+        &:nth-child(even) {
+          background-color: #f0f4f8;
+        }
+        
+        &:hover {
+          background-color: #dbeafe !important;
+        }
+      }
+
+      .mat-mdc-header-row {
+        height: 20px !important;
+        min-height: 20px !important;
+      }
+
+      .action-cell {
+        flex-direction: column;
+        gap: 1px;
+        height: 36px;
+
+        button {
+          width: 100%;
+          padding: 1px 4px;
+          font-size: 0.7rem;
+          height: 16px;
+          line-height: 1;
+        }
+      }
+    }
+
+    .match-group {
+      margin-bottom: 6px;
+    }
   }
 }

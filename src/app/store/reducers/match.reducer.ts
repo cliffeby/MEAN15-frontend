@@ -10,6 +10,7 @@ export interface MatchState extends EntityState<Match> {
   currentMatch: Match | null;
   filterByUser: string | null;
   filterByStatus: string | null;
+  deleteConflict: any | null;
 }
 
 // Entity adapter
@@ -33,6 +34,7 @@ export const initialState: MatchState = adapter.getInitialState({
   currentMatch: null,
   filterByUser: null,
   filterByStatus: null,
+  deleteConflict: null,
 });
 
 // Reducer
@@ -129,15 +131,29 @@ export const matchReducer = createReducer(
   on(MatchActions.deleteMatch, (state) => ({ 
     ...state, 
     loading: true, 
-    error: null 
+    error: null,
+    deleteConflict: null 
   })),
   on(MatchActions.deleteMatchSuccess, (state, { id }) =>
-    adapter.removeOne(id, { ...state, loading: false, error: null })
+    adapter.removeOne(id, { ...state, loading: false, error: null, deleteConflict: null })
   ),
   on(MatchActions.deleteMatchFailure, (state, { error }) => ({ 
     ...state, 
     loading: false, 
-    error 
+    error,
+    deleteConflict: null 
+  })),
+  on(MatchActions.deleteMatchConflict, (state, { conflict }) => ({ 
+    ...state, 
+    loading: false, 
+    error: null,
+    deleteConflict: conflict
+  })),
+  on(MatchActions.deleteMatchWithAction, (state) => ({ 
+    ...state, 
+    loading: true, 
+    error: null,
+    deleteConflict: null
   })),
 
   // Load matches by user

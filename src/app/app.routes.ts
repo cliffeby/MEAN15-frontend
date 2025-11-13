@@ -4,16 +4,9 @@ import { Register } from './components/register/register';
 import { Dashboard } from './components/dashboard/dashboard';
 import { AuthGuard } from './guards/auth-guard';
 import { roleGuard } from './guards/role-guard';
-import { LoanDetail } from './components/loans/loan-detail/loan-detail';
-import { LoanForm } from './components/loans/loan-form/loan-form';
-import { LoanList } from './components/loans/loan-list/loan-list';
 import { MainLayoutComponent } from './main-layout/main-layout';
 import { ReadMe } from './read-me/read-me';
 import { API } from './apis/apis';
-import { OfferListComponent } from './components/offers-list/offers-list';
-import { OffersForm } from './components/offers-form/offer-form';
-import { OffersDashboard } from './components/offers-dashboard/offers-dashboard';
-import { OfferStats } from './components/offer-stats/offer-stats';
 import { MemberFormComponent } from './components/member-form/member-form';
 import { MemberEditComponent } from './components/member-edit/member-edit';
 import { MemberListComponent } from './components/member-list/member-list';
@@ -28,6 +21,7 @@ import { MatchFormComponent } from './components/match-form/match-form';
 import { MatchEditComponent } from './components/match-edit/match-edit';
 import { ScoreEntryComponent } from './components/score-entry/score-entry';
 import { PrintableScorecardComponent } from './components/printable-scorecard/printable-scorecard';
+import { AdminConfigurationComponent } from './components/admin-configuration/admin-configuration.component';
 
 export const routes: Routes = [
     // Public
@@ -42,18 +36,8 @@ export const routes: Routes = [
       children: [
         { path: 'dashboard', component: Dashboard, canActivate: [roleGuard], data: { role: 'admin' } },
         { path: 'user-dashboard', component: Dashboard, canActivate: [roleGuard], data: { role: 'user' } },
-        { path: 'loans', component: LoanList },
-        { path: 'loans/add', component: LoanForm },
-        { path: 'loans/edit/:id', component: LoanForm },
-        { path: 'loans/:id', component: LoanDetail },    
         { path: 'read-me', component: ReadMe },  
         { path: 'apis', component: API },  
-        { path: 'offers', component: OfferListComponent },
-        { path: 'offers/create', component: OffersForm },
-        { path: 'offers/dashboard', component: OffersDashboard },
-        { path: 'offers/stats', component: OfferStats },
-        { path: 'offers/create', component: OffersForm },
-        { path: 'offers/edit/:id', component: OffersForm },
          { path: 'members', component: MemberListComponent },
          { path: 'members/add', component: MemberFormComponent, canActivate: [roleGuard], data: { role: 'admin' } },
   { path: 'members/edit/:id', component: MemberEditComponent, canActivate: [roleGuard], data: { role: 'admin' } },
@@ -69,6 +53,7 @@ export const routes: Routes = [
   { path: 'matches/edit/:id', component: MatchEditComponent, canActivate: [roleGuard], data: { role: 'admin' } },
   { path: 'matches/:id/score-entry', component: ScoreEntryComponent, canActivate: [roleGuard], data: { role: 'admin' } },
   { path: 'matches/:id/printable-scorecard', component: PrintableScorecardComponent },
+  { path: 'admin/configuration', component: AdminConfigurationComponent, canActivate: [roleGuard], data: { role: 'admin' } },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
       ]
     },

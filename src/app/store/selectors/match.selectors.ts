@@ -39,6 +39,11 @@ export const selectFilterByStatus = createSelector(
   (state) => state.filterByStatus
 );
 
+export const selectMatchDeleteConflict = createSelector(
+  selectMatchState,
+  (state) => state.deleteConflict
+);
+
 // Advanced selectors
 export const selectMatchById = (id: string) => createSelector(
   selectMatchEntities,

@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { MatchService } from '../../services/matchService';
 import * as MatchActions from '../actions/match.actions';
-import { mergeMap, map, catchError, tap } from 'rxjs/operators';
+import { mergeMap, map, catchError, tap, filter } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 
 @Injectable()
 export class MatchEffects {
@@ -13,7 +14,8 @@ export class MatchEffects {
     private actions$: Actions, 
     private matchService: MatchService,
     private router: Router,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private confirmDialog: ConfirmDialogService
   ) {}
 
   // Load all matches
@@ -103,9 +105,71 @@ export class MatchEffects {
       mergeMap((action) =>
         this.matchService.delete(action.id).pipe(
           map(() => MatchActions.deleteMatchSuccess({ id: action.id })),
+          catchError((error) => {
+            console.log('Delete match error:', error);
+            // Handle 409 conflict specially
+            if (error && error.status === 409) {
+              console.log('409 conflict detected:', error.error);
+              return of(MatchActions.deleteMatchConflict({ 
+                id: action.id, 
+                conflict: error.error 
+              }));
+            }
+            return of(MatchActions.deleteMatchFailure({ error }));
+          })
+        )
+      )
+    )
+  );
+
+  // Delete match with action (force delete)
+  deleteMatchWithAction$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(MatchActions.deleteMatchWithAction),
+      mergeMap((action) =>
+        this.matchService.deleteWithAction(action.id, action.action).pipe(
+          map(() => MatchActions.deleteMatchSuccess({ id: action.id })),
           catchError((error) => of(MatchActions.deleteMatchFailure({ error })))
         )
       )
+    )
+  );
+
+  // Handle delete conflict - show dialog to user
+  deleteMatchConflict$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(MatchActions.deleteMatchConflict),
+      mergeMap((action) => {
+        console.log('Handling delete conflict for match:', action.id, action.conflict);
+        const conflictData = {
+          title: 'Cannot Delete Match',
+          message: `This match has ${action.conflict.conflictCount} associated scores that would become orphaned.`,
+          conflictDetails: action.conflict
+        };
+        
+        return this.confirmDialog.resolveConflict(conflictData).pipe(
+          map(result => {
+            console.log('Conflict dialog result:', result);
+            if (result && (result.action === 'nullify' || result.action === 'delete')) {
+              return MatchActions.deleteMatchWithAction({ 
+                id: action.id, 
+                action: result.action 
+              });
+            }
+            // User cancelled or closed dialog - clear conflict from state
+            return MatchActions.deleteMatchFailure({ 
+              error: 'User cancelled deletion' 
+            });
+          }),
+          catchError((dialogError) => {
+            console.error('Error in conflict dialog:', dialogError);
+            // Handle any errors in opening the dialog
+            return of(MatchActions.deleteMatchFailure({ 
+              error: 'Error opening conflict resolution dialog' 
+            }));
+          })
+        );
+      })
     )
   );
 

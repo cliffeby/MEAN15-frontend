@@ -20,6 +20,11 @@ export class MatchService {
 
   private handleError(error: HttpErrorResponse) {
     console.error('MatchService error:', error);
+    // For 409 conflicts, preserve the original error structure
+    if (error.status === 409) {
+      return throwError(() => error);
+    }
+    
     let errorMsg = 'An unexpected error occurred. Please try again later.';
     if (error.error instanceof ErrorEvent) {
       errorMsg = `Client error: ${error.error.message}`;
@@ -52,6 +57,13 @@ export class MatchService {
   delete(id: string): Observable<any> {
     return this.http.delete(`${this.baseUrl}/${id}`, this.getHeaders())
       .pipe(catchError(this.handleError));
+  }
+
+  deleteWithAction(id: string, action: 'nullify' | 'delete'): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/${id}`, {
+      ...this.getHeaders(),
+      body: { force: true, action }
+    }).pipe(catchError(this.handleError));
   }
 
   // Additional methods specific to matches

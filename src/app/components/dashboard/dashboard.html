@@ -1,94 +1,150 @@
-<div style="text-align:center">
-  <h1>Dashboard with Material Table - Sorting, Filtering, Pagination & Charts</h1>
+<div class="dashboard-title">
+  <h1>Rochester Golf Dashboard</h1>
 </div>
 
-<mat-toolbar color="primary">
-    <span>Dashboard</span>
-  </mat-toolbar>
-  
-  <!-- Admin View -->
-  <div *ngIf="auth.role === 'admin'" class="dashboard-container">
-    <mat-card class="dashboard-card">
-      <h3>Total Offers</h3>
-      <p>{{ totalOffers() }}</p>
-      <button mat-raised-button color="accent" (click)="goTo('/offers')">View Customers</button>
-    </mat-card>
-  
-    <mat-card class="dashboard-card">
-      <h3>Total Loans</h3>
-      <p>{{ totalLoans() }}</p>
-      <button mat-raised-button color="accent" (click)="goTo('/loans')">View Loans</button>
-    </mat-card>
-  
-    <mat-card class="dashboard-card">
-      <h3>Loan Status Overview</h3>
-      <canvas baseChart [data]="loanStatusChartData" chartType="pie" style="max-width:100%"></canvas>
-    </mat-card>
-
-    <mat-toolbar color="primary">
-        <span>Loans</span>
-        <span class="spacer"></span>
-        <button mat-raised-button color="accent" (click)="goToAddLoan()">Add Loan</button>
-      </mat-toolbar>
-  
-    <mat-card class="dashboard-card">
-        <h3>Loans Table</h3>
-      
-        <!-- Search input -->
-        <mat-form-field appearance="fill" class="full-width">
-          <mat-label>Search Loans</mat-label>
-          <input matInput (keyup)="applyFilter($event)" placeholder="Search by customer, amount, status..." />
-        </mat-form-field>
-      
-        <table mat-table [dataSource]="dataSource" class="mat-elevation-z8" matSort>
-      
-          <!-- Customer Column -->
-          <ng-container matColumnDef="customer">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header> Customer </th>
-            <td mat-cell *matCellDef="let loan"> {{ loan.customer?.name || 'N/A' }} </td>
-          </ng-container>
-      
-          <!-- Amount Column -->
-          <ng-container matColumnDef="amount">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header> Amount </th>
-            <td mat-cell *matCellDef="let loan"> {{ loan.amount }} </td>
-          </ng-container>
-      
-          <!-- Status Column -->
-          <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
-            <td mat-cell *matCellDef="let loan"> {{ loan.status }} </td>
-          </ng-container>
-      
-          <!-- CreatedBy Column -->
-          <ng-container matColumnDef="createdBy">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header> Created By </th>
-            <td mat-cell *matCellDef="let loan"> {{ loan.createdBy?.name || 'N/A' }} </td>
-          </ng-container>
-      
-          <tr mat-header-row *matHeaderRowDef="displayedLoanColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedLoanColumns"></tr>
-        </table>
-      
-        <!-- Paginator -->
-        <mat-paginator [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons></mat-paginator>
+<div *ngIf="auth.role === 'admin'" class="dashboard-container">
+  <!-- Overview Section -->
+  <section class="overview-section">
+    <h2>Overview</h2>
+    <div class="stats-grid">
+      <mat-card class="stat-card">
+        <mat-card-header>
+          <mat-icon class="stat-icon">group</mat-icon>
+          <mat-card-title>Total Members</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="stat-number">{{ totalMembers() }}</div>
+        </mat-card-content>
       </mat-card>
-      
-  </div>
-  
-  <!-- Customer View -->
-  <div *ngIf="auth.role === 'customer'" class="dashboard-container">
-    <mat-card class="dashboard-card">
-      <h3>My Loans</h3>
-      <ng-container *ngIf="myLoans().length > 0; else noLoans">
-        <div *ngFor="let loan of myLoans()">
-          <p>Loan ID: {{ loan._id }} | Amount: {{ loan.amount }} | Status: {{ loan.status }}</p>
-        </div>
-      </ng-container>
-      <ng-template #noLoans>
-        <p>No loans found.</p>
-      </ng-template>
-      <button mat-raised-button color="primary" (click)="goTo('/loans/add')">Apply for Loan</button>
-    </mat-card>
-  </div>
-  
+    </div>
+  </section>
+
+  <!-- Activity Section -->
+  <section class="activity-section">
+    <h2>Activity Summary</h2>
+    <div class="stats-grid">
+      <mat-card class="stat-card">
+        <mat-card-header>
+          <mat-icon class="stat-icon">groups</mat-icon>
+          <mat-card-title>Groups This Year</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="stat-number">{{ groupsThisYear() }}</div>
+          <div class="stat-subtitle">{{ currentYear }}</div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-header>
+          <mat-icon class="stat-icon">event</mat-icon>
+          <mat-card-title>Matches This Year</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="stat-number">{{ matchesThisYear() }}</div>
+          <div class="stat-subtitle">{{ currentYear }}</div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-header>
+          <mat-icon class="stat-icon">history</mat-icon>
+          <mat-card-title>Matches (Past 12 Months)</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="stat-number">{{ matchesPast12Months() }}</div>
+          <div class="stat-subtitle">{{ twelveMonthsAgo | date:'MMM yyyy' }} - {{ currentDate | date:'MMM yyyy' }}</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </section>
+
+  <!-- Performance Section -->
+  <section class="performance-section">
+    <h2>Performance Highlights</h2>
+    <div class="stats-grid">
+      <!-- Debug info -->
+      <mat-card class="stat-card">
+        <mat-card-header>
+          <mat-icon class="stat-icon">bug_report</mat-icon>
+          <mat-card-title>Debug Info</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="stat-number">{{ allScores().length }}</div>
+          <div class="stat-subtitle">Total Scores</div>
+          <div class="stat-detail">Members: {{ allMembers().length }}</div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card performance-card low-score">
+        <mat-card-header>
+          <mat-icon class="stat-icon">golf_course</mat-icon>
+          <mat-card-title>Lowest Net Score</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="stat-number">{{ lowestNetScore()?.netScore || 'N/A' }}</div>
+          <div class="stat-subtitle" *ngIf="lowestNetScore()">
+            {{ lowestNetScore()?.memberName }}
+          </div>
+          <div class="stat-detail" *ngIf="lowestNetScore()">
+            {{ lowestNetScore()?.datePlayed | date:'mediumDate' }}
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card performance-card high-score">
+        <mat-card-header>
+          <mat-icon class="stat-icon">trending_up</mat-icon>
+          <mat-card-title>Highest Net Score</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="stat-number">{{ highestNetScore()?.netScore || 'N/A' }}</div>
+          <div class="stat-subtitle" *ngIf="highestNetScore()">
+            {{ highestNetScore()?.memberName }}
+          </div>
+          <div class="stat-detail" *ngIf="highestNetScore()">
+            {{ highestNetScore()?.datePlayed | date:'mediumDate' }}
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </section>
+
+  <!-- Quick Actions -->
+  <section class="actions-section">
+    <h2>Quick Actions</h2>
+    <div class="action-buttons">
+      <button mat-raised-button color="primary" (click)="goTo('/members')">
+        <mat-icon>group</mat-icon>
+        View All Members
+      </button>
+      <button mat-raised-button color="primary" (click)="goTo('/matches')">
+        <mat-icon>event</mat-icon>
+        View All Matches
+      </button>
+      <button mat-raised-button color="primary" (click)="goTo('/scores')">
+        <mat-icon>golf_course</mat-icon>
+        View All Scores
+      </button>
+      <button mat-raised-button color="accent" (click)="goTo('/admin/configuration')">
+        <mat-icon>settings</mat-icon>
+        Configuration
+      </button>
+    </div>
+  </section>
+</div>
+
+<!-- User View (if needed) -->
+<div *ngIf="auth.role === 'user'" class="user-dashboard">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Welcome to Rochester Golf</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <p>Access your golf records and view match information.</p>
+      <button mat-raised-button color="primary" (click)="goTo('/matches')">
+        <mat-icon>event</mat-icon>
+        View Matches
+      </button>
+    </mat-card-content>
+  </mat-card>
+</div>

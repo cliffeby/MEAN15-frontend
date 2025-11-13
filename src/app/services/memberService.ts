@@ -30,6 +30,11 @@ export class MemberService {
 
   private handleError(error: HttpErrorResponse) {
     console.error('MemberService error:', error);
+    // For 409 conflicts, preserve the original error structure
+    if (error.status === 409) {
+      return throwError(() => error);
+    }
+    
     let errorMsg = 'An unexpected error occurred. Please try again later.';
     if (error.error instanceof ErrorEvent) {
       errorMsg = `Client error: ${error.error.message}`;
@@ -89,6 +94,24 @@ export class MemberService {
     return this.http.delete(`${this.baseUrl}/${id}`, this.getHeaders())
       .pipe(
         tap(() => this.clearCache()), // Clear cache after deleting
+        catchError(this.handleError)
+      );
+  }
+
+  deleteWithAction(id: string, action: 'nullify' | 'delete'): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/${id}`, {
+      ...this.getHeaders(),
+      body: { force: true, action }
+    }).pipe(
+      tap(() => this.clearCache()), // Clear cache after deleting
+      catchError(this.handleError)
+    );
+  }
+
+  removeDuplicateEmails(): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/duplicates/remove`, this.getHeaders())
+      .pipe(
+        tap(() => this.clearCache()), // Clear cache after removing duplicates
         catchError(this.handleError)
       );
   }

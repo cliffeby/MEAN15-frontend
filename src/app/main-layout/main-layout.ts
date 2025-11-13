@@ -33,9 +33,6 @@ export class MainLayoutComponent {
 
   sidebarLinks = [
     { label: 'Dashboard', route: '/dashboard' },
-    { label: 'Loans (CRUD)', route: '/loans'},
-    { label: 'Offers CRUD + NgRX)', route: '/offers'},
-    { label: 'Offers (Parent + Child)', route: '/offers/dashboard' },
     { label: 'Member List', route: '/members' },
     // { label: 'Add Member', route: '/members/add' },
     { label: 'Scorecard List', route: '/scorecards' },        // Added
@@ -49,6 +46,10 @@ export class MainLayoutComponent {
   ];
 
   get showUserListLink() {
+    return this.auth.role === 'admin';
+  }
+
+  get showAdminLinks() {
     return this.auth.role === 'admin';
   }
 

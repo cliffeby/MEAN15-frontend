@@ -1,185 +1,244 @@
-import { Component, inject, signal, ViewChild, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NavigationEnd, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatSort, MatSortModule } from '@angular/material/sort';
-import { NgChartsModule } from 'ng2-charts';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { forkJoin } from 'rxjs';
 
-// Updated imports with Service suffix
 import { AuthService } from '../../services/authService';
-import { LoanService } from '../../services/loanService';
-import { OffersService } from '../../services/offerService';
-import { ScorecardService } from '../../services/scorecardService';
-import { Subscription } from 'rxjs';
+import { MemberService } from '../../services/memberService';
+import { ScoreService } from '../../services/scoreService';
+import { MatchService } from '../../services/matchService';
+import { Member } from '../../models/member';
+import { Score } from '../../models/score';
+import { Match } from '../../models/match';
+
+interface ScoreWithMember {
+  score: number;
+  netScore?: number;
+  memberName: string;
+  datePlayed: string;
+}
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [
-    CommonModule, MatToolbarModule, MatButtonModule, MatCardModule, MatSnackBarModule,
-    MatTableModule, MatPaginatorModule, MatSortModule, NgChartsModule, MatFormFieldModule,
-    MatInputModule
+    CommonModule, 
+    MatToolbarModule, 
+    MatButtonModule, 
+    MatCardModule, 
+    MatSnackBarModule,
+    MatIconModule
   ],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.scss']
 })
-export class Dashboard implements AfterViewInit {
+export class Dashboard implements OnInit {
   router = inject(Router);
-  auth = inject(AuthService);            // Updated
-  offerService = inject(OffersService);    // Updated  
-  loanService = inject(LoanService);      // Updated
-  scorecardService = inject(ScorecardService); // Updated
+  auth = inject(AuthService);
+  memberService = inject(MemberService);
+  scoreService = inject(ScoreService);
+  matchService = inject(MatchService);
   snackBar = inject(MatSnackBar);
 
-  totalCustomers = signal(0);
-  totalOffers = signal(0);
-  totalLoans = signal(0);
-  customersData: any[] = [];
-  offersData: any[] = [];
-  loansData: any[] = [];
-  myLoans = signal<any[]>([]);
-  dataSource!: MatTableDataSource<any>;
+  // Basic signals
+  totalMembers = signal(0);
+  allMembers = signal<Member[]>([]);
+  allScores = signal<Score[]>([]);
+  allMatches = signal<Match[]>([]);
 
-  private routerSub!: Subscription;
+  // Date calculations
+  currentDate = new Date();
+  currentYear = this.currentDate.getFullYear();
+  twelveMonthsAgo = new Date(this.currentDate.getFullYear() - 1, this.currentDate.getMonth(), this.currentDate.getDate());
 
-  displayedLoanColumns: string[] = ['customer', 'amount', 'status', 'createdBy'];
+  // Computed statistics
+  groupsThisYear = computed(() => {
+    const matches = this.allMatches();
+    const thisYear = this.currentYear;
+    return matches.filter(match => {
+      const matchDate = new Date(match.datePlayed || '');
+      return matchDate.getFullYear() === thisYear;
+    }).length;
+  });
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  matchesThisYear = computed(() => {
+    const matches = this.allMatches();
+    const thisYear = this.currentYear;
+    return matches.filter(match => {
+      const matchDate = new Date(match.datePlayed || '');
+      return matchDate.getFullYear() === thisYear;
+    }).length;
+  });
 
-  loanStatusChartData = {
-    labels: ['Approved', 'Pending', 'Rejected'],
-    datasets: [{ data: [0, 0, 0], backgroundColor: ['#4caf50', '#ff9800', '#f44336'] }]
-  };
-
-  constructor(private cdr: ChangeDetectorRef) {
-    if (this.auth.role === 'admin') {
-      this.loadAdminStats();
-    } else if (this.auth.role === 'customer') {
-      this.loadUserLoans();
-    }
-  }
-
-  ngAfterViewInit() {
+  matchesPast12Months = computed(() => {
+    const matches = this.allMatches();
+    const now = this.currentDate;
+    const twelveMonthsAgo = this.twelveMonthsAgo;
     
-    if (this.dataSource) {
-      this.dataSource.paginator = this.paginator;
-      this.dataSource.sort = this.sort;
-  
-      // Custom filter predicate for nested objects
-    this.dataSource.filterPredicate = (data: any, filter: string) => {
-      const transformedFilter = filter.trim().toLowerCase();
+    return matches.filter(match => {
+      const matchDate = new Date(match.datePlayed || '');
+      return matchDate >= twelveMonthsAgo && matchDate <= now;
+    }).length;
+  });
 
-      // Convert all fields to a single string
-      const dataStr = [
-        data._id,
-        data.status,
-        data.amount,
-        data.customer?.name,
-        data.customer?.email,
-        data.customer?.role,
-        data.createdBy?.name
-      ]
-        .filter(Boolean) // remove null/undefined
-        .join(' ')
-        .toLowerCase();
+  lowestNetScore = computed(() => {
+    const scores = this.allScores();
+    const members = this.allMembers();
+    
+    console.log('Computing lowest net score:', { scores: scores.length, members: members.length });
+    
+    if (scores.length === 0) return null;
 
-      return dataStr.includes(transformedFilter);
-    };
+    let lowestScore: ScoreWithMember | null = null;
+
+    for (const score of scores) {
+      if (score.score && score.handicap !== undefined) {
+        const netScore = score.score - score.handicap;
+        
+        // Handle populated memberId or find member by ID
+        let memberName = 'Unknown Member';
+        if (score.memberId) {
+          if (typeof score.memberId === 'object' && (score.memberId as any).name) {
+            // memberId is populated with member data
+            memberName = (score.memberId as any).name;
+          } else if (typeof score.memberId === 'string') {
+            // memberId is just an ID, find the member
+            const member = members.find(m => m._id === score.memberId || m.id === score.memberId);
+            if (member) {
+              memberName = `${member.firstName} ${member.lastName || ''}`.trim();
+            }
+          }
+        }
+        
+        console.log('Found score for lowest:', { netScore, memberName, score: score.score, handicap: score.handicap });
+        
+        const scoreData: ScoreWithMember = {
+          score: netScore,
+          netScore: netScore,
+          memberName: memberName,
+          datePlayed: score.datePlayed || ''
+        };
+
+        if (!lowestScore || netScore < lowestScore.score) {
+          lowestScore = scoreData;
+        }
+      }
+    }
+
+    console.log('Lowest net score result:', lowestScore);
+    return lowestScore;
+  });
+
+  highestNetScore = computed(() => {
+    const scores = this.allScores();
+    const members = this.allMembers();
+    
+    console.log('Computing highest net score:', { scores: scores.length, members: members.length });
+    
+    if (scores.length === 0) return null;
+
+    let highestScore: ScoreWithMember | null = null;
+
+    for (const score of scores) {
+      if (score.score && score.handicap !== undefined) {
+        const netScore = score.score - score.handicap;
+        
+        // Handle populated memberId or find member by ID
+        let memberName = 'Unknown Member';
+        if (score.memberId) {
+          if (typeof score.memberId === 'object' && (score.memberId as any).name) {
+            // memberId is populated with member data
+            memberName = (score.memberId as any).name;
+          } else if (typeof score.memberId === 'string') {
+            // memberId is just an ID, find the member
+            const member = members.find(m => m._id === score.memberId || m.id === score.memberId);
+            if (member) {
+              memberName = `${member.firstName} ${member.lastName || ''}`.trim();
+            }
+          }
+        }
+        
+        console.log('Found score for highest:', { netScore, memberName, score: score.score, handicap: score.handicap });
+        
+        const scoreData: ScoreWithMember = {
+          score: netScore,
+          netScore: netScore,
+          memberName: memberName,
+          datePlayed: score.datePlayed || ''
+        };
+
+        if (!highestScore || netScore > highestScore.score) {
+          highestScore = scoreData;
+        }
+      }
+    }
+
+    console.log('Highest net score result:', highestScore);
+    return highestScore;
+  });
+
+  constructor() {
+    console.log('Dashboard constructor - User role:', this.auth.role);
+  }
+
+  ngOnInit() {
+    if (this.auth.role === 'admin') {
+      this.loadDashboardData();
     }
   }
 
-  logout() {
-    this.auth.logout();
-    this.router.navigate(['/login']);
-    this.snackBar.open('Logged out successfully', 'Close', { duration: 2000 });
-  }
+  private loadDashboardData() {
+    console.log('Loading dashboard data...');
+    
+    forkJoin({
+      members: this.memberService.getAll(),
+      scores: this.scoreService.getAll(),
+      matches: this.matchService.getAll()
+    }).subscribe({
+      next: ({ members, scores, matches }) => {
+        console.log('Dashboard data loaded:', {
+          members: members?.length,
+          scores: scores?.length || (scores as any)?.scores?.length,
+          matches: matches?.length || (matches as any)?.matches?.length
+        });
 
-  loadAdminStats() {
-    // Load Customers
-    this.offerService.getOffers().subscribe({
-      next: (res: any) => {
-        this.offersData = res;           // store the array of offers
-        this.totalOffers.set(res.length); // set total count
+        // Handle members
+        const membersArray = Array.isArray(members) ? members : (members as any)?.members || [];
+        this.allMembers.set(membersArray);
+        this.totalMembers.set(membersArray.length);
+
+        // Handle scores - might be wrapped in response object
+        let scoresArray: Score[] = [];
+        if (Array.isArray(scores)) {
+          scoresArray = scores;
+        } else if ((scores as any)?.scores && Array.isArray((scores as any).scores)) {
+          scoresArray = (scores as any).scores;
+        }
+        console.log('Setting scores array:', scoresArray.slice(0, 3)); // Log first 3 scores
+        this.allScores.set(scoresArray);
+
+        // Handle matches - might be wrapped in response object  
+        let matchesArray: Match[] = [];
+        if (Array.isArray(matches)) {
+          matchesArray = matches;
+        } else if ((matches as any)?.matches && Array.isArray((matches as any).matches)) {
+          matchesArray = (matches as any).matches;
+        }
+        this.allMatches.set(matchesArray);
       },
-      error: () => this.totalOffers.set(0)
+      error: (error) => {
+        console.error('Error loading dashboard data:', error);
+        this.snackBar.open('Error loading dashboard data', 'Close', { duration: 3000 });
+      }
     });
-
-    // Load Loans
-    this.loanService.getAll().subscribe({
-      next: (res: any) => {
-        const loans = Array.isArray(res.loans) ? res.loans : [];
-        this.loansData = loans;
-        this.totalLoans.set(loans.length);
-
-        this.dataSource = new MatTableDataSource(loans);
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
-
-        // Custom filter for nested objects
-    this.dataSource.filterPredicate = (data: any, filter: string) => {
-      const transformedFilter = filter.trim().toLowerCase();
-      const dataStr = [
-        data._id,
-        data.amount,
-        data.status,
-        data.customer?.name,
-        data.customer?.email,
-        data.customer?.role,
-        data.createdBy?.name
-      ]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase();
-      return dataStr.includes(transformedFilter);
-    };
-
-        this.updateLoanChart(loans);
-      },
-      error: () => this.totalLoans.set(0)
-    });
-  }
-
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-  if (this.dataSource) {
-    this.dataSource.filter = filterValue.trim().toLowerCase();
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
-    }
-  }
-  }
-
-  loadUserLoans() {
-    this.loanService.getMyLoans().subscribe({
-      next: (res: any[]) => this.myLoans.set(res),
-      error: () => this.myLoans.set([])
-    });
-  }
-
-  goToAddLoan() {
-    this.router.navigate(['/loans/add']);
-  }
-
-  updateLoanChart(loans: any[]) {
-    const safeLoans = Array.isArray(loans) ? loans : [];
-    const approved = safeLoans.filter(l => l.status.toLowerCase() === 'approved').length;
-    const pending = safeLoans.filter(l => l.status.toLowerCase() === 'pending').length;
-    const rejected = safeLoans.filter(l => l.status.toLowerCase() === 'declined').length;
-
-    this.loanStatusChartData.datasets[0].data = [approved, pending, rejected];
   }
 
   goTo(route: string) {
     this.router.navigate([route]);
   }
-
-  
 }

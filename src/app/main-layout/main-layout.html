@@ -12,6 +12,11 @@
         <a *ngIf="showUserListLink" mat-list-item [routerLink]="'/users'" routerLinkActive="active-link">
           <span>User List</span>
         </a>
+        <mat-divider *ngIf="showAdminLinks"></mat-divider>
+        <a *ngIf="showAdminLinks" mat-list-item [routerLink]="'/admin/configuration'" routerLinkActive="active-link">
+          <mat-icon matListIcon>settings</mat-icon>
+          <span>Configuration</span>
+        </a>
       </mat-nav-list>
     </mat-sidenav>
   

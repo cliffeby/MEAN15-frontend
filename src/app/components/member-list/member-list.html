@@ -1,10 +1,16 @@
 <div class="member-list">
   <div class="header">
     <h2>Members</h2>
-    <button *ngIf="isAdmin" mat-raised-button color="primary" (click)="addMember()">
-      <mat-icon>add</mat-icon>
-      Add Member
-    </button>
+    <div class="header-buttons">
+      <button *ngIf="isAdmin" mat-raised-button color="primary" (click)="addMember()">
+        <mat-icon>add</mat-icon>
+        Add Member
+      </button>
+      <button *ngIf="isAdmin" mat-raised-button color="warn" (click)="removeDuplicateEmails()" matTooltip="Remove members with duplicate email addresses, keeping the oldest">
+        <mat-icon>content_copy</mat-icon>
+        Remove Duplicates
+      </button>
+    </div>
   </div>
 
   <!-- Filter Controls -->

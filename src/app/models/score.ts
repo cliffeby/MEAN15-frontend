@@ -14,9 +14,24 @@ export interface Score {
   wonIndo?: boolean;
   isPaired?: boolean;
   isScored?: boolean;
-  matchId?: string;
-  memberId?: string;
-  scorecardId?: string;
+  matchId?: string | {
+    _id?: string;
+    id?: string;
+    name: string;
+    datePlayed?: string;
+    status?: string;
+  };
+  memberId?: string | {
+    _id?: string;
+    id?: string;
+    name: string;
+    email?: string;
+  };
+  scorecardId?: string | {
+    _id?: string;
+    id?: string;
+    name: string;
+  };
   scSlope?: number;
   scRating?: number;
   scPars?: number[];

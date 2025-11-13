@@ -292,4 +292,38 @@ export class MemberListComponent implements OnInit {
       }
     });
   }
+
+  removeDuplicateEmails() {
+    if (!this.isAdmin) {
+      this.snackBar.open('You are not authorized to remove duplicates.', 'Close', { duration: 2500 });
+      return;
+    }
+
+    this.confirmDialog.confirmAction(
+      'Remove Duplicate Emails', 
+      'This will permanently delete members with duplicate email addresses, keeping only the oldest member for each email. This action cannot be undone.',
+      'Remove Duplicates',
+      'Cancel'
+    ).subscribe(confirmed => {
+      if (confirmed) {
+        this.memberService.removeDuplicateEmails().subscribe({
+          next: (response) => {
+            if (response.deletedCount > 0) {
+              this.snackBar.open(`Removed ${response.deletedCount} duplicate members`, 'Close', { duration: 4000 });
+              this.loadMembers(); // Refresh the list
+            } else {
+              this.snackBar.open('No duplicate email addresses found', 'Close', { duration: 3000 });
+            }
+          },
+          error: (err) => {
+            if (err.status === 403 || err.status === 401) {
+              this.snackBar.open('You are not authorized to remove duplicates.', 'Close', { duration: 2500 });
+            } else {
+              this.snackBar.open('Error removing duplicates', 'Close', { duration: 3000 });
+            }
+          }
+        });
+      }
+    });
+  }
 }
