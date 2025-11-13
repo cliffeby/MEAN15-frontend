@@ -18,9 +18,15 @@ import { Match } from '../../models/match';
 
 interface ScoreWithMember {
   score: number;
-  netScore?: number;
+  netScore: number;
   memberName: string;
   datePlayed: string;
+}
+
+interface FrequentPlayer {
+  memberName: string;
+  rounds: number;
+  memberId: string;
 }
 
 @Component({
@@ -103,9 +109,14 @@ export class Dashboard implements OnInit {
         // Handle populated memberId or find member by ID
         let memberName = 'Unknown Member';
         if (score.memberId) {
-          if (typeof score.memberId === 'object' && (score.memberId as any).name) {
+          if (typeof score.memberId === 'object') {
             // memberId is populated with member data
-            memberName = (score.memberId as any).name;
+            const populatedMember = score.memberId as any;
+            if (populatedMember.firstName) {
+              memberName = `${populatedMember.firstName} ${populatedMember.lastName || ''}`.trim();
+            } else if (populatedMember.name) {
+              memberName = populatedMember.name;
+            }
           } else if (typeof score.memberId === 'string') {
             // memberId is just an ID, find the member
             const member = members.find(m => m._id === score.memberId || m.id === score.memberId);
@@ -151,9 +162,14 @@ export class Dashboard implements OnInit {
         // Handle populated memberId or find member by ID
         let memberName = 'Unknown Member';
         if (score.memberId) {
-          if (typeof score.memberId === 'object' && (score.memberId as any).name) {
+          if (typeof score.memberId === 'object') {
             // memberId is populated with member data
-            memberName = (score.memberId as any).name;
+            const populatedMember = score.memberId as any;
+            if (populatedMember.firstName) {
+              memberName = `${populatedMember.firstName} ${populatedMember.lastName || ''}`.trim();
+            } else if (populatedMember.name) {
+              memberName = populatedMember.name;
+            }
           } else if (typeof score.memberId === 'string') {
             // memberId is just an ID, find the member
             const member = members.find(m => m._id === score.memberId || m.id === score.memberId);
@@ -180,6 +196,65 @@ export class Dashboard implements OnInit {
 
     console.log('Highest net score result:', highestScore);
     return highestScore;
+  });
+
+  topFrequentPlayers = computed(() => {
+    const scores = this.allScores();
+    const members = this.allMembers();
+    
+    if (scores.length === 0) return [];
+
+    // Get scores from the past 12 months
+    const twelveMonthsAgo = this.twelveMonthsAgo;
+    const now = this.currentDate;
+    
+    const recentScores = scores.filter(score => {
+      const scoreDate = new Date(score.datePlayed || '');
+      return scoreDate >= twelveMonthsAgo && scoreDate <= now;
+    });
+
+    // Count rounds per member
+    const memberRounds: { [key: string]: { memberName: string; rounds: number; memberId: string } } = {};
+    
+    for (const score of recentScores) {
+      let memberId: string = '';
+      let memberName = 'Unknown Member';
+      
+      if (score.memberId) {
+        if (typeof score.memberId === 'object') {
+          // memberId is populated with member data
+          const populatedMember = score.memberId as any;
+          memberId = populatedMember._id || populatedMember.id || '';
+          if (populatedMember.firstName) {
+            memberName = `${populatedMember.firstName} ${populatedMember.lastName || ''}`.trim();
+          } else if (populatedMember.name) {
+            memberName = populatedMember.name;
+          }
+        } else if (typeof score.memberId === 'string') {
+          // memberId is just an ID, find the member
+          memberId = score.memberId;
+          const member = members.find(m => m._id === memberId || m.id === memberId);
+          if (member) {
+            memberName = `${member.firstName} ${member.lastName || ''}`.trim();
+          }
+        }
+      }
+      
+      if (memberId) {
+        if (!memberRounds[memberId]) {
+          memberRounds[memberId] = { memberName, rounds: 0, memberId };
+        }
+        memberRounds[memberId].rounds++;
+      }
+    }
+
+    // Convert to array and sort by rounds descending
+    const sortedPlayers = Object.values(memberRounds)
+      .sort((a, b) => b.rounds - a.rounds)
+      .slice(0, 5); // Top 5 players
+
+    console.log('Top frequent players:', sortedPlayers);
+    return sortedPlayers;
   });
 
   constructor() {
@@ -220,6 +295,14 @@ export class Dashboard implements OnInit {
           scoresArray = (scores as any).scores;
         }
         console.log('Setting scores array:', scoresArray.slice(0, 3)); // Log first 3 scores
+        if (scoresArray.length > 0) {
+          console.log('Sample score structure:', {
+            score: scoresArray[0].score,
+            handicap: scoresArray[0].handicap,
+            memberId: scoresArray[0].memberId,
+            memberIdType: typeof scoresArray[0].memberId
+          });
+        }
         this.allScores.set(scoresArray);
 
         // Handle matches - might be wrapped in response object  

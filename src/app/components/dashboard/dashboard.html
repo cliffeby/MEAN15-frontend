@@ -58,23 +58,37 @@
     </div>
   </section>
 
+  <!-- Most Active Players Section -->
+  <section class="activity-section">
+    <h2>Most Active Players (Past 12 Months)</h2>
+    <div class="stats-grid">
+      <mat-card class="stat-card frequent-players-card">
+        <mat-card-header>
+          <mat-icon class="stat-icon">people</mat-icon>
+          <mat-card-title>Top 5 Players</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="frequent-players-list" *ngIf="topFrequentPlayers().length > 0; else noFrequentPlayers">
+            <div class="player-item" *ngFor="let player of topFrequentPlayers(); let i = index">
+              <div class="player-rank">{{ i + 1 }}</div>
+              <div class="player-info">
+                <div class="player-name">{{ player.memberName }}</div>
+                <div class="player-rounds">{{ player.rounds }} rounds</div>
+              </div>
+            </div>
+          </div>
+          <ng-template #noFrequentPlayers>
+            <div class="no-data">No recent activity</div>
+          </ng-template>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </section>
+
   <!-- Performance Section -->
   <section class="performance-section">
     <h2>Performance Highlights</h2>
     <div class="stats-grid">
-      <!-- Debug info -->
-      <mat-card class="stat-card">
-        <mat-card-header>
-          <mat-icon class="stat-icon">bug_report</mat-icon>
-          <mat-card-title>Debug Info</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="stat-number">{{ allScores().length }}</div>
-          <div class="stat-subtitle">Total Scores</div>
-          <div class="stat-detail">Members: {{ allMembers().length }}</div>
-        </mat-card-content>
-      </mat-card>
-
       <mat-card class="stat-card performance-card low-score">
         <mat-card-header>
           <mat-icon class="stat-icon">golf_course</mat-icon>
