@@ -167,6 +167,7 @@
                              (input)="onScoreChange(playerIndex, holeIndex, $event)"
                              (keydown)="onKeyDown($event, playerIndex, holeIndex)"
                              (blur)="onScoreChange(playerIndex, holeIndex, $event)"
+                             (focus)="onInputFocus($event)"
                              [id]="'score-' + playerIndex + '-' + holeIndex"
                              placeholder="0">
                     </mat-form-field>
@@ -191,6 +192,7 @@
                              (input)="onScoreChange(playerIndex, holeIndex, $event)"
                              (keydown)="onKeyDown($event, playerIndex, holeIndex)"
                              (blur)="onScoreChange(playerIndex, holeIndex, $event)"
+                             (focus)="onInputFocus($event)"
                              [id]="'score-' + playerIndex + '-' + holeIndex"
                              placeholder="0">
                     </mat-form-field>

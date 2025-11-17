@@ -30,17 +30,17 @@ import { AuthService } from '../../services/authService';
 import { Match } from '../../models/match';
 import { Member } from '../../models/member';
 import { Score } from '../../models/score';
+import type { PlayerScore } from '../../models/player-score.interface';
+import {
+  sumScores,
+  calculateCourseHandicap,
+  getParForHole,
+  getCoursePar,
+  getFrontNinePar,
+  getBackNinePar,
+  calculatePlayerTotals
+} from '../../utils/score-utils';
 
-interface PlayerScore {
-  member: Member;
-  scores: (number | null)[];
-  frontNine: number;
-  backNine: number;
-  total: number;
-  handicap: number;
-  netScore: number;
-  existingScoreId?: string;
-}
 
 @Component({
   selector: 'app-score-entry',
@@ -62,6 +62,45 @@ interface PlayerScore {
   styleUrls: ['./score-entry.scss']
 })
 export class ScoreEntryComponent implements OnInit, OnDestroy {
+  getParForHole(holeIndex: number): number {
+    // Returns the par for a specific hole
+    return getParForHole(this.scorecard?.pars, holeIndex);
+  }
+
+  getBackNinePar(): number {
+    // Returns the sum of pars for holes 10-18
+    if (this.scorecard?.pars && Array.isArray(this.scorecard.pars)) {
+      return getBackNinePar(this.scorecard.pars);
+    }
+    return 0;
+  }
+
+  getHoleHandicapFromScorecard(holeIndex: number): number {
+    // Returns the handicap for a specific hole from scorecard
+    return this.scorecard?.hCaps?.[holeIndex] || 0;
+  }
+
+  getHoleHandicap(playerIndex: number): number {
+    // Returns the handicap for a player
+    return this.playerScores[playerIndex]?.handicap || 0;
+  }
+
+  onKeyDown(event: KeyboardEvent, playerIndex: number, holeIndex: number): void {
+    // Prevent input if match is completed
+    if (this.isMatchCompleted) {
+      event.preventDefault();
+      this.snackBar.open('Cannot modify scores - match is completed.', 'Close', { duration: 3000 });
+    }
+  }
+
+  saveScores(): void {
+    // Triggers debounced save
+    if (this.canSave()) {
+      this.saveSubject.next();
+    } else {
+      this.snackBar.open('Cannot save scores. Please check all fields.', 'Close', { duration: 3000 });
+    }
+  }
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private fb = inject(FormBuilder);
@@ -83,8 +122,6 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   saving = false;
   isMatchCompleted = false;  // Default to false to allow editing initially
   private saveSubject = new Subject<void>();
-  private lastSaveTime = 0;
-  private readonly SAVE_COOLDOWN = 2000; // 2 seconds between saves
 
   displayedColumns: string[] = ['player', 'handicap'];
   holeColumns: string[] = [];
@@ -156,7 +193,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
     }
     
     this.matchService.getById(this.matchId).pipe(
-      retryWhen(errors => 
+      (errors => 
         errors.pipe(
           delay(1000),
           take(3) // Retry up to 3 times with 1 second delay
@@ -390,7 +427,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
     console.log('Loading existing scores for match ID:', matchId);
 
     this.scoreService.getScoresByMatch(matchId).pipe(
-      retryWhen(errors => 
+      (errors => 
         errors.pipe(
           delay(500),
           take(2) // Retry up to 2 times for score loading
@@ -541,12 +578,13 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
     const inputValue = event.target.value.trim();
     let score: number | null = null;
     
-    // Handle empty input
-    if (!inputValue) {
+    // Handle empty input or zero
+    if (!inputValue || inputValue === '0') {
       score = null;
+      event.target.value = '';
     } else if (!isNaN(inputValue)) {
       const numValue = parseInt(inputValue);
-      // Allow scores from 1 to 15 for golf
+      // Allow scores from 1 to 15 for golf (zero is not valid)
       if (numValue >= 1 && numValue <= 15) {
         score = numValue;
       } else {
@@ -562,267 +600,38 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
     
     this.playerScores[playerIndex].scores[holeIndex] = score;
     this.calculatePlayerTotals(playerIndex);
+
+    // Auto-advance to next input if a valid digit (1-9) is entered
+    if (score !== null && event && event.target && event.target.value.length === 1) {
+      const nextHoleIndex = holeIndex + 1;
+      // Only advance if next hole exists (0-17)
+      if (nextHoleIndex < 18) {
+        const nextInputId = `score-${playerIndex}-${nextHoleIndex}`;
+        const nextInput = document.getElementById(nextInputId);
+        if (nextInput) {
+          (nextInput as HTMLElement).focus();
+        }
+      }
+    }
+  }
+
+  // Highlight and replace value on entry
+  onInputFocus(event: any): void {
+    if (event && event.target) {
+      setTimeout(() => {
+        event.target.select();
+      }, 0);
+    }
   }
 
   private calculatePlayerTotals(playerIndex: number): void {
     const player = this.playerScores[playerIndex];
     const scores = player.scores;
-
-    // Calculate front nine (holes 1-9)
-    player.frontNine = this.sumScores(scores.slice(0, 9));
-    
-    // Calculate back nine (holes 10-18)
-    player.backNine = this.sumScores(scores.slice(9, 18));
-    
-    // Calculate total
-    player.total = player.frontNine + player.backNine;
-    
-    // Calculate net score (total - handicap)
-    player.netScore = player.total - player.handicap;
-  }
-
-  private sumScores(scores: (number | null)[]): number {
-    return scores.reduce((sum: number, score: number | null) => sum + (score || 0), 0);
-  }
-
-  calculateCourseHandicap(usgaIndex: number): number {
-    if (!this.scorecard?.slope) return 0;
-    return Math.round((usgaIndex * this.scorecard.slope) / 113);
-  }
-
-  getParForHole(holeIndex: number): number {
-    return this.scorecard?.pars?.[holeIndex] || 4;
-  }
-
-  getCoursePar(): number {
-    return this.scorecard?.par || this.scorecard?.pars?.reduce((sum, par) => sum + par, 0) || 72;
-  }
-
-  getFrontNinePar(): number {
-    return this.scorecard?.pars?.slice(0, 9).reduce((sum, par) => sum + par, 0) || 36;
-  }
-
-  getBackNinePar(): number {
-    return this.scorecard?.pars?.slice(9, 18).reduce((sum, par) => sum + par, 0) || 36;
-  }
-
-  getHoleHandicap(playerIndex: number): number {
-    // Get the player's course handicap
-    const player = this.playerScores[playerIndex];
-    if (!player || !player.member?.usgaIndex || !this.scorecard?.slope) {
-      return 0;
-    }
-    
-    return Math.round((player.member.usgaIndex * this.scorecard.slope) / 113);
-  }
-
-  getHoleHandicapFromScorecard(holeIndex: number): number {
-    return this.scorecard?.hCaps?.[holeIndex] || 0;
-  }
-
-  onKeyDown(event: KeyboardEvent, playerIndex: number, holeIndex: number): void {
-    const target = event.target as HTMLInputElement;
-    
-    // Only process if match is not completed
-    if (this.isMatchCompleted) {
-      event.preventDefault();
-      return;
-    }
-    
-    // Allow normal backspace, delete, tab, escape, enter, arrow keys
-    if ([8, 9, 27, 13, 46, 37, 38, 39, 40].includes(event.keyCode)) {
-      return; // Let these keys work normally
-    }
-    
-    // Allow digits 0-9 for scores
-    if (event.keyCode >= 48 && event.keyCode <= 57) {
-      // Always clear the field before entering a digit if value is 0 or single digit
-      if (target.value === '0' || target.value.length === 1) {
-        target.value = '';
-      }
-      // Let the normal typing behavior work, but limit to 2 characters via maxlength
-      setTimeout(() => this.moveToNextCell(playerIndex, holeIndex), 0);
-      return; // Don't preventDefault - let normal input handling work
-    }
-    
-    // Prevent all other keys (letters, symbols, etc.)
-    event.preventDefault();
-  }
-
-  private moveToNextCell(playerIndex: number, holeIndex: number): void {
-    let nextPlayerIndex = playerIndex;
-    let nextHoleIndex = holeIndex + 1;
-    
-    // If we're at the last hole, move to first hole of next player
-    if (nextHoleIndex >= 18) {
-      nextHoleIndex = 0;
-      nextPlayerIndex = playerIndex + 1;
-    }
-    
-    // If we're at the last player, stop
-    if (nextPlayerIndex >= this.playerScores.length) {
-      return;
-    }
-    
-    // Focus the next input
-    const nextInput = document.getElementById(`score-${nextPlayerIndex}-${nextHoleIndex}`);
-    if (nextInput) {
-      nextInput.focus();
-    }
-  }
-
-  async saveScores(): Promise<void> {
-    console.log('🔥 saveScores called:', {
-      isMatchCompleted: this.isMatchCompleted,
-      canSave: this.canSave(),
-      loading: this.loading,
-      saving: this.saving,
-      timestamp: new Date().toISOString()
-    });
-    
-    // ABSOLUTE PREVENTION - Multiple checks for match completion
-    if (this.isMatchCompleted) {
-      console.log('🚫 SAVE BLOCKED - match is completed');
-      this.snackBar.open('Cannot save scores - match is completed. Change match status to enable saving.', 'Close', { 
-        duration: 5000,
-        panelClass: ['warning-snackbar']
-      });
-      return;
-    }
-
-    // Check for any score entry containing a 0
-    let hasZero = false;
-    for (const playerScore of this.playerScores) {
-      if (playerScore.scores.some(s => s === 0)) {
-        hasZero = true;
-        break;
-      }
-    }
-    if (hasZero) {
-      const confirmed = await this.confirmDialog.confirm({
-        title: 'Zero Score Detected',
-        message: 'One or more scores are 0. Do you want to save anyway? (Status will be set to Needs Review)',
-        confirmText: 'Save Anyway',
-        cancelText: 'Cancel',
-        icon: 'warning',
-        color: 'warn'
-      }).toPromise();
-      if (!confirmed) {
-        this.snackBar.open('Save cancelled. Please update scores.', 'Close', { duration: 4000, panelClass: ['warning-snackbar'] });
-        return;
-      }
-          if (
-            this.match &&
-            typeof this.match._id === 'string' &&
-            this.match._id &&
-            this.match.status === 'open'
-          ) {
-            this.matchService.updateMatchStatus(this.match._id, 'needs_review').subscribe({
-              next: (res) => {
-                if (this.match) {
-                  this.match.status = 'needs_review';
-                }
-                console.log('Match status updated to needs_review:', res);
-              },
-              error: (err) => {
-                console.error('Failed to update match status:', err);
-                this.snackBar.open('Failed to update match status', 'Close', { duration: 4000, panelClass: ['warning-snackbar'] });
-              }
-            });
-          }
-    }
-
-    // Additional check - if canSave returns false, don't proceed
-    if (!this.canSave()) {
-      console.log('🚫 SAVE BLOCKED - canSave() returned false');
-      this.snackBar.open('Cannot save at this time', 'Close', { 
-        duration: 3000
-      });
-      return;
-    }
-
-    this.saving = true;
-    
-    try {
-      // Save scores sequentially to avoid overwhelming the server
-      for (const playerScore of this.playerScores) {
-        await this.savePlayerScore(playerScore);
-        // Small delay between saves to further reduce server load
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-      
-      this.snackBar.open('Scores saved successfully!', 'Close', { duration: 3000 });
-      this.router.navigate(['/matches']);
-    } catch (error) {
-      this.snackBar.open('Error saving scores. Please try again.', 'Close', { duration: 3000 });
-    } finally {
-      this.saving = false;
-    }
-  }
-
-  private async savePlayerScore(playerScore: any): Promise<void> {
-    const scoreData: Partial<Score> = {
-      name: `${playerScore.member.firstName} ${playerScore.member.lastName || ''}`.trim(),
-      score: playerScore.total,
-      postedScore: playerScore.total,
-      scores: playerScore.scores.map((s: any) => s || 0),
-      scoresToPost: playerScore.scores.map((s: any) => s || 0),
-      usgaIndex: playerScore.member.usgaIndex,
-      handicap: this.calculateCourseHandicap(playerScore.handicap),
-      matchId: this.match?._id,
-      memberId: playerScore.member._id,
-      scorecardId: this.scorecardId,
-      scSlope: this.scorecard?.slope,
-      scRating: this.scorecard?.rating,
-      scPars: this.scorecard?.pars,
-      scHCaps: this.scorecard?.hCaps,
-      scName: this.scorecard?.name,
-      datePlayed: this.match?.datePlayed,
-      user: this.authService.user?.id,
-      isScored: true
-    };
-
-    console.log('Saving score data:', {
-      scorecardId: this.scorecardId,
-      matchId: this.match?._id,
-      memberId: playerScore.member._id,
-      fullScoreData: scoreData
-    });
-
-    try {
-      if (playerScore.existingScoreId) {
-        // Update existing score with retry logic
-        await lastValueFrom(
-          this.scoreService.update(playerScore.existingScoreId, scoreData as Score).pipe(
-            retryWhen(errors => 
-              errors.pipe(
-                delay(500),
-                take(2) // Retry up to 2 times for updates
-              )
-            )
-          )
-        );
-      } else {
-        // Create new score with retry logic
-        await lastValueFrom(
-          this.scoreService.create(scoreData as Score).pipe(
-            retryWhen(errors => 
-              errors.pipe(
-                delay(500),
-                take(2) // Retry up to 2 times for creates
-              )
-            )
-          )
-        );
-      }
-    } catch (error) {
-      console.error(`Error saving score for ${playerScore.member.firstName}:`, error);
-      throw error; // Re-throw to be caught by the calling method
-    }
-  }
-
-  canSave(): boolean {
-    return !this.loading && !this.saving && !this.isMatchCompleted && this.playerScores.length > 0;
+    const { frontNine, backNine, total, netScore } = calculatePlayerTotals(scores, player.handicap);
+    player.frontNine = frontNine;
+    player.backNine = backNine;
+    player.total = total;
+    player.netScore = netScore;
   }
 
   editMatch(): void {
@@ -836,74 +645,6 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // Clean up subscriptions to prevent memory leaks
     this.saveSubject.complete();
-  }
-
-  // DEBUG METHODS - Remove in production
-  debugEventBinding() {
-    console.log('🔍 Debug Event Binding Check');
-    console.log('Component state:', {
-      loading: this.loading,
-      saving: this.saving,
-      isMatchCompleted: this.isMatchCompleted,
-      playerScores: this.playerScores?.length,
-      canSave: this.canSave()
-    });
-    
-    console.log('Methods available:', {
-      onScoreChange: typeof this.onScoreChange,
-      saveScores: typeof this.saveScores,
-      canSave: typeof this.canSave
-    });
-  }
-
-  debugOnScoreChange() {
-    console.log('🔍 Testing onScoreChange manually');
-    
-    if (!this.playerScores || this.playerScores.length === 0) {
-      console.error('❌ No player scores available');
-      return;
-    }
-    
-    const mockEvent = {
-      target: { value: '4' },
-      preventDefault: () => console.log('preventDefault called')
-    };
-    
-    try {
-      this.onScoreChange(0, 0, mockEvent);
-      console.log('✅ onScoreChange executed');
-    } catch (error) {
-      console.error('❌ onScoreChange failed:', error);
-    }
-  }
-
-  debugSaveScores() {
-    console.log('🔍 Testing saveScores manually');
-    
-    try {
-      this.saveScores();
-      console.log('✅ saveScores executed');
-    } catch (error) {
-      console.error('❌ saveScores failed:', error);
-    }
-  }
-
-  debugFormState() {
-    console.log('🔍 Form State Debug');
-    console.log('Form object:', this.scoreForm);
-    console.log('Form valid:', this.scoreForm?.valid);
-    console.log('Form value:', this.scoreForm?.value);
-    
-    const playersArray = this.scoreForm?.get('players') as FormArray;
-    console.log('Players array:', {
-      exists: !!playersArray,
-      length: playersArray?.length,
-      controls: playersArray?.controls?.length
-    });
-    
-    if (playersArray && playersArray.length > 0) {
-      console.log('First player form:', playersArray.at(0)?.value);
-    }
   }
 
   private async performSave(): Promise<void> {
@@ -927,4 +668,49 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       this.saving = false;
     }
   }
+
+  private async savePlayerScore(playerScore: any): Promise<void> {
+    const scoreData: Partial<Score> = {
+      name: `${playerScore.member.firstName} ${playerScore.member.lastName || ''}`.trim(),
+      score: playerScore.total,
+      postedScore: playerScore.total,
+      scores: playerScore.scores.map((s: any) => s || 0),
+      scoresToPost: playerScore.scores.map((s: any) => s || 0),
+      usgaIndex: playerScore.member.usgaIndex,
+      handicap: calculateCourseHandicap(playerScore.handicap, this.scorecard?.slope),
+      matchId: this.match?._id,
+      memberId: playerScore.member._id,
+      scorecardId: this.scorecardId,
+      scSlope: this.scorecard?.slope,
+      scRating: this.scorecard?.rating,
+      scPars: this.scorecard?.pars,
+      scHCaps: this.scorecard?.hCaps,
+      scName: this.scorecard?.name,
+      datePlayed: this.match?.datePlayed,
+      user: this.authService.user?.id,
+      isScored: true
+    };
+
+    try {
+      await this.scoreService.savePlayerScore(scoreData, playerScore.existingScoreId);
+    } catch (error) {
+      console.error(`Error saving score for ${playerScore.member.firstName}:`, error);
+      throw error;
+    }
+  }
+
+  canSave(): boolean {
+    return !this.loading && !this.saving && !this.isMatchCompleted && this.playerScores.length > 0;
+  }
+
+  getCoursePar(): number {
+    return getCoursePar(this.scorecard?.par, this.scorecard?.pars);
+  }
+    getFrontNinePar(): number {
+      // Returns the sum of pars for holes 1-9
+      if (this.scorecard?.pars && Array.isArray(this.scorecard.pars)) {
+        return getFrontNinePar(this.scorecard.pars);
+      }
+      return 0;
+    }
 }

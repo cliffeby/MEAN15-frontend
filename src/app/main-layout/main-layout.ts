@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from '../services/authService';
 
 @Component({
@@ -22,7 +23,8 @@ import { AuthService } from '../services/authService';
     MatButtonModule,
     MatListModule,
     MatSidenavModule,
-    MatDividerModule
+  MatDividerModule,
+  MatTooltipModule
   ],
   templateUrl: './main-layout.html',
   styleUrls: ['./main-layout.scss']

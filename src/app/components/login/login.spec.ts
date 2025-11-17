@@ -3,7 +3,7 @@ import { of } from 'rxjs';
 import { Router } from '@angular/router';
 
 import { Login } from './login';
-import { Auth } from '../../services/auth';
+import { AuthService } from '../../services/authService';
 
 describe('Login', () => {
   let component: Login;
@@ -14,14 +14,14 @@ describe('Login', () => {
       login: (email: string, password: string) => of({ token: 'fake' }),
       role: 'user',
       payload: () => ({ id: 'u1', name: 'Test' })
-    } as Partial<Auth> as Auth;
+    } as Partial<AuthService> as AuthService;
 
     const mockRouter = { navigate: (commands: any[]) => Promise.resolve(true) } as Partial<Router> as Router;
 
     await TestBed.configureTestingModule({
       imports: [Login],
       providers: [
-        { provide: Auth, useValue: mockAuth },
+        { provide: AuthService, useValue: mockAuth },
         { provide: Router, useValue: mockRouter }
       ]
     })

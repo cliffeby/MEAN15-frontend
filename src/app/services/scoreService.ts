@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, throwError, lastValueFrom } from 'rxjs';
 import { catchError, shareReplay, tap, retryWhen, delay, take } from 'rxjs/operators';
 import { AuthService } from './authService';
 import { Score } from '../models/score';
@@ -113,5 +113,25 @@ export class ScoreService {
   getScoresByScorecard(scorecardId: string): Observable<any> {
     return this.http.get(`${this.baseUrl}/scorecard/${scorecardId}`, this.getHeaders())
       .pipe(catchError(this.handleError));
+  }
+
+  savePlayerScore(scoreData: Partial<Score>, existingScoreId?: string): Promise<any> {
+    if (existingScoreId) {
+      return lastValueFrom(
+        this.update(existingScoreId, scoreData as Score).pipe(
+          retryWhen(errors => errors.pipe(delay(500), take(2))),
+          tap(() => this.clearCache()),
+          catchError(this.handleError)
+        )
+      );
+    } else {
+      return lastValueFrom(
+        this.create(scoreData as Score).pipe(
+          retryWhen(errors => errors.pipe(delay(500), take(2))),
+          tap(() => this.clearCache()),
+          catchError(this.handleError)
+        )
+      );
+    }
   }
 }
