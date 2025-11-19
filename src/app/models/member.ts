@@ -7,7 +7,7 @@ export interface Member {
   lastDatePlayed?: string;
   scorecardsId?: string[];
   user: string;
-  email: string;
+  Email: string;
   fullName?: string;
   fullNameR?: string;
 }

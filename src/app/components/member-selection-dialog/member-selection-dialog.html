@@ -29,8 +29,8 @@
               {{ member.firstName }} {{ member.lastName || '' }}
               <span class="lineup-indicator" *ngIf="isInOriginalLineup(member._id)">• Currently in lineup</span>
             </div>
-            <div class="member-details" *ngIf="member.email || member.usgaIndex">
-              <span class="email" *ngIf="member.email">{{ member.email }}</span>
+            <div class="member-details" *ngIf="member.Email || member.usgaIndex">
+              <span class="email" *ngIf="member.Email">{{ member.Email }}</span>
               <span class="index" *ngIf="member.usgaIndex"> • Index: {{ member.usgaIndex | number:'1.1-1' }}</span>
             </div>
           </div>

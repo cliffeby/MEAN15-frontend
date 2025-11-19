@@ -88,7 +88,7 @@ export class MemberListComponent implements OnInit {
     // Create default column configuration
     const defaultColumns = [
       { key: 'fullName', label: 'Name', visible: true },
-      { key: 'email', label: 'Email', visible: true },
+  { key: 'Email', label: 'Email', visible: true },
       { key: 'usgaIndex', label: 'USGA Index', visible: true },
       { key: 'lastDatePlayed', label: 'Last Played', visible: true },
       { key: 'actions', label: 'Actions', visible: true, fixed: true }
@@ -114,6 +114,8 @@ export class MemberListComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
+        // console.log('Error handler reached in loadMembers');
+        // console.log('SnackBar instance in component:', this.snackBar);
         this.snackBar.open('Error loading members', 'Close', { duration: 2000 });
         this.loading = false;
       }
@@ -128,7 +130,7 @@ export class MemberListComponent implements OnInit {
       const searchLower = this.searchTerm.toLowerCase().trim();
       filtered = filtered.filter(member => {
         const fullName = (member.fullName || `${member.firstName} ${member.lastName || ''}`.trim()).toLowerCase();
-        const email = (member.email || '').toLowerCase();
+  const email = (member.Email || '').toLowerCase();
         return fullName.includes(searchLower) || email.includes(searchLower);
       });
     }
@@ -143,9 +145,9 @@ export class MemberListComponent implements OnInit {
           aValue = (a.fullName || `${a.firstName} ${a.lastName || ''}`.trim()).toLowerCase();
           bValue = (b.fullName || `${b.firstName} ${b.lastName || ''}`.trim()).toLowerCase();
           break;
-        case 'email':
-          aValue = (a.email || '').toLowerCase();
-          bValue = (b.email || '').toLowerCase();
+        case 'Email':
+          aValue = (a.Email || '').toLowerCase();
+          bValue = (b.Email || '').toLowerCase();
           break;
         case 'usgaIndex':
           aValue = a.usgaIndex || 0;
@@ -251,7 +253,7 @@ export class MemberListComponent implements OnInit {
     // Check if current settings differ from defaults
     const defaultColumns = [
       { key: 'fullName', visible: true },
-      { key: 'email', visible: true },
+      { key: 'Email', visible: true },
       { key: 'usgaIndex', visible: true },
       { key: 'lastDatePlayed', visible: true }
     ];

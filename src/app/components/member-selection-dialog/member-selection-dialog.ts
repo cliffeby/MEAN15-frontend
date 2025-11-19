@@ -64,7 +64,7 @@ export class MemberSelectionDialogComponent implements OnInit {
     const term = this.searchTerm.toLowerCase();
     this.filteredMembers = this.allMembers.filter(member => 
       `${member.firstName} ${member.lastName || ''}`.toLowerCase().includes(term) ||
-      member.email?.toLowerCase().includes(term) ||
+      member.Email?.toLowerCase().includes(term) ||
       member.usgaIndex?.toString().includes(term)
     );
   }

@@ -33,11 +33,11 @@
 
   <mat-form-field appearance="fill">
     <mat-label>Email</mat-label>
-  <input matInput formControlName="email" type="email" required placeholder="Enter email address" />
-    <mat-error *ngIf="memberForm.get('email')?.hasError('required') && memberForm.get('email')?.touched">
+  <input matInput formControlName="Email" type="email" required placeholder="Enter email address" />
+    <mat-error *ngIf="memberForm.get('Email')?.hasError('required') && memberForm.get('Email')?.touched">
       Email is required
     </mat-error>
-    <mat-error *ngIf="memberForm.get('email')?.hasError('email') && memberForm.get('email')?.touched">
+    <mat-error *ngIf="memberForm.get('Email')?.hasError('email') && memberForm.get('Email')?.touched">
       Invalid email address
     </mat-error>
   </mat-form-field>

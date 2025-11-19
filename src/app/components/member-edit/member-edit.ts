@@ -41,7 +41,7 @@ export class MemberEditComponent implements OnInit {
       lastName: ['', Validators.required],
       usgaIndex: [null, [Validators.min(-10), Validators.max(54)]],
       lastDatePlayed: [''],
-      email: ['', [Validators.required, Validators.email]],
+  Email: ['', [Validators.required, Validators.email]],
       user: [''],
       scorecardsId: [[]]
     });

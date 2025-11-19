@@ -97,9 +97,9 @@ export class MatchEditComponent implements OnInit, OnDestroy {
         console.error('Failed to load members from service, using mock data:', error);
         // Return mock data for testing
         return of([
-          { _id: '1', firstName: 'John', lastName: 'Doe', email: 'john@example.com', user: 'admin', usgaIndex: 12.5 },
-          { _id: '2', firstName: 'Jane', lastName: 'Smith', email: 'jane@example.com', user: 'admin', usgaIndex: 8.2 },
-          { _id: '3', firstName: 'Bob', lastName: 'Wilson', email: 'bob@example.com', user: 'admin', usgaIndex: 15.7 }
+          { _id: '1', firstName: 'John', lastName: 'Doe', email: 'john@example.com', Email: 'john@example.com', user: 'admin', usgaIndex: 12.5 },
+          { _id: '2', firstName: 'Jane', lastName: 'Smith', email: 'jane@example.com', Email: 'jane@example.com', user: 'admin', usgaIndex: 8.2 },
+          { _id: '3', firstName: 'Bob', lastName: 'Wilson', email: 'bob@example.com', Email: 'bob@example.com', user: 'admin', usgaIndex: 15.7 }
         ]);
       })
     );
