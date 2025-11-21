@@ -1,0 +1,35 @@
+<div class="lineup-header">
+	<button mat-raised-button color="accent" type="button" (click)="onAddMembers()" class="select-members-btn">
+		<mat-icon>group_add</mat-icon>
+		Add Members
+	</button>
+</div>
+<div class="current-lineup">
+	<h4>Current Lineup ({{ lineUpsArray.length }} members)</h4>
+	<p *ngIf="lineUpsArray.length === 0" class="no-members">No members added to lineup yet</p>
+	<div *ngIf="members.length">
+		<div *ngIf="lineUpsArray.length > 0" class="lineup-compact">
+			<ng-container *ngFor="let memberControl of lineUpsArray.controls; let i = index">
+				<div *ngIf="i % 4 === 0" class="member-group">
+					<div class="member-group-box">
+						<span class="member-names">
+							<ng-container *ngFor="let j of [0,1,2,3]; let isLast = last">
+								<ng-container *ngIf="lineUpsArray.controls[i + j] as control">
+									<ng-container *ngIf="getMemberById(control.value) as member; else showId">
+										{{ getCompactName(member) }}
+									</ng-container>
+									<ng-template #showId>{{ control.value }}</ng-template>
+									<span *ngIf="!isLast && lineUpsArray.controls[i + j + 1]"> : </span>
+								</ng-container>
+							</ng-container>
+						</span>
+						<button mat-icon-button type="button" color="warn" (click)="onRemoveGroup(i)" class="group-remove-btn">
+							<span>×</span>
+						</button>
+					</div>
+				</div>
+			</ng-container>
+		</div>
+	</div>
+</div>
+

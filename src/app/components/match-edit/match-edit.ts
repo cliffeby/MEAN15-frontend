@@ -22,6 +22,7 @@ import { MemberService } from '../../services/memberService';
 import { AuthService } from '../../services/authService';
 import { ScorecardService } from '../../services/scorecardService';
 import { MemberSelectionDialogComponent } from '../member-selection-dialog/member-selection-dialog';
+import { MatchLineupComponent } from '../match-lineup/match-lineup';
 import * as MatchActions from '../../store/actions/match.actions';
 import * as MatchSelectors from '../../store/selectors/match.selectors';
 import * as ScorecardActions from '../../store/actions/scorecard.actions';
@@ -43,7 +44,8 @@ import * as ScorecardSelectors from '../../store/selectors/scorecard.selectors';
     MatNativeDateModule,
     MatSnackBarModule,
     MatDialogModule,
-    MatIconModule
+    MatIconModule,
+    MatchLineupComponent
   ]
 })
 export class MatchEditComponent implements OnInit, OnDestroy {

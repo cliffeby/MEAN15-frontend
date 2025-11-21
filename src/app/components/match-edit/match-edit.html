@@ -58,43 +58,12 @@
 
   <!-- Member Lineup Section -->
   <div class="lineup-section">
-    <div class="lineup-header">
-      <h3>Match Lineup</h3>
-      <button mat-raised-button color="accent" type="button" (click)="openMemberSelectionDialog()" class="select-members-btn">
-        <mat-icon>group_add</mat-icon>
-        Select Members
-      </button>
-    </div>
-
-    <!-- Current Lineup Display -->
-    <div class="current-lineup" formArrayName="lineUps">
-      <h4>Current Lineup ({{ lineUpsArray.length }} members)</h4>
-      <p *ngIf="lineUpsArray.length === 0" class="no-members">No members added to lineup yet</p>
-      <ng-container *ngIf="members$ | async as members">
-        <div *ngIf="lineUpsArray.length > 0" class="lineup-compact">
-          <ng-container *ngFor="let memberControl of lineUpsArray.controls; let i = index">
-            <div *ngIf="i % 4 === 0" class="member-group">
-              <div class="member-group-box">
-                <span class="member-names">
-                  <ng-container *ngFor="let j of [0,1,2,3]; let isLast = last">
-                    <ng-container *ngIf="lineUpsArray.controls[i + j] as control">
-                      <ng-container *ngIf="getMemberById(control.value, members) as member; else showId">
-                        {{ getCompactName(member) }}
-                      </ng-container>
-                      <ng-template #showId>{{ control.value }}</ng-template>
-                      <span *ngIf="!isLast && lineUpsArray.controls[i + j + 1]"> : </span>
-                    </ng-container>
-                  </ng-container>
-                </span>
-                <button mat-icon-button type="button" color="warn" (click)="removeGroup(i)" class="group-remove-btn">
-                  <span>×</span>
-                </button>
-              </div>
-            </div>
-          </ng-container>
-        </div>
-      </ng-container>
-    </div>
+    <app-match-lineup
+      [members]="(members$ | async) ?? []"
+      [lineUpsArray]="lineUpsArray"
+      (removeGroup)="removeGroup($event)"
+      (addMembers)="openMemberSelectionDialog()">
+    </app-match-lineup>
   </div>
 
   <mat-form-field appearance="fill">
