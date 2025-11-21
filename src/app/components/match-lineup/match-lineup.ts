@@ -13,6 +13,40 @@ import { Member } from '../../models/member';
 	imports: [CommonModule, MatIconModule, MatButtonModule]
 })
 export class MatchLineupComponent {
+				getTeamIndexSum(team: string[]): number {
+					let sum = 0;
+					for (const memberId of team) {
+						const member = this.getMemberById(memberId);
+						if (member && typeof member.usgaIndex === 'number') {
+							sum += member.usgaIndex;
+						}
+					}
+					return Math.round(sum * 10) / 10;
+				}
+			pairingMode = false;
+			pairedTeams: { team1: string[], team2: string[] }[] = [];
+
+			pairTeams() {
+				this.pairingMode = true;
+				this.pairedTeams = [];
+				const members = this.lineUpsArray.value as string[];
+				for (let i = 0; i < members.length; i += 4) {
+					const group = members.slice(i, i + 4);
+					if (group.length === 4) {
+						// Shuffle group
+						const shuffled = [...group].sort(() => Math.random() - 0.5);
+						this.pairedTeams.push({ team1: [shuffled[0], shuffled[1]], team2: [shuffled[2], shuffled[3]] });
+					} else {
+						// If not a full foursome, just show as is
+						this.pairedTeams.push({ team1: group.slice(0, 2), team2: group.slice(2) });
+					}
+				}
+			}
+
+			exitPairing() {
+				this.pairingMode = false;
+				this.pairedTeams = [];
+			}
 		@Output() addMembers = new EventEmitter<void>();
 
 		onAddMembers() {
@@ -26,10 +60,11 @@ export class MatchLineupComponent {
 		return this.members.find(m => m._id === memberId);
 	}
 
-	getCompactName(member: Member): string {
+	getCompactNameWithIndex(member: Member): string {
 		const firstInitial = member.firstName ? member.firstName.charAt(0).toUpperCase() : '';
 		const lastName = member.lastName || 'Unknown';
-		return `${lastName}, ${firstInitial}`;
+		const index = (typeof member.usgaIndex === 'number') ? member.usgaIndex.toFixed(1) : 'NA';
+		return `${lastName}, ${firstInitial}(${index})`;
 	}
 
 	onRemoveGroup(startIndex: number): void {

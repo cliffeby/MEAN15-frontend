@@ -23,3 +23,15 @@ When generating code for the frontend:
 - When changes are made, ensure that the UI is responsive and accessible.
 - Use the existing codebase as a reference for style and structure.
 - Ensure that all new code is covered by appropriate unit tests and, where applicable, end-to-end tests.
+## Match-Lineup Specific Instructions
+The `match-lineup` component is a critical part of the Matches feature. When generating or modifying code related to this component:
+- Ensure that the component accepts `members` and `lineUpsArray` as inputs.
+- Implement event emitters for actions such as `removeGroup` and `addMembers`.
+- Ensure that the component is integrated seamlessly with the parent `match-edit` component.
+- Follow best practices for Angular component design, ensuring clarity and maintainability. 
+- When documenting the `match-lineup` component, provide clear instructions on its inputs, outputs, and usage within the Matches feature.
+### Match-lineup functions
+- `removeGroup(event)`: This function should handle the removal of a group from the lineup. Ensure that it correctly updates the state and UI.
+- `openMemberSelectionDialog()`: This function should open a dialog for selecting members to add to the lineup. Ensure that it integrates with the member selection component and updates the lineup accordingly.
+- `pairing(groupIndex: number, memberIndex: number)`: This function should return a unique identifier for each pairing in the lineup. Various types of pairing will be available. The configuration component will set the type of pairing used.  Fourball pairing will create two-man teams which consist of an A and a B player. The combined handicap of each team should be as close as possible to other teams in the match. If there are an odd number of players, a low handicap player will be on two teams.
+- `getHandicap(memberId: string)`: This function should retrieve the USGAIndex for a given member. Ensure that it fetches the correct data from the member model or service.

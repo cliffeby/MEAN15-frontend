@@ -18,6 +18,7 @@ import { Member } from '../../models/member';
 import { MemberService } from '../../services/memberService';
 import { AuthService } from '../../services/authService';
 import { MemberSelectionDialogComponent } from '../member-selection-dialog/member-selection-dialog';
+import { MatchLineupComponent } from '../match-lineup/match-lineup';
 import * as MatchActions from '../../store/actions/match.actions';
 import * as ScorecardActions from '../../store/actions/scorecard.actions';
 import { selectMatchesLoading, selectMatchesError } from '../../store/selectors/match.selectors';
@@ -40,10 +41,18 @@ import { ScorecardService } from '../../services/scorecardService';
     MatNativeDateModule,
     MatSnackBarModule,
     MatDialogModule,
-    MatIconModule
+    MatIconModule,
+    MatchLineupComponent
   ]
 })
 export class MatchFormComponent implements OnInit, OnDestroy {
+    onRemoveGroup(startIndex: number): void {
+      this.removeGroup(startIndex);
+    }
+
+    onAddMembers(): void {
+      this.openMemberSelectionDialog();
+    }
   defaultName: string = '';
   matchForm: FormGroup;
   loading$: Observable<boolean>;

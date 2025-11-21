@@ -1,10 +1,40 @@
-<div class="lineup-header">
+<!-- Pair Teams button will be moved to lineup-header -->
+
+<div *ngIf="pairingMode" class="paired-teams-layout">
+	<div *ngFor="let group of pairedTeams; let gIdx = index" class="paired-group-row">
+		<div class="paired-team-col left">
+			<ng-container *ngFor="let memberId of group.team1; let isLast = last">
+				<ng-container *ngIf="getMemberById(memberId) as member; else showId">
+					  {{ getCompactNameWithIndex(member) }}
+				</ng-container>
+				<ng-template #showId>{{ memberId }}</ng-template>
+				<span *ngIf="!isLast">, </span>
+			</ng-container>
+			<span class="team-index">({{ getTeamIndexSum(group.team1) }})</span>
+		</div>
+		<div class="paired-team-col right">
+			<ng-container *ngFor="let memberId of group.team2; let isLast = last">
+				<ng-container *ngIf="getMemberById(memberId) as member; else showId">
+					  {{ getCompactNameWithIndex(member) }}
+				</ng-container>
+				<ng-template #showId>{{ memberId }}</ng-template>
+				<span *ngIf="!isLast">, </span>
+			</ng-container>
+			<span class="team-index">({{ getTeamIndexSum(group.team2) }})</span>
+		</div>
+	</div>
+</div>
+<div class="lineup-header" style="display: flex; align-items: center; gap: 1em;">
 	<button mat-raised-button color="accent" type="button" (click)="onAddMembers()" class="select-members-btn">
 		<mat-icon>group_add</mat-icon>
 		Add Members
 	</button>
+	<button mat-raised-button color="primary" type="button" (click)="pairTeams()" style="margin-left: auto;">
+		Pair Teams
+	</button>
+	<button *ngIf="pairingMode" mat-button type="button" (click)="exitPairing()">Exit Pairing</button>
 </div>
-<div class="current-lineup">
+<div class="current-lineup" *ngIf="!pairingMode">
 	<h4>Current Lineup ({{ lineUpsArray.length }} members)</h4>
 	<p *ngIf="lineUpsArray.length === 0" class="no-members">No members added to lineup yet</p>
 	<div *ngIf="members.length">
@@ -16,7 +46,7 @@
 							<ng-container *ngFor="let j of [0,1,2,3]; let isLast = last">
 								<ng-container *ngIf="lineUpsArray.controls[i + j] as control">
 									<ng-container *ngIf="getMemberById(control.value) as member; else showId">
-										{{ getCompactName(member) }}
+										{{ getCompactNameWithIndex(member) }}
 									</ng-container>
 									<ng-template #showId>{{ control.value }}</ng-template>
 									<span *ngIf="!isLast && lineUpsArray.controls[i + j + 1]"> : </span>
