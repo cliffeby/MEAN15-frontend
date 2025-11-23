@@ -3,24 +3,31 @@
 <div *ngIf="pairingMode" class="paired-teams-layout">
 	<div *ngFor="let group of pairedTeams; let gIdx = index" class="paired-group-row">
 		<div class="paired-team-col left">
-			<ng-container *ngFor="let memberId of group.team1; let isLast = last">
-				<ng-container *ngIf="getMemberById(memberId) as member; else showId">
-					  {{ getCompactNameWithIndex(member) }}
-				</ng-container>
-				<ng-template #showId>{{ memberId }}</ng-template>
-				<span *ngIf="!isLast">, </span>
+			<span class="ab-label">A:</span>
+			<ng-container *ngIf="getMemberById(group.teamA[0]) as memberA; else showIdA">
+				{{ getCompactNameWithIndex(memberA) }}
 			</ng-container>
-			<span class="team-index">({{ getTeamIndexSum(group.team1) }})</span>
+			<ng-template #showIdA>{{ group.teamA[0] }}</ng-template>
+			<span class="ab-label">B:</span>
+			<ng-container *ngIf="getMemberById(group.teamA[1]) as memberB; else showIdB">
+				{{ getCompactNameWithIndex(memberB) }}
+			</ng-container>
+			<ng-template #showIdB>{{ group.teamA[1] }}</ng-template>
+			<span class="team-index">({{ group.combinedA }})</span>
 		</div>
+		<div class="vs-label">vs</div>
 		<div class="paired-team-col right">
-			<ng-container *ngFor="let memberId of group.team2; let isLast = last">
-				<ng-container *ngIf="getMemberById(memberId) as member; else showId">
-					  {{ getCompactNameWithIndex(member) }}
-				</ng-container>
-				<ng-template #showId>{{ memberId }}</ng-template>
-				<span *ngIf="!isLast">, </span>
+			<span class="ab-label">A:</span>
+			<ng-container *ngIf="getMemberById(group.teamB[0]) as memberA2; else showIdA2">
+				{{ getCompactNameWithIndex(memberA2) }}
 			</ng-container>
-			<span class="team-index">({{ getTeamIndexSum(group.team2) }})</span>
+			<ng-template #showIdA2>{{ group.teamB[0] }}</ng-template>
+			<span class="ab-label">B:</span>
+			<ng-container *ngIf="getMemberById(group.teamB[1]) as memberB2; else showIdB2">
+				{{ getCompactNameWithIndex(memberB2) }}
+			</ng-container>
+			<ng-template #showIdB2>{{ group.teamB[1] }}</ng-template>
+			<span class="team-index">({{ group.combinedB }})</span>
 		</div>
 	</div>
 </div>
@@ -29,7 +36,7 @@
 		<mat-icon>group_add</mat-icon>
 		Add Members
 	</button>
-	<button mat-raised-button color="primary" type="button" (click)="pairTeams()" style="margin-left: auto;">
+	<button mat-raised-button color="primary" type="button" (click)="pairFourballTeams()" style="margin-left: auto;">
 		Pair Teams
 	</button>
 	<button *ngIf="pairingMode" mat-button type="button" (click)="exitPairing()">Exit Pairing</button>

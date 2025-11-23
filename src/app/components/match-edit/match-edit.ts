@@ -23,6 +23,7 @@ import { AuthService } from '../../services/authService';
 import { ScorecardService } from '../../services/scorecardService';
 import { MemberSelectionDialogComponent } from '../member-selection-dialog/member-selection-dialog';
 import { MatchLineupComponent } from '../match-lineup/match-lineup';
+import { ViewChild } from '@angular/core';
 import * as MatchActions from '../../store/actions/match.actions';
 import * as MatchSelectors from '../../store/selectors/match.selectors';
 import * as ScorecardActions from '../../store/actions/scorecard.actions';
@@ -49,6 +50,15 @@ import * as ScorecardSelectors from '../../store/selectors/scorecard.selectors';
   ]
 })
 export class MatchEditComponent implements OnInit, OnDestroy {
+  pairingMode = false;
+    onPairingUpdated(event: { foursomeIdsTEMP: string[][], partnerIdsTEMP: string[][] }) {
+      const foursomeArray = this.matchForm.get('foursomeIdsTEMP') as FormArray;
+      const partnerArray = this.matchForm.get('partnerIdsTEMP') as FormArray;
+      foursomeArray.clear();
+      partnerArray.clear();
+      event.foursomeIdsTEMP.forEach(group => foursomeArray.push(this.fb.control(group)));
+      event.partnerIdsTEMP.forEach(pair => partnerArray.push(this.fb.control(pair)));
+    }
   matchForm: FormGroup;
   loading$: Observable<boolean>;
   currentMatch$: Observable<Match | null>;
@@ -85,6 +95,8 @@ export class MatchEditComponent implements OnInit, OnDestroy {
       scGroupName: [''],
       status: ['open', Validators.required],
       lineUps: this.fb.array([]),
+      foursomeIdsTEMP: this.fb.array([]),
+      partnerIdsTEMP: this.fb.array([]),
       datePlayed: [new Date(), Validators.required],
       user: [this.getCurrentUserEmail(), Validators.required]
     });
@@ -196,7 +208,6 @@ export class MatchEditComponent implements OnInit, OnDestroy {
       datePlayed: match.datePlayed ? new Date(match.datePlayed) : new Date(),
       user: match.user
     });
-    
     // Fix scorecardId if it's an object instead of a string
     this.fixScorecardIdValue();
 
@@ -207,6 +218,24 @@ export class MatchEditComponent implements OnInit, OnDestroy {
       match.lineUps.forEach(memberId => {
         lineUpsArray.push(this.fb.control(memberId));
       });
+    }
+
+    // Populate foursomeIdsTEMP array
+    const foursomeArray = this.matchForm.get('foursomeIdsTEMP') as FormArray;
+    foursomeArray.clear();
+    if (match.foursomeIdsTEMP && Array.isArray(match.foursomeIdsTEMP)) {
+      match.foursomeIdsTEMP.forEach(id => foursomeArray.push(this.fb.control(id)));
+    }
+
+    // If match is paired, set pairingMode for child
+    const isPaired = Array.isArray(match.foursomeIdsTEMP) && match.foursomeIdsTEMP.length > 0;
+    this.pairingMode = isPaired;
+
+    // Populate partnerIdsTEMP array
+    const partnerArray = this.matchForm.get('partnerIdsTEMP') as FormArray;
+    partnerArray.clear();
+    if (match.partnerIdsTEMP && Array.isArray(match.partnerIdsTEMP)) {
+      match.partnerIdsTEMP.forEach(id => partnerArray.push(this.fb.control(id)));
     }
   }
 
@@ -253,17 +282,21 @@ export class MatchEditComponent implements OnInit, OnDestroy {
 
   submit() {
     if (this.matchForm.invalid || !this.matchId) return;
-    
+
     const formValue = { ...this.matchForm.value };
     // Convert date to ISO string if it's a Date object
     if (formValue.datePlayed instanceof Date) {
       formValue.datePlayed = formValue.datePlayed.toISOString();
     }
 
+    // Ensure foursomeIdsTEMP and partnerIdsTEMP are arrays of member IDs
+    formValue.foursomeIdsTEMP = (this.matchForm.get('foursomeIdsTEMP') as FormArray).value;
+    formValue.partnerIdsTEMP = (this.matchForm.get('partnerIdsTEMP') as FormArray).value;
+
     // Dispatch the update action - effects will handle the API call and navigation
-    this.store.dispatch(MatchActions.updateMatch({ 
-      id: this.matchId, 
-      match: formValue 
+    this.store.dispatch(MatchActions.updateMatch({
+      id: this.matchId,
+      match: formValue
     }));
   }
 
