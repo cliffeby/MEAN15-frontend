@@ -217,10 +217,16 @@ export class MatchListComponent implements OnInit, OnDestroy {
       };
 
       // Generate PDF using the service
+      // Group players into foursomes
+      const groups: PrintablePlayer[][] = [];
+      for (let i = 0; i < players.length; i += 4) {
+        groups.push(players.slice(i, i + 4));
+      }
+
       await this.pdfService.generateScorecardPDF(
         matchData, 
         scorecardData, 
-        players,
+        groups,
         { openInNewWindow: true }
       );
 

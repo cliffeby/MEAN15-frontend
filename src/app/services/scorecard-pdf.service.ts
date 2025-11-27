@@ -22,46 +22,64 @@ export class ScorecardPdfService {
   async generateScorecardPDF(
     match: MatchData, 
     scorecard: ScorecardData, 
-    players: PrintablePlayer[], 
+    players: PrintablePlayer[] | PrintablePlayer[][], 
     options: PdfGenerationOptions = {}
   ): Promise<void> {
+    // Debug: log received players/groups
+    console.log('generateScorecardPDF called. Players param:', Array.isArray(players[0]) ? (players as PrintablePlayer[][]).map(group => group.length) : (players as PrintablePlayer[]).length);
     const pdf = new jsPDF({
       orientation: 'landscape',
       unit: 'mm',
-      format: 'a4'
+      format: 'letter'
     });
 
     pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(16);
-
-    // Title
-    const title = this.formatterService.formatMatchTitle(match.course.name, match.description);
-    const titleWidth = pdf.getTextWidth(title);
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const titleX = (pageWidth - titleWidth) / 2;
-    pdf.text(title, titleX, 15);
-
-    // Date
     pdf.setFontSize(12);
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    // Match name (left)
+    const matchName = this.formatterService.formatMatchTitle(match.course.name, match.description);
     const dateText = `Date: ${this.formatterService.formatDateForDisplay(match.teeTime)}`;
     const dateWidth = pdf.getTextWidth(dateText);
-    const dateX = (pageWidth - dateWidth) / 2;
-    pdf.text(dateText, dateX, 25);
-
-    // Tee information
-    pdf.setFontSize(10);
-    const teeText = this.formatterService.formatTeeInfo(scorecard.tees);
-    const teeWidth = pdf.getTextWidth(teeText);
-    const teeX = (pageWidth - teeWidth) / 2;
-    pdf.text(teeText, teeX, 32);
 
     // Calculate layout
-    const contentWidth = 270;
-    const startX = (pageWidth - contentWidth) / 2;
-    const tableY = 40;
+    const startX = 6.35; // 0.25 inches in mm
+    const tableY = 10;
 
-    // Draw the scorecard table
-    this.drawTable(pdf, scorecard, players, startX, tableY, contentWidth);
+    // Debug: log received players/groups
+    let groups: PrintablePlayer[][];
+    if (Array.isArray(players[0])) {
+      groups = players as PrintablePlayer[][];
+      console.log('Scorecard PDF: Number of groups to print:', groups.length);
+      groups.forEach((g, idx) => {
+        console.log(`Group ${idx + 1}:`, g.map(p => `${p.member?.firstName || ''} ${p.member?.lastName || ''}`.trim() || p.member?._id));
+      });
+    } else {
+      groups = [players as PrintablePlayer[]];
+      console.log('Scorecard PDF: Single group, length:', groups[0].length);
+      console.log('Group 1:', groups[0].map(p => `${p.member?.firstName || ''} ${p.member?.lastName || ''}`.trim() || p.member?._id));
+    }
+
+    for (let i = 0; i < groups.length; i++) {
+      if (i > 0) {
+        pdf.addPage();
+      }
+      const group = groups[i];
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(12);
+      // First scorecard (top)
+      pdf.text(matchName, 6.35, tableY);
+      pdf.text(dateText, pageWidth - dateWidth - 6.35, tableY);
+      this.drawTable(pdf, scorecard, group, startX, tableY + 5);
+
+      // Duplicate scorecard (halfway down)
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const halfY = Math.floor(pageHeight / 2) +5;
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(12);
+      pdf.text(matchName, 6.35, halfY);
+      pdf.text(dateText, pageWidth - dateWidth - 6.35, halfY);
+      this.drawTable(pdf, scorecard, group, startX, halfY + 5);
+    }
 
     // Generate filename and handle PDF output
     const filename = options.filename || this.printService.generateFilename(
@@ -93,12 +111,11 @@ export class ScorecardPdfService {
     scorecard: ScorecardData, 
     players: PrintablePlayer[], 
     startX: number, 
-    startY: number, 
-    contentWidth: number
+    startY: number
   ): void {
-    const playerColWidth = 40;
-    const holeColWidth = 12;
-    const totalColWidth = 16;
+    const playerColWidth = 32;
+    const holeColWidth = 10;
+    const totalColWidth = 10;
 
     let currentY = startY;
 
@@ -117,16 +134,42 @@ export class ScorecardPdfService {
     for (let i = 0; i < Math.min(players.length, 4); i++) {
       if (players[i]) {
         currentY = this.drawPlayerRow(pdf, players[i], players, lowestHandicap, scorecard, startX, currentY, playerColWidth, holeColWidth, totalColWidth);
+        // After the second player, insert three blank rows
+        if (i === 1) {
+          for (let r = 0; r < 3; r++) {
+            let blankX = startX;
+            const rowLabel = r === 0 ? 'One Ball' : '+/-';
+            const backgroundColor = r === 0 ? undefined : '#D3D3D3'; // Light gray for +/- rows
+            blankX = this.drawCell(pdf, blankX, currentY, playerColWidth, 8, rowLabel, false, backgroundColor);
+            for (let h = 0; h < 18; h++) {
+              blankX = this.drawCell(pdf, blankX, currentY, holeColWidth, 8, '', false, backgroundColor); // No numbers for +/- rows
+              if (h === 8) {
+                blankX = this.drawCell(pdf, blankX, currentY, totalColWidth, 8, '', false, backgroundColor);
+              }
+            }
+            for (let t = 0; t < 4; t++) {
+              blankX = this.drawCell(pdf, blankX, currentY, totalColWidth, 8, '', false, backgroundColor);
+            }
+            currentY += 8;
+          }
+        }
+        // After the fourth player, insert one blank row
+        if (i === 3) {
+          let blankX = startX;
+          blankX = this.drawCell(pdf, blankX, currentY, playerColWidth, 8, 'One Ball');
+          for (let h = 0; h < 18; h++) {
+            blankX = this.drawCell(pdf, blankX, currentY, holeColWidth, 8, '');
+            if (h === 8) {
+              blankX = this.drawCell(pdf, blankX, currentY, totalColWidth, 8, '');
+            }
+          }
+          for (let t = 0; t < 4; t++) {
+            blankX = this.drawCell(pdf, blankX, currentY, totalColWidth, 8, '');
+          }
+          currentY += 8;
+        }
       }
     }
-
-    // Draw match rows for additional space
-    currentY = this.drawMatchRow(pdf, 'Best Ball', startX, currentY, playerColWidth, holeColWidth, totalColWidth);
-    currentY = this.drawMatchRow(pdf, 'Alt Shot', startX, currentY, playerColWidth, holeColWidth, totalColWidth);
-    currentY = this.drawMatchRow(pdf, 'Individual', startX, currentY, playerColWidth, holeColWidth, totalColWidth);
-
-    // Draw signature row
-    this.drawSignatureRow(pdf, startX, currentY, playerColWidth, holeColWidth, totalColWidth);
   }
 
   /**
@@ -144,17 +187,18 @@ export class ScorecardPdfService {
     let currentY = y;
 
     currentX = this.drawCell(pdf, currentX, currentY, playerColWidth, 8, 'HOLE');
+    pdf.setFontSize(7);
 
     for (let hole = 1; hole <= 9; hole++) {
       currentX = this.drawCell(pdf, currentX, currentY, holeColWidth, 8, hole.toString(), true, '#000000', '#FFFFFF');
       if (hole === 9) {
-        currentX = this.drawCell(pdf, currentX, currentY, totalColWidth, 8, 'OUT', true);
+        currentX = this.drawCell(pdf, currentX, currentY, totalColWidth, 8, 'OUT', true, '#000000', '#FFFFFF');
       }
     }
 
     const backNineColumns = ['10', '11', '12', '13', '14', '15', '16', '17', '18', 'IN', 'TOT', 'HCP', 'NET'];
     for (const col of backNineColumns) {
-      currentX = this.drawCell(pdf, currentX, currentY, totalColWidth, 8, col, true);
+      currentX = this.drawCell(pdf, currentX, currentY, totalColWidth, 8, col, true,  '#000000', '#FFFFFF');
     }
 
     return currentY + 8;
@@ -260,77 +304,12 @@ export class ScorecardPdfService {
     for (let hole = 0; hole < 18; hole++) {
       const playerHandicap = player.handicap;
       const holeHandicap = this.handicapService.getHoleHandicap(scorecard, hole);
-      
-      // Individual stroke hole (small x in upper left) - can be multiple strokes
-      const individualStrokeCount = this.handicapService.getStrokeCountOnHole(playerHandicap, holeHandicap);
-      
-      // Team stroke hole (diagonal slash) - based on handicap difference from lowest player
-      const getsTeamStroke = this.handicapService.playerGetsTeamStroke(player, lowestHandicap, holeHandicap);
-      
-      currentX = this.drawCell(pdf, currentX, y, holeColWidth, 8, undefined, false, undefined, undefined, getsTeamStroke, individualStrokeCount);
-      if (hole === 8) {
-        currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8);
-      }
-    }
-
-    for (let i = 0; i < 4; i++) {
-      currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8);
-    }
-
-    return y + 8;
-  }
-
-  /**
-   * Draw a match row (Best Ball, Alt Shot, etc.)
-   */
-  private drawMatchRow(
-    pdf: jsPDF, 
-    label: string, 
-    x: number, 
-    y: number, 
-    playerColWidth: number, 
-    holeColWidth: number, 
-    totalColWidth: number
-  ): number {
-    let currentX = x;
-    
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(8);
-    const backgroundColor = '#E0E0E0';
-    
-    currentX = this.drawCell(pdf, currentX, y, playerColWidth, 8, label, false, backgroundColor);
-
-    for (let hole = 0; hole < 9; hole++) {
-      currentX = this.drawCell(pdf, currentX, y, holeColWidth, 8, undefined, false, backgroundColor);
-      if (hole === 8) {
-        currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, undefined, false, backgroundColor);
-      }
-    }
-
-    for (let i = 0; i < 4; i++) {
-      currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, undefined, false, backgroundColor);
-    }
-
-    return y + 8;
-  }
-
-  /**
-   * Draw signature row
-   */
-  private drawSignatureRow(
-    pdf: jsPDF, 
-    x: number, 
-    y: number, 
-    playerColWidth: number, 
-    holeColWidth: number, 
-    totalColWidth: number
-  ): number {
-    let currentX = x;
-    
-    currentX = this.drawCell(pdf, currentX, y, playerColWidth, 8, '________________________');
-
-    for (let hole = 0; hole < 9; hole++) {
-      currentX = this.drawCell(pdf, currentX, y, holeColWidth, 8);
+      // Individual strokes (x's)
+      const strokeCount = this.handicapService.getStrokeCountOnHole(playerHandicap, holeHandicap);
+      // Differential strokes (slashes)
+      const lowestHandicapStrokeCount = this.handicapService.getStrokeCountOnHole(lowestHandicap, holeHandicap);
+      const differentialStrokeCount = Math.max(0, strokeCount - lowestHandicapStrokeCount);
+      currentX = this.drawCell(pdf, currentX, y, holeColWidth, 8, undefined, false, undefined, undefined, strokeCount, differentialStrokeCount);
       if (hole === 8) {
         currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8);
       }
@@ -356,8 +335,8 @@ export class ScorecardPdfService {
     centered: boolean = false, 
     backgroundColor?: string, 
     textColor?: string, 
-    drawSlash: boolean = false, 
-    strokeCount: number = 0
+    strokeCount: number = 0, 
+    differentialStrokeCount: number = 0
   ): number {
     if (backgroundColor) {
       pdf.setFillColor(backgroundColor);
@@ -366,11 +345,15 @@ export class ScorecardPdfService {
     
     pdf.rect(x, y, width, height);
     
-    // Draw diagonal slash if requested (for team stroke holes)
-    if (drawSlash) {
+    // Draw diagonal slashes for differential strokes
+    if (differentialStrokeCount > 0) {
       pdf.setLineWidth(0.5);
-      pdf.line(x, y + height, x + width, y); // Diagonal line from bottom-left to top-right
-      pdf.setLineWidth(0.25); // Reset line width
+      for (let i = 0; i < differentialStrokeCount; i++) {
+        // Offset each slash slightly
+        const offset = i * 2.5;
+        pdf.line(x + offset, y + height, x + width - offset, y);
+      }
+      pdf.setLineWidth(0.25);
     }
 
     // Draw small "x" marks for individual stroke holes (can be multiple)
@@ -378,21 +361,16 @@ export class ScorecardPdfService {
       const oldFontSize = pdf.getFontSize();
       pdf.setFontSize(5); // Very small font
       pdf.setFont('helvetica', 'normal');
-      
       if (strokeCount === 1) {
-        // Single stroke - one "x" in upper left
         pdf.text('x', x + 0.5, y + 2);
       } else if (strokeCount === 2) {
-        // Two strokes - two "x" marks
         pdf.text('x', x + 0.5, y + 2);
         pdf.text('x', x + 2.5, y + 2);
       } else if (strokeCount >= 3) {
-        // Three or more strokes - show number instead
         pdf.setFontSize(6);
         pdf.text(strokeCount.toString(), x + 0.5, y + 2.5);
       }
-      
-      pdf.setFontSize(oldFontSize); // Restore original font size
+      pdf.setFontSize(oldFontSize);
     }
     
     if (text) {

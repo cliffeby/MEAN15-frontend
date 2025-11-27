@@ -193,9 +193,29 @@ export class PrintableScorecardComponent implements OnInit {
 
 
   async generateScorecard(): Promise<void> {
+      console.log('generateScorecard() called');
     if (!this.match || !this.scorecard || this.players.length === 0) {
       this.snackBar.open('Cannot generate scorecard - missing data', 'Close', { duration: 3000 });
       return;
+    }
+
+    // Debug: log players before grouping
+    if (this.players && this.players.length) {
+      console.log('Players before grouping:', this.players.length, this.players.map(p => p.member && (p.member.firstName + ' ' + p.member.lastName)));
+    } else {
+      console.warn('No players found before grouping:', this.players);
+    }
+
+    // Group players into foursomes (arrays of 4)
+    const foursomes: PrintablePlayer[][] = [];
+    for (let i = 0; i < this.players.length; i += 4) {
+      foursomes.push(this.players.slice(i, i + 4));
+    }
+    // Debug: log grouped foursomes
+    if (foursomes && foursomes.length) {
+      console.log('Foursomes:', foursomes.map(group => group.map(p => p.member && (p.member.firstName + ' ' + p.member.lastName))));
+    } else {
+      console.warn('No foursomes created:', foursomes);
     }
 
     try {
@@ -218,15 +238,15 @@ export class PrintableScorecardComponent implements OnInit {
         distances: this.scorecard.yards || Array(18).fill(0)
       };
 
-      // Generate PDF using the service
+      // Generate PDF using the service for all foursomes
       await this.pdfService.generateScorecardPDF(
-        matchData, 
-        scorecardData, 
-        this.players,
+        matchData,
+        scorecardData,
+        foursomes,
         { openInNewWindow: true }
       );
 
-      this.snackBar.open('Scorecard ready - choose Download, Email, or Print from the preview window!', 'Close', { duration: 5000 });
+      this.snackBar.open('Scorecards ready - choose Download, Email, or Print from the preview window!', 'Close', { duration: 5000 });
 
     } catch (error) {
       console.error('Error generating scorecard:', error);

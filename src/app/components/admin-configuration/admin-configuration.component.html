@@ -44,82 +44,86 @@
             </button>
           </div>
 
-          <div class="fields-grid">
-            <mat-card *ngFor="let field of getFieldsForSection(section.key)" class="field-card">
-              <mat-card-content>
-                <div class="field-header">
-                  <label class="field-label">{{ field.label }}</label>
-                  <mat-icon *ngIf="field.description" 
-                           class="info-icon" 
-                           [matTooltip]="field.description">
-                    info_outline
-                  </mat-icon>
-                </div>
+          <form [formGroup]="configForm">
+            <div [formGroupName]="section.key">
+              <div class="fields-grid">
+                <mat-card *ngFor="let field of getFieldsForSection(section.key)" class="field-card">
+                  <mat-card-content>
+                    <div class="field-header">
+                      <label class="field-label">{{ field.label }}</label>
+                      <mat-icon *ngIf="field.description" 
+                               class="info-icon" 
+                               [matTooltip]="field.description">
+                        info_outline
+                      </mat-icon>
+                    </div>
 
-                <!-- Number Input -->
-                <mat-form-field *ngIf="field.type === 'number'" appearance="outline" class="field-input">
-                  <input matInput 
-                         type="number" 
-                         [formControlName]="getFieldControlName(section.key, field.key)"
-                         [attr.min]="field.validation?.min || null"
-                         [attr.max]="field.validation?.max || null"
-                         [attr.aria-label]="field.label"
-                         [attr.title]="field.label">
-                  <mat-error *ngIf="getFieldControl(section.key, field.key)?.hasError('required')">
-                    This field is required
-                  </mat-error>
-                  <mat-error *ngIf="getFieldControl(section.key, field.key)?.hasError('min')">
-                    Minimum value is {{ field.validation?.min }}
-                  </mat-error>
-                  <mat-error *ngIf="getFieldControl(section.key, field.key)?.hasError('max')">
-                    Maximum value is {{ field.validation?.max }}
-                  </mat-error>
-                </mat-form-field>
+                    <!-- Number Input -->
+                    <mat-form-field *ngIf="field.type === 'number'" appearance="outline" class="field-input">
+                      <input matInput 
+                             type="number" 
+                             [formControlName]="field.key"
+                             [attr.min]="field.validation?.min || null"
+                             [attr.max]="field.validation?.max || null"
+                             [attr.aria-label]="field.label"
+                             [attr.title]="field.label">
+                      <mat-error *ngIf="getFieldControl(section.key, field.key)?.hasError('required')">
+                        This field is required
+                      </mat-error>
+                      <mat-error *ngIf="getFieldControl(section.key, field.key)?.hasError('min')">
+                        Minimum value is {{ field.validation?.min }}
+                      </mat-error>
+                      <mat-error *ngIf="getFieldControl(section.key, field.key)?.hasError('max')">
+                        Maximum value is {{ field.validation?.max }}
+                      </mat-error>
+                    </mat-form-field>
 
-                <!-- Boolean Toggle -->
-                <div *ngIf="field.type === 'boolean'" class="boolean-field">
-                  <mat-slide-toggle [formControlName]="getFieldControlName(section.key, field.key)">
-                    {{ getFieldControl(section.key, field.key)?.value ? 'Enabled' : 'Disabled' }}
-                  </mat-slide-toggle>
-                </div>
+                    <!-- Boolean Toggle -->
+                    <div *ngIf="field.type === 'boolean'" class="boolean-field">
+                      <mat-slide-toggle [formControlName]="field.key">
+                        {{ getFieldControl(section.key, field.key)?.value ? 'Enabled' : 'Disabled' }}
+                      </mat-slide-toggle>
+                    </div>
 
-                <!-- String Input -->
-                <mat-form-field *ngIf="field.type === 'string'" appearance="outline" class="field-input">
-                  <input matInput 
-                         [formControlName]="getFieldControlName(section.key, field.key)"
-                         [attr.aria-label]="field.label"
-                         [attr.title]="field.label">
-                  <mat-error *ngIf="getFieldControl(section.key, field.key)?.hasError('required')">
-                    This field is required
-                  </mat-error>
-                </mat-form-field>
+                    <!-- String Input -->
+                    <mat-form-field *ngIf="field.type === 'string'" appearance="outline" class="field-input">
+                      <input matInput 
+                             [formControlName]="field.key"
+                             [attr.aria-label]="field.label"
+                             [attr.title]="field.label">
+                      <mat-error *ngIf="getFieldControl(section.key, field.key)?.hasError('required')">
+                        This field is required
+                      </mat-error>
+                    </mat-form-field>
 
-                <!-- Select Dropdown -->
-                <mat-form-field *ngIf="field.type === 'select'" appearance="outline" class="field-input">
-                  <mat-select [formControlName]="getFieldControlName(section.key, field.key)">
-                    <mat-option *ngFor="let option of field.options" [value]="option.value">
-                      {{ option.label }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
+                    <!-- Select Dropdown -->
+                    <mat-form-field *ngIf="field.type === 'select'" appearance="outline" class="field-input">
+                      <mat-select [formControlName]="field.key">
+                        <mat-option *ngFor="let option of field.options" [value]="option.value">
+                          {{ option.label }}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
 
-                <div class="field-actions" *ngIf="hasFieldChanged(section.key, field.key)">
-                  <button mat-icon-button 
-                          color="primary" 
-                          (click)="saveField(section.key, field.key)"
-                          matTooltip="Save this setting">
-                    <mat-icon>save</mat-icon>
-                  </button>
-                  <button mat-icon-button 
-                          color="warn" 
-                          (click)="resetField(section.key, field.key, field.defaultValue)"
-                          matTooltip="Reset to default">
-                    <mat-icon>undo</mat-icon>
-                  </button>
-                </div>
-              </mat-card-content>
-            </mat-card>
-          </div>
+                    <div class="field-actions" *ngIf="hasFieldChanged(section.key, field.key)">
+                      <button mat-icon-button 
+                              color="primary" 
+                              (click)="saveField(section.key, field.key)"
+                              matTooltip="Save this setting">
+                        <mat-icon>save</mat-icon>
+                      </button>
+                      <button mat-icon-button 
+                              color="warn" 
+                              (click)="resetField(section.key, field.key, field.defaultValue)"
+                              matTooltip="Reset to default">
+                        <mat-icon>undo</mat-icon>
+                      </button>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              </div>
+            </div>
+          </form>
         </div>
       </ng-template>
     </mat-tab>

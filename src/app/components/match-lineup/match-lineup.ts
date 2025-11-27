@@ -4,7 +4,7 @@ import { FormArray } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { Member } from '../../models/member';
-import { MEMBER_B_DUMMY } from '../../models/member-b-dummy';
+import { pairFourballTeams, getTeamIndexSum } from '../../utils/pair-utils';
 
 @Component({
   selector: 'app-match-lineup',
@@ -59,105 +59,11 @@ export class MatchLineupComponent {
   pairFourballTeams() {
     if (!this.members || !this.lineUpsArray) return;
     this.pairingMode = true;
-    let lineupIds: string[] = this.lineUpsArray.value as string[];
-    // Get member objects for lineup
-    let lineupMembers = lineupIds.map((id) => this.getMemberById(id)).filter(Boolean) as Member[];
-    // If odd number of players, add 'B Dummy' from models with last real player's index
-    if (lineupMembers.length % 2 !== 0 && lineupMembers.length > 1) {
-      let sortedForDummy = [...lineupMembers].sort((a, b) => (a.usgaIndex ?? 99) - (b.usgaIndex ?? 99));
-      const lastPlayer = sortedForDummy[sortedForDummy.length - 1];
-      if (lastPlayer) {
-        const dummy: Member = { ...MEMBER_B_DUMMY, _id: '00000000000000000000B001', usgaIndex: lastPlayer.usgaIndex };
-        lineupMembers.push(dummy);
-      }
-    }
-    // Sort by handicap ascending
-    lineupMembers.sort((a, b) => (a.usgaIndex ?? 99) - (b.usgaIndex ?? 99));
-    // Handle odd number: duplicate lowest handicap player
-    // if (lineupMembers.length % 2 !== 0 && lineupMembers.length > 1) {
-    // 	lineupMembers.push(lineupMembers[0]);
-    // }
-    // Sort all players by USGA Index ascending
-    let sortedMembers = [...lineupMembers].sort(
-      (a, b) => (a.usgaIndex ?? 99) - (b.usgaIndex ?? 99)
-    );
-    let n = sortedMembers.length;
-    // Handle odd number: duplicate lowest handicap player
-    // if (n % 2 !== 0 && n > 1) {
-    // 	sortedMembers.push(sortedMembers[0]);
-    // 	n++;
-    // }
-    // Split into A and B
-    let half = Math.floor(n / 2);
-    let aPlayers = sortedMembers.slice(0, half);
-    let bPlayers = sortedMembers.slice(half);
-    console.log('A Players:', aPlayers);
-    // Pair lowest A with highest B, but always assign lower index as A
-    let teams: { ids: string[]; combined: number }[] = [];
-    for (let i = 0; i < half; i++) {
-      let a = aPlayers[i];
-      let b = bPlayers[half - 1 - i];
-      // Ensure A is lower index, B is higher
-      if ((a?.usgaIndex ?? 99) > (b?.usgaIndex ?? 99)) {
-        // Swap if needed
-        [a, b] = [b, a];
-      }
-      const aId = typeof a?._id === 'string' ? a._id : '';
-      const bId = typeof b?._id === 'string' ? b._id : '';
-      const combined = Math.round(((a?.usgaIndex ?? 0) + (b?.usgaIndex ?? 0)) * 10) / 10;
-      teams.push({ ids: [aId, bId], combined });
-    }
-    // Pair teams for fourball matches (teamA vs teamB)
-    this.pairedTeams = [];
-    let foursomeIdsTEMP: string[][] = [];
-    let partnerIdsTEMP: string[][] = [];
-    let i = 0;
-    while (i < teams.length) {
-      // If 3 teams left and total players is odd (11), make last group of 3
-      if (teams.length - i === 3 && n === 11) {
-        // Last three teams: group as a trio
-        const trio = [teams[i].ids[0], teams[i].ids[1], teams[i+1].ids[0]];
-        this.pairedTeams.push({
-          teamA: trio,
-          teamB: [],
-          combinedA: this.getTeamIndexSum(trio),
-          combinedB: 0,
-        });
-        foursomeIdsTEMP.push([...trio]);
-        partnerIdsTEMP.push([...trio]);
-        break;
-      }
-      let teamA = teams[i];
-      let teamB = teams[i + 1];
-      if (teamB) {
-        this.pairedTeams.push({
-          teamA: teamA.ids,
-          teamB: teamB.ids,
-          combinedA: teamA.combined,
-          combinedB: teamB.combined,
-        });
-        // Store foursome as array of 4 member IDs
-        foursomeIdsTEMP.push([...teamA.ids, ...teamB.ids]);
-        // Store each partner team as array of 2 member IDs
-        partnerIdsTEMP.push([...teamA.ids]);
-        partnerIdsTEMP.push([...teamB.ids]);
-      } else {
-        // Odd team out
-        this.pairedTeams.push({
-          teamA: teamA.ids,
-          teamB: [],
-          combinedA: teamA.combined,
-          combinedB: 0,
-        });
-        foursomeIdsTEMP.push([...teamA.ids]);
-        partnerIdsTEMP.push([...teamA.ids]);
-      }
-      i += 2;
-    }
-    // Update @Input arrays for parent form
-    this.foursomeIdsTEMP = foursomeIdsTEMP;
-    this.partnerIdsTEMP = partnerIdsTEMP;
-    this.pairingUpdated.emit({ foursomeIdsTEMP, partnerIdsTEMP });
+    const result = pairFourballTeams(this.members, this.getMemberById.bind(this), this.lineUpsArray);
+    this.pairedTeams = result.pairedTeams;
+    this.foursomeIdsTEMP = result.foursomeIdsTEMP;
+    this.partnerIdsTEMP = result.partnerIdsTEMP;
+    this.pairingUpdated.emit({ foursomeIdsTEMP: result.foursomeIdsTEMP, partnerIdsTEMP: result.partnerIdsTEMP });
   }
 
   // Call this when user presses pair button
@@ -167,14 +73,7 @@ export class MatchLineupComponent {
   @Input() foursomeIdsTEMP: string[][] = [];
   @Input() partnerIdsTEMP: string[][] = [];
   getTeamIndexSum(team: string[]): number {
-    let sum = 0;
-    for (const memberId of team) {
-      const member = this.getMemberById(memberId);
-      if (member && typeof member.usgaIndex === 'number') {
-        sum += member.usgaIndex;
-      }
-    }
-    return Math.round(sum * 10) / 10;
+    return getTeamIndexSum(team, this.getMemberById.bind(this));
   }
   // Removed duplicate pairedTeams property
 
