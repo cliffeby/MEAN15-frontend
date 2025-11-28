@@ -1,5 +1,5 @@
 // src/app/layouts/main-layout/main-layout.component.ts
-import { Component, inject } from '@angular/core';
+import { Component, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -10,6 +10,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from '../services/authService';
+import { MatSidenav } from '@angular/material/sidenav';
 
 @Component({
   selector: 'app-main-layout',
@@ -23,28 +24,33 @@ import { AuthService } from '../services/authService';
     MatButtonModule,
     MatListModule,
     MatSidenavModule,
-  MatDividerModule,
-  MatTooltipModule
+    MatDividerModule,
+    MatTooltipModule,
   ],
   templateUrl: './main-layout.html',
-  styleUrls: ['./main-layout.scss']
+  styleUrls: ['./main-layout.scss'],
 })
 export class MainLayoutComponent {
   auth = inject(AuthService);
   router = inject(Router);
 
+  @ViewChild('drawer') drawer!: MatSidenav; // Add definite assignment assertion
+
+  isSidebarCollapsed = false;
+  someCondition = true; // Add this property for conditional rendering or testing
+
   sidebarLinks = [
     { label: 'Dashboard', route: '/dashboard' },
     { label: 'Member List', route: '/members' },
     // { label: 'Add Member', route: '/members/add' },
-    { label: 'Scorecard List', route: '/scorecards' },        // Added
+    { label: 'Scorecard List', route: '/scorecards' }, // Added
     // { label: 'Add Scorecard', route: '/scorecards/add' },     // Added
-    { label: 'Score List', route: '/scores' },        // Added
+    { label: 'Score List', route: '/scores' }, // Added
     // { label: 'Add Score', route: '/scores/add' },     // Added
-    { label: 'Match List', route: '/matches' },        // Added
+    { label: 'Match List', route: '/matches' }, // Added
     // { label: 'Add Match', route: '/matches/add' },     // Added
     { label: 'API Details', route: '/apis' },
-    { label: 'Read Me', route: '/read-me' }
+    { label: 'Read Me', route: '/read-me' },
   ];
 
   get showUserListLink() {
@@ -58,5 +64,19 @@ export class MainLayoutComponent {
   logout() {
     this.auth.logout();
     this.router.navigate(['/login']);
+  }
+
+  toggleSidebar() {
+    this.drawer?.toggle(); // Update this method to use the drawer reference
+  }
+
+  navigationEvent = {
+    emit: (event: any) => {
+      console.log('Navigation event emitted:', event);
+    },
+  };
+
+  onResize() {
+    console.log('Window resized');
   }
 }
