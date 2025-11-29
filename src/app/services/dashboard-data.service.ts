@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { forkJoin, Observable } from 'rxjs';
-import { MemberService } from '../../services/memberService';
-import { ScoreService } from '../../services/scoreService';
-import { MatchService } from '../../services/matchService';
-import { Member } from '../../models/member';
-import { Score } from '../../models/score';
-import { Match } from '../../models/match';
+import { MemberService } from './memberService';
+import { ScoreService } from './scoreService';
+import { MatchService } from './matchService';
+import { Member } from '../models/member';
+import { Score } from '../models/score';
+import { Match } from '../models/match';
 
 export interface DashboardApiResponse {
   members: Member[];
@@ -54,17 +54,11 @@ export class DashboardDataService {
           subscriber.next(normalizedData);
           subscriber.complete();
         },
-        error: (error) => {
-          console.error('Error loading dashboard data:', error);
-          subscriber.error(error);
-        }
+        error: err => subscriber.error(err)
       });
     });
   }
 
-  /**
-   * Normalize members data - handle wrapped responses
-   */
   private normalizeMembers(members: any): Member[] {
     if (Array.isArray(members)) {
       return members;
@@ -75,9 +69,6 @@ export class DashboardDataService {
     return [];
   }
 
-  /**
-   * Normalize scores data - handle wrapped responses
-   */
   private normalizeScores(scores: any): Score[] {
     if (Array.isArray(scores)) {
       return scores;
@@ -97,9 +88,6 @@ export class DashboardDataService {
     return [];
   }
 
-  /**
-   * Normalize matches data - handle wrapped responses
-   */
   private normalizeMatches(matches: any): Match[] {
     if (Array.isArray(matches)) {
       return matches;

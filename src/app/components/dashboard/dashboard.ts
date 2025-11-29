@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit, AfterViewInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, AfterViewInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -11,8 +11,8 @@ import { AuthService } from '../../services/authService';
 import { Member } from '../../models/member';
 import { Score } from '../../models/score';
 import { Match } from '../../models/match';
-import { DashboardStatsService } from './dashboard-stats.service';
-import { DashboardDataService } from './dashboard-data.service';
+import { DashboardStatsService } from '../../services/dashboard-stats.service';
+import { DashboardDataService } from '../../services/dashboard-data.service';
 import { ConfigurationService } from '../../services/configuration.service';
 import { ScoreWithMember, FrequentPlayer } from './dashboard.types';
 
@@ -63,6 +63,15 @@ export class Dashboard implements OnInit, AfterViewInit {
 
   constructor() {
     console.log('Dashboard constructor - User role:', this.auth.role);
+    
+    // Add effect to debug signal changes
+    effect(() => {
+      console.log('Signal updates:', {
+        allMembers: this.allMembers().length,
+        allScores: this.allScores().length,
+        allMatches: this.allMatches().length
+      });
+    });
   }
 
   ngOnInit() {
@@ -81,10 +90,24 @@ export class Dashboard implements OnInit, AfterViewInit {
     
     this.dataService.loadDashboardData().subscribe({
       next: ({ members, scores, matches }) => {
+        console.log('Dashboard data received:', {
+          members: members.length,
+          scores: scores.length,
+          matches: matches.length
+        });
         this.allMembers.set(members);
         this.totalMembers.set(members.length);
         this.allScores.set(scores);
         this.allMatches.set(matches);
+        
+        console.log('After setting signals:', {
+          totalMembers: this.totalMembers(),
+          groupsThisYear: this.groupsThisYear(),
+          matchesPast12Months: this.matchesPast12Months(),
+          lowestNetScore: this.lowestNetScore(),
+          highestNetScore: this.highestNetScore(),
+          topFrequentPlayers: this.topFrequentPlayers()
+        });
       },
       error: (error) => {
         console.error('Error loading dashboard data:', error);
