@@ -37,7 +37,8 @@ export class MemberFormComponent {
       lastDatePlayed: [''],
       Email: ['', [Validators.required, Validators.email]],
       user: [''],
-      scorecardsId: [[]]
+      scorecardsId: [[]],
+      hidden: [false]
     });
   }
 

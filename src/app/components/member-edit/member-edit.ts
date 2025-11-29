@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MemberService } from '../../services/memberService';
 import { Member } from '../../models/member';
+import { MatCheckbox } from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-member-edit',
@@ -21,8 +22,9 @@ import { Member } from '../../models/member';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatSnackBarModule
-  ]
+    MatSnackBarModule,
+    MatCheckbox
+  ],
 })
 export class MemberEditComponent implements OnInit {
   memberForm: FormGroup;
@@ -41,9 +43,10 @@ export class MemberEditComponent implements OnInit {
       lastName: ['', Validators.required],
       usgaIndex: [null, [Validators.min(-10), Validators.max(54)]],
       lastDatePlayed: [''],
-  Email: ['', [Validators.required, Validators.email]],
+      Email: ['', [Validators.required, Validators.email]],
       user: [''],
-      scorecardsId: [[]]
+      scorecardsId: [[]],
+      hidden: [false],
     });
   }
 
@@ -59,7 +62,7 @@ export class MemberEditComponent implements OnInit {
         error: () => {
           this.snackBar.open('Error loading member', 'Close', { duration: 2000 });
           this.loading = false;
-        }
+        },
       });
     }
   }
@@ -89,7 +92,7 @@ export class MemberEditComponent implements OnInit {
       error: () => {
         this.snackBar.open('Error updating member', 'Close', { duration: 2000 });
         this.loading = false;
-      }
+      },
     });
   }
 }

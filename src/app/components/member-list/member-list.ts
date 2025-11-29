@@ -44,24 +44,27 @@ import { UserPreferencesService, ColumnPreference } from '../../services/user-pr
     MatMenuModule,
     MatCheckboxModule,
     MatTooltipModule,
-    FormsModule
-  ]
+    FormsModule,
+  ],
 })
 export class MemberListComponent implements OnInit {
   members: Member[] = [];
   filteredMembers: Member[] = [];
   loading = false;
-  
+
   // Filter properties
   searchTerm = '';
   sortField = 'firstName';
   sortDirection: 'asc' | 'desc' = 'asc';
-  
+
   // Table configuration
   allColumns: Array<{ key: string; label: string; visible: boolean; fixed?: boolean }> = [];
 
+  // Add a property to track hidden members toggle state
+  showHiddenMembers = false;
+
   get displayedColumns(): string[] {
-    return this.allColumns.filter(col => col.visible).map(col => col.key);
+    return this.allColumns.filter((col) => col.visible).map((col) => col.key);
   }
 
   constructor(
@@ -84,22 +87,23 @@ export class MemberListComponent implements OnInit {
   private initializeColumns() {
     // Load saved preferences
     const savedPreferences = this.preferencesService.getMemberListColumnPreferences();
-    
+
     // Create default column configuration
     const defaultColumns = [
       { key: 'fullName', label: 'Name', visible: true },
-  { key: 'Email', label: 'Email', visible: true },
+      { key: 'Email', label: 'Email', visible: true },
       { key: 'usgaIndex', label: 'USGA Index', visible: true },
       { key: 'lastDatePlayed', label: 'Last Played', visible: true },
-      { key: 'actions', label: 'Actions', visible: true, fixed: true }
+      { key: 'hidden', label: 'Hidden', visible: false },
+      { key: 'actions', label: 'Actions', visible: true, fixed: true },
     ];
 
     // Merge saved preferences with default columns
-    this.allColumns = defaultColumns.map(defaultCol => {
-      const savedCol = savedPreferences.find(saved => saved.key === defaultCol.key);
+    this.allColumns = defaultColumns.map((defaultCol) => {
+      const savedCol = savedPreferences.find((saved) => saved.key === defaultCol.key);
       return {
         ...defaultCol,
-        visible: defaultCol.fixed ? true : (savedCol ? savedCol.visible : defaultCol.visible)
+        visible: defaultCol.fixed ? true : savedCol ? savedCol.visible : defaultCol.visible,
       };
     });
   }
@@ -108,7 +112,7 @@ export class MemberListComponent implements OnInit {
     this.loading = true;
     this.memberService.getAll().subscribe({
       next: (members) => {
-        console.log('Members loaded:', members);    
+        console.log('Members loaded:', members);
         this.members = members;
         this.applyFilter();
         this.loading = false;
@@ -118,7 +122,7 @@ export class MemberListComponent implements OnInit {
         // console.log('SnackBar instance in component:', this.snackBar);
         this.snackBar.open('Error loading members', 'Close', { duration: 2000 });
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -128,12 +132,28 @@ export class MemberListComponent implements OnInit {
     // Apply search filter
     if (this.searchTerm.trim()) {
       const searchLower = this.searchTerm.toLowerCase().trim();
-      filtered = filtered.filter(member => {
-        const fullName = (member.fullName || `${member.firstName} ${member.lastName || ''}`.trim()).toLowerCase();
-  const email = (member.Email || '').toLowerCase();
+      filtered = filtered.filter((member) => {
+        const fullName = (
+          member.fullName || `${member.firstName} ${member.lastName || ''}`.trim()
+        ).toLowerCase();
+        const email = (member.Email || '').toLowerCase();
         return fullName.includes(searchLower) || email.includes(searchLower);
       });
     }
+
+    // Only show hidden members if the hidden column is visible
+    const hiddenColumnVisible = this.allColumns.some((col) => col.key === 'hidden' && col.visible);
+    console.log('Hidden column visible:', hiddenColumnVisible);
+    if (!hiddenColumnVisible) {
+      filtered = filtered.filter((member) => !member.hidden);
+    }
+
+    // Include hidden members if the toggle is active
+    if (this.showHiddenMembers) {
+      filtered = filtered.filter((member) => member.hidden);
+    }
+
+    console.log('Filtered members:', filtered);
 
     // Apply sorting
     filtered.sort((a, b) => {
@@ -167,6 +187,8 @@ export class MemberListComponent implements OnInit {
       return 0;
     });
 
+    console.log('Sorted members:', filtered);
+
     this.filteredMembers = filtered;
   }
 
@@ -176,7 +198,7 @@ export class MemberListComponent implements OnInit {
 
   sortData(sort: Sort) {
     this.sortField = sort.active;
-    this.sortDirection = sort.direction as 'asc' | 'desc' || 'asc';
+    this.sortDirection = (sort.direction as 'asc' | 'desc') || 'asc';
     this.applyFilter();
   }
 
@@ -204,10 +226,10 @@ export class MemberListComponent implements OnInit {
     }
 
     // Find the member to get their name for the confirmation dialog
-    const member = this.members.find(m => m._id === id);
+    const member = this.members.find((m) => m._id === id);
     const memberName = member ? `${member.firstName} ${member.lastName}`.trim() : `Member ${id}`;
-    
-    this.confirmDialog.confirmDelete(memberName, 'member').subscribe(confirmed => {
+
+    this.confirmDialog.confirmDelete(memberName, 'member').subscribe((confirmed) => {
       if (confirmed) {
         this.memberService.delete(id).subscribe({
           next: () => {
@@ -216,37 +238,44 @@ export class MemberListComponent implements OnInit {
           },
           error: (err) => {
             if (err.status === 403 || err.status === 401) {
-              this.snackBar.open('You are not authorized to delete members.', 'Close', { duration: 2500 });
+              this.snackBar.open('You are not authorized to delete members.', 'Close', {
+                duration: 2500,
+              });
             } else {
               this.snackBar.open('Error deleting member', 'Close', { duration: 2000 });
             }
-          }
+          },
         });
       }
     });
   }
 
   toggleColumnVisibility(columnKey: string) {
-    const column = this.allColumns.find(col => col.key === columnKey);
+    const column = this.allColumns.find((col) => col.key === columnKey);
     if (column && !column.fixed) {
       // Prevent hiding all data columns (keep at least one visible)
-      const visibleDataColumns = this.allColumns.filter(col => col.visible && !col.fixed).length;
+      const visibleDataColumns = this.allColumns.filter((col) => col.visible && !col.fixed).length;
       if (column.visible && visibleDataColumns <= 1) {
-        this.snackBar.open('At least one data column must remain visible', 'Close', { duration: 2000 });
+        this.snackBar.open('At least one data column must remain visible', 'Close', {
+          duration: 2000,
+        });
         return;
       }
       column.visible = !column.visible;
       this.saveColumnPreferences();
+
+      // Reapply filter to reflect column visibility changes
+      this.applyFilter();
     }
   }
 
   isColumnVisible(columnKey: string): boolean {
-    const column = this.allColumns.find(col => col.key === columnKey);
+    const column = this.allColumns.find((col) => col.key === columnKey);
     return column ? column.visible : false;
   }
 
   getVisibleColumnsCount(): number {
-    return this.allColumns.filter(col => col.visible).length;
+    return this.allColumns.filter((col) => col.visible).length;
   }
 
   hasCustomPreferences(): boolean {
@@ -255,17 +284,17 @@ export class MemberListComponent implements OnInit {
       { key: 'fullName', visible: true },
       { key: 'Email', visible: true },
       { key: 'usgaIndex', visible: true },
-      { key: 'lastDatePlayed', visible: true }
+      { key: 'lastDatePlayed', visible: true },
     ];
 
-    return defaultColumns.some(defaultCol => {
-      const currentCol = this.allColumns.find(col => col.key === defaultCol.key);
+    return defaultColumns.some((defaultCol) => {
+      const currentCol = this.allColumns.find((col) => col.key === defaultCol.key);
       return currentCol && currentCol.visible !== defaultCol.visible;
     });
   }
 
   resetColumns() {
-    this.allColumns.forEach(column => {
+    this.allColumns.forEach((column) => {
       column.visible = true;
     });
     this.saveColumnPreferences();
@@ -274,58 +303,85 @@ export class MemberListComponent implements OnInit {
   private saveColumnPreferences() {
     // Only save preferences for non-fixed columns
     const preferences: ColumnPreference[] = this.allColumns
-      .filter(col => !col.fixed)
-      .map(col => ({ key: col.key, visible: col.visible }));
-    
+      .filter((col) => !col.fixed)
+      .map((col) => ({ key: col.key, visible: col.visible }));
+
     this.preferencesService.saveMemberListColumnPreferences(preferences);
   }
 
   clearAllPreferences() {
-    this.confirmDialog.confirmAction(
-      'Reset All Preferences', 
-      'This will reset all your column preferences to default settings. Are you sure?',
-      'Reset',
-      'Cancel'
-    ).subscribe(confirmed => {
-      if (confirmed) {
-        this.preferencesService.clearUserPreferences();
-        this.initializeColumns(); // Reload with defaults
-        this.snackBar.open('All preferences have been reset to defaults', 'Close', { duration: 3000 });
-      }
-    });
+    this.confirmDialog
+      .confirmAction(
+        'Reset All Preferences',
+        'This will reset all your column preferences to default settings. Are you sure?',
+        'Reset',
+        'Cancel'
+      )
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.preferencesService.clearUserPreferences();
+          this.initializeColumns(); // Reload with defaults
+          this.snackBar.open('All preferences have been reset to defaults', 'Close', {
+            duration: 3000,
+          });
+        }
+      });
   }
 
   removeDuplicateEmails() {
     if (!this.isAdmin) {
-      this.snackBar.open('You are not authorized to remove duplicates.', 'Close', { duration: 2500 });
+      this.snackBar.open('You are not authorized to remove duplicates.', 'Close', {
+        duration: 2500,
+      });
       return;
     }
 
-    this.confirmDialog.confirmAction(
-      'Remove Duplicate Emails', 
-      'This will permanently delete members with duplicate email addresses, keeping only the oldest member for each email. This action cannot be undone.',
-      'Remove Duplicates',
-      'Cancel'
-    ).subscribe(confirmed => {
-      if (confirmed) {
-        this.memberService.removeDuplicateEmails().subscribe({
-          next: (response) => {
-            if (response.deletedCount > 0) {
-              this.snackBar.open(`Removed ${response.deletedCount} duplicate members`, 'Close', { duration: 4000 });
-              this.loadMembers(); // Refresh the list
-            } else {
-              this.snackBar.open('No duplicate email addresses found', 'Close', { duration: 3000 });
-            }
-          },
-          error: (err) => {
-            if (err.status === 403 || err.status === 401) {
-              this.snackBar.open('You are not authorized to remove duplicates.', 'Close', { duration: 2500 });
-            } else {
-              this.snackBar.open('Error removing duplicates', 'Close', { duration: 3000 });
-            }
-          }
-        });
-      }
-    });
+    this.confirmDialog
+      .confirmAction(
+        'Remove Duplicate Emails',
+        'This will permanently delete members with duplicate email addresses, keeping only the oldest member for each email. This action cannot be undone.',
+        'Remove Duplicates',
+        'Cancel'
+      )
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.memberService.removeDuplicateEmails().subscribe({
+            next: (response) => {
+              if (response.deletedCount > 0) {
+                this.snackBar.open(`Removed ${response.deletedCount} duplicate members`, 'Close', {
+                  duration: 4000,
+                });
+                this.loadMembers(); // Refresh the list
+              } else {
+                this.snackBar.open('No duplicate email addresses found', 'Close', {
+                  duration: 3000,
+                });
+              }
+            },
+            error: (err) => {
+              if (err.status === 403 || err.status === 401) {
+                this.snackBar.open('You are not authorized to remove duplicates.', 'Close', {
+                  duration: 2500,
+                });
+              } else {
+                this.snackBar.open('Error removing duplicates', 'Close', { duration: 3000 });
+              }
+            },
+          });
+        }
+      });
+  }
+
+  // Add a method to toggle hidden members visibility
+  toggleHiddenMembers() {
+    this.showHiddenMembers = !this.showHiddenMembers;
+
+    // Ensure the hidden column is visible when showing hidden members
+    const hiddenColumn = this.allColumns.find((col) => col.key === 'hidden');
+    if (hiddenColumn) {
+      hiddenColumn.visible = this.showHiddenMembers;
+    }
+
+    this.applyFilter();
   }
 }

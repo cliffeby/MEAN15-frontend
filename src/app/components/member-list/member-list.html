@@ -10,6 +10,10 @@
         <mat-icon>content_copy</mat-icon>
         Remove Duplicates
       </button>
+      <!-- Move the toggle hidden members button to the top -->
+      <button mat-raised-button color="accent" (click)="toggleHiddenMembers()">
+        {{ showHiddenMembers ? 'Hide Hidden Members' : 'Show Hidden Members' }}
+      </button>
     </div>
   </div>
 
@@ -93,7 +97,15 @@
       <ng-container matColumnDef="lastDatePlayed">
         <th mat-header-cell *matHeaderCellDef mat-sort-header="lastDatePlayed">Last Played</th>
         <td mat-cell *matCellDef="let member">
-          {{ member.lastDatePlayed ? (member.lastDatePlayed | date:'short') : '-' }}
+          {{ member.lastDatePlayed ? (member.lastDatePlayed | date:'shortDate') : '-' }}
+        </td>
+      </ng-container>
+
+      <!-- Hidden Column -->
+      <ng-container matColumnDef="hidden">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="hidden">Hidden</th>
+        <td mat-cell *matCellDef="let member">
+          {{ member.hidden ? 'Yes' : 'No' }}
         </td>
       </ng-container>
 

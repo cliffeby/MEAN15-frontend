@@ -8,6 +8,7 @@ export interface Member {
   scorecardsId?: string[];
   user: string;
   Email: string;
+  hidden?: boolean;
   fullName?: string;
   fullNameR?: string;
 }
