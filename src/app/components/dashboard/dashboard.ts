@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -13,6 +13,7 @@ import { Score } from '../../models/score';
 import { Match } from '../../models/match';
 import { DashboardStatsService } from './dashboard-stats.service';
 import { DashboardDataService } from './dashboard-data.service';
+import { ConfigurationService } from '../../services/configuration.service';
 import { ScoreWithMember, FrequentPlayer } from './dashboard.types';
 
 @Component({
@@ -29,12 +30,13 @@ import { ScoreWithMember, FrequentPlayer } from './dashboard.types';
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.scss']
 })
-export class Dashboard implements OnInit {
+export class Dashboard implements OnInit, AfterViewInit {
   private router = inject(Router);
   public auth = inject(AuthService);
   private snackBar = inject(MatSnackBar);
   private statsService = inject(DashboardStatsService);
   private dataService = inject(DashboardDataService);
+  private configService = inject(ConfigurationService);
 
   // Data signals
   totalMembers = signal(0);
@@ -56,6 +58,9 @@ export class Dashboard implements OnInit {
   highestNetScore = this.statsService.calculateHighestNetScore(this.allScores, this.allMembers);
   topFrequentPlayers = this.statsService.calculateTopFrequentPlayers(this.allScores, this.allMembers, this.currentDate);
 
+  // Update the currentTheme property to use the uiConfig computed property
+  currentTheme = this.configService.uiConfig().theme;
+
   constructor() {
     console.log('Dashboard constructor - User role:', this.auth.role);
   }
@@ -64,6 +69,11 @@ export class Dashboard implements OnInit {
     if (this.auth.role === 'admin') {
       this.loadDashboardData();
     }
+  }
+
+  ngAfterViewInit() {
+    // Apply the theme after the view is initialized
+    this.applyTheme();
   }
 
   private loadDashboardData() {
@@ -81,6 +91,16 @@ export class Dashboard implements OnInit {
         this.snackBar.open('Error loading dashboard data', 'Close', { duration: 3000 });
       }
     });
+  }
+
+  private applyTheme() {
+    const dashboardElement = document.querySelector('.dashboard-container');
+    if (dashboardElement) {
+      dashboardElement.setAttribute('data-theme', this.currentTheme);
+      console.log('Theme applied:', this.currentTheme); // Debugging log
+    } else {
+      console.warn('Dashboard container not found'); // Debugging log
+    }
   }
 
   goTo(route: string) {

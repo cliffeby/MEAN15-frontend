@@ -48,8 +48,8 @@ export class AdminConfigurationComponent implements OnInit, OnDestroy {
   selectedUser: User | null = null;
   leagueOptions = [
     { value: 'Premier', label: 'Premier' },
-    { value: 'Championship', label: 'Championship' },
-    { value: 'League One', label: 'League One' }
+    { value: 'Championship', label: 'Swindle' },
+    { value: 'League One', label: 'Rochester' }
   ];
   isUpdatingLeague = false;
   configForm!: FormGroup;
