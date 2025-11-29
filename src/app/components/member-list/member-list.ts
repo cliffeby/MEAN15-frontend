@@ -80,6 +80,8 @@ export class MemberListComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.sortField = 'lastName'; // Set initial sort field to lastName
+    this.sortDirection = 'asc'; // Set initial sort direction to ascending
     this.initializeColumns();
     this.loadMembers();
   }
@@ -161,6 +163,10 @@ export class MemberListComponent implements OnInit {
       let bValue: any;
 
       switch (this.sortField) {
+        case 'lastName':
+          aValue = (a.lastName || '').toLowerCase();
+          bValue = (b.lastName || '').toLowerCase();
+          break;
         case 'fullName':
           aValue = (a.fullName || `${a.firstName} ${a.lastName || ''}`.trim()).toLowerCase();
           bValue = (b.fullName || `${b.firstName} ${b.lastName || ''}`.trim()).toLowerCase();
@@ -186,8 +192,6 @@ export class MemberListComponent implements OnInit {
       if (aValue > bValue) return this.sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
-
-    console.log('Sorted members:', filtered);
 
     this.filteredMembers = filtered;
   }
