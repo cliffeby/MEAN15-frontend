@@ -4,7 +4,7 @@ import { Member } from '../models/member';
 import { Score } from '../models/score';
 import { Match } from '../models/match';
 import { ScoreWithMember, FrequentPlayer } from '../components/dashboard/dashboard.types';
-import { MemberUtils } from '../components/dashboard/member.utils';
+import { MemberUtils } from '../utils/member.utils';
 
 /**
  * Service responsible for computing dashboard statistics
@@ -86,17 +86,17 @@ export class DashboardStatsService {
       const membersArray = members();
 
       const playerFrequency = scoresArray.reduce((acc, score) => {
-        const member = membersArray.find(m => String(m.id) === String(score.memberId));
+        const member = membersArray.find(m => String(m._id) === String(score.memberId));
         // const member = membersArray.find(member => member.id === score.memberId);
-        if (member && member.id) {
-          acc[member.id] = (acc[member.id] || 0) + 1;
+        if (member && member._id) {
+          acc[member._id] = (acc[member._id] || 0) + 1;
         }
         return acc;
       }, {} as Record<string, number>);
 
       return Object.keys(playerFrequency)
         .map(memberId => {
-          const member = membersArray.find(m => m.id === memberId);
+          const member = membersArray.find(m => m._id === memberId);
           return {
             memberId: memberId,
             memberName: member ? `${member.firstName} ${member.lastName}` : 'Unknown',
@@ -120,7 +120,7 @@ export class DashboardStatsService {
         return scoresArray
           .filter(score => score.memberId === memberId)
           .map(score => {
-            const member = membersArray.find(m => m.id === score.memberId);
+            const member = membersArray.find(m => m._id === score.memberId);
             return {
               ...score,
               memberName: member ? `${member.firstName} ${member.lastName}` : 'Unknown',

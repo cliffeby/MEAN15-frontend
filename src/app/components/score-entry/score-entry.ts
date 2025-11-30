@@ -416,7 +416,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
 
   private loadExistingScores(): void {
     // Get match ID - handle both _id and id cases
-    const matchId = this.match?._id || this.match?.id || this.matchId;
+    const matchId = this.match?._id || this.matchId;
     
     if (!matchId) {
       console.log('No match ID available for loading scores');
@@ -456,7 +456,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
         console.log('Available players:', this.playerScores.map(ps => ({
           name: `${ps.member.firstName} ${ps.member.lastName || ''}`.trim(),
           id: ps.member._id,
-          memberId: ps.member.id
+          memberId: ps.member._id
         })));
         
         // Match existing scores with players
@@ -476,7 +476,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
           }
           
           const playerIndex = this.playerScores.findIndex(
-            ps => ps.member._id === memberIdToMatch || ps.member.id === memberIdToMatch
+            ps => ps.member._id === memberIdToMatch || ps.member._id === memberIdToMatch
           );
           
           console.log(`Looking for member ID: ${memberIdToMatch}, found at index: ${playerIndex}`);
@@ -504,7 +504,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       },
       error: (error: any) => {
         console.error('Error loading existing scores:', error);
-        console.error('Match ID used for score loading:', this.match?._id || this.match?.id || this.matchId);
+        console.error('Match ID used for score loading:', this.match?._id || this.matchId);
         console.error('Error details:', {
           status: error.status,
           message: error.message,
@@ -687,7 +687,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       scHCaps: this.scorecard?.hCaps,
       scName: this.scorecard?.name,
       datePlayed: this.match?.datePlayed,
-      user: this.authService.user?.id,
+      user: this.authService.user?._id,
       isScored: true
     };
 

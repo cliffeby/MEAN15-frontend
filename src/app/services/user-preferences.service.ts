@@ -30,7 +30,7 @@ export class UserPreferencesService {
    */
   private getUserStorageKey(): string {
     const user = this.authService.user;
-    const userId = user?.id || user?.userId || user?.email || 'anonymous';
+    const userId = user?._id || user?.userId || user?.email || 'anonymous';
     return `${this.STORAGE_KEY_PREFIX}${userId}`;
   }
 

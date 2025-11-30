@@ -15,7 +15,7 @@ export interface MatchState extends EntityState<Match> {
 
 // Entity adapter
 export const adapter: EntityAdapter<Match> = createEntityAdapter<Match>({
-  selectId: (match: Match) => match._id || match.id || '',
+  selectId: (match: Match) => match._id || '',
   sortComparer: (a: Match, b: Match) => {
     // Sort by date played (newest first), then by name
     const dateA = new Date(a.datePlayed || 0).getTime();

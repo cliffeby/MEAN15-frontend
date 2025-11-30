@@ -118,7 +118,7 @@ export class ScoreListComponent implements OnInit {
     this.groupedScores = Array.from(grouped.entries()).map(([matchId, scores]) => {
       // Get match info from populated object or find in matches array
       const matchInfo = this.extractMatchInfo(scores[0]) || 
-        this.matches.find(m => (m._id || m.id) === matchId);
+        this.matches.find(m => (m._id) === matchId);
       
       // Detect if this is an orphaned group
       const isOrphaned = matchId !== 'no-match' && !matchInfo;

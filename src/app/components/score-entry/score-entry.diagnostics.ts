@@ -78,7 +78,7 @@ class ScoreEntryDiagnostics {
     if (inputs.length > 0) {
       const firstInput = inputs[0] as HTMLInputElement;
       console.log('First input:', {
-        id: firstInput.id,
+        _id: firstInput.id,
         value: firstInput.value,
         readonly: firstInput.readOnly,
         disabled: firstInput.disabled,

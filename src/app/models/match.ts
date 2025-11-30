@@ -1,5 +1,5 @@
 export interface Match {
-  id?: string;
+  // id?: string;
   _id?: string;
   name: string;
   scorecardId?: string;

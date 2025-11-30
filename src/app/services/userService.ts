@@ -5,7 +5,7 @@ import { catchError } from 'rxjs/operators';
 import { AuthService } from './authService';
 
 export interface User {
-  id?: string;
+  _id?: string;
   name?: string;
   email?: string;
   role?: string;

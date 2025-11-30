@@ -106,9 +106,9 @@ export class AdminConfigurationComponent implements OnInit, OnDestroy {
   }
 
   updateLeague(league: string): void {
-    if (!this.selectedUser?.id) return;
+    if (!this.selectedUser?._id) return;
     this.isUpdatingLeague = true;
-    this.userService.updateLeague(this.selectedUser.id, league).subscribe({
+    this.userService.updateLeague(this.selectedUser._id, league).subscribe({
       next: (res) => {
         this.selectedUser = res.user;
         this.isUpdatingLeague = false;

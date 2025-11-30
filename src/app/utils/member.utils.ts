@@ -1,11 +1,10 @@
-import { Member } from '../../models/member';
-import { Score } from '../../models/score';
+import { Member } from '../models/member';
+import { Score } from '../models/score';
 
 /**
  * Utility functions for resolving member information from various data structures
  */
 export class MemberUtils {
-  
   /**
    * Resolves member name from a score object that may have populated or unpopulated memberId
    */
@@ -13,8 +12,6 @@ export class MemberUtils {
     if (!score.memberId) {
       return 'Unknown Member';
     }
-
-    // Handle populated memberId (object with member data)
     if (typeof score.memberId === 'object') {
       const populatedMember = score.memberId as any;
       if (populatedMember.firstName) {
@@ -25,17 +22,12 @@ export class MemberUtils {
       }
       return 'Unknown Member';
     }
-
-    // Handle string memberId (need to find member in members array)
     if (typeof score.memberId === 'string') {
-      const member = members.find(m => 
-        m._id === score.memberId || m.id === score.memberId
-      );
+      const member = members.find(m => m._id === score.memberId || m._id === score.memberId);
       if (member) {
         return `${member.firstName} ${member.lastName || ''}`.trim();
       }
     }
-
     return 'Unknown Member';
   }
 
@@ -46,16 +38,13 @@ export class MemberUtils {
     if (!score.memberId) {
       return '';
     }
-
     if (typeof score.memberId === 'object') {
       const populatedMember = score.memberId as any;
       return populatedMember._id || populatedMember.id || '';
     }
-
     if (typeof score.memberId === 'string') {
       return score.memberId;
     }
-
     return '';
   }
 
