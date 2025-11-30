@@ -86,7 +86,8 @@ export class DashboardStatsService {
       const membersArray = members();
 
       const playerFrequency = scoresArray.reduce((acc, score) => {
-        const member = membersArray.find(member => member.id === score.memberId);
+        const member = membersArray.find(m => String(m.id) === String(score.memberId));
+        // const member = membersArray.find(member => member.id === score.memberId);
         if (member && member.id) {
           acc[member.id] = (acc[member.id] || 0) + 1;
         }
@@ -314,13 +315,13 @@ export class DashboardStatsService {
         });
         
         const scoreData: ScoreWithMember = {
-          score: netScore,
+          score: score.score || 0,
           netScore: netScore,
           memberName: memberName,
           datePlayed: score.datePlayed || ''
         };
 
-        if (!highestScore || netScore > highestScore.score) {
+        if (!highestScore || netScore > highestScore.netScore) {
           highestScore = scoreData;
         }
       }
