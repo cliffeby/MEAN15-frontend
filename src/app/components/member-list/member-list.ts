@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { MatListModule } from '@angular/material/list';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -7,6 +7,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTableModule } from '@angular/material/table';
 import { MatSortModule, Sort } from '@angular/material/sort';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
@@ -22,6 +23,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../services/authService';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 import { UserPreferencesService, ColumnPreference } from '../../services/user-preferences.service';
+import { ConfigurationService } from '../../services/configuration.service';
 
 @Component({
   selector: 'app-member-list',
@@ -45,12 +47,20 @@ import { UserPreferencesService, ColumnPreference } from '../../services/user-pr
     MatCheckboxModule,
     MatTooltipModule,
     FormsModule,
+    MatPaginatorModule,
   ],
 })
-export class MemberListComponent implements OnInit {
+export class MemberListComponent implements OnInit, AfterViewInit {
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  
   members: Member[] = [];
   filteredMembers: Member[] = [];
+  pagedMembers: Member[] = [];
   loading = false;
+
+  // Pagination
+  pageSize = 20;
+  pageSizeOptions: number[] = [10, 20, 50, 100];
 
   // Filter properties
   searchTerm = '';
@@ -73,17 +83,29 @@ export class MemberListComponent implements OnInit {
     private snackBar: MatSnackBar,
     private authService: AuthService,
     private confirmDialog: ConfirmDialogService,
-    private preferencesService: UserPreferencesService
+    private preferencesService: UserPreferencesService,
+    private configService: ConfigurationService
   ) {}
   get isAdmin(): boolean {
     return this.authService.role === 'admin';
   }
 
   ngOnInit() {
+    // Load pagination config from configuration
+    const displayConfig = this.configService.displayConfig();
+    const paginationConfig = this.configService.paginationConfig();
+    this.pageSize = displayConfig.memberListPageSize;
+    this.pageSizeOptions = paginationConfig.pageSizeOptions;
+    
     this.sortField = 'lastName'; // Set initial sort field to lastName
     this.sortDirection = 'asc'; // Set initial sort direction to ascending
     this.initializeColumns();
     this.loadMembers();
+  }
+
+  ngAfterViewInit() {
+    // Paginator is inside *ngIf so it won't be available here
+    // Subscription is set up in loadMembers after data loads
   }
 
   private initializeColumns() {
@@ -118,6 +140,16 @@ export class MemberListComponent implements OnInit {
         this.members = members;
         this.applyFilter();
         this.loading = false;
+        // Set up paginator after view renders
+        setTimeout(() => {
+          if (this.paginator) {
+            this.paginator.page.subscribe(() => {
+              console.log('Paginator page event fired');
+              this.updatePagedMembers();
+            });
+            this.updatePagedMembers();
+          }
+        }, 0);
       },
       error: () => {
         // console.log('Error handler reached in loadMembers');
@@ -194,6 +226,23 @@ export class MemberListComponent implements OnInit {
     });
 
     this.filteredMembers = filtered;
+    
+    // Reset to first page when filter changes
+    if (this.paginator) {
+      this.paginator.firstPage();
+    }
+    this.updatePagedMembers();
+  }
+
+  updatePagedMembers() {
+    if (!this.paginator) {
+      this.pagedMembers = this.filteredMembers;
+      return;
+    }
+    const startIndex = this.paginator.pageIndex * this.paginator.pageSize;
+    const endIndex = startIndex + this.paginator.pageSize;
+    this.pagedMembers = this.filteredMembers.slice(startIndex, endIndex);
+    console.log(`Paginator: pageIndex=${this.paginator.pageIndex}, pageSize=${this.paginator.pageSize}, showing ${startIndex}-${endIndex} of ${this.filteredMembers.length}`);
   }
 
   onSearchChange() {

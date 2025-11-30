@@ -1,5 +1,5 @@
-<form [formGroup]="scoreForm" (ngSubmit)="submit()" class="score-edit">
-  <h2>Edit Score</h2>
+<form class="score-edit">
+  <h2>View Score</h2>
   
   <!-- Match Status Warning -->
   @if (isMatchCompleted) {
@@ -19,137 +19,64 @@
     </div>
   }
   
-  <mat-form-field appearance="fill">
-    <mat-label>Name</mat-label>
-    <input matInput formControlName="name" required placeholder="Enter player name" title="Name" />
-  </mat-form-field>
+  <div class="score-view-grid">
+    <div><strong>Name:</strong> <span>{{ scoreForm.get('name')?.value }}</span></div>
+    <div><strong>Score:</strong> <span>{{ scoreForm.get('score')?.value }}</span></div>
+    <div><strong>Posted:</strong> <span>{{ scoreForm.get('postedScore')?.value }}</span></div>
+    <div><strong>Handicap:</strong> <span>{{ scoreForm.get('handicap')?.value }}</span></div>
+    <div><strong>USGA Index:</strong> <span>{{ scoreForm.get('usgaIndex')?.value }}</span></div>
+    <div><strong>USGA Today:</strong> <span>{{ scoreForm.get('usgaIndexForTodaysScore')?.value }}</span></div>
+    <div><strong>Date Played:</strong> <span>{{ scoreForm.get('datePlayed')?.value | date:'mediumDate' }}</span></div>
+    <div *ngIf="userName"><strong>User:</strong> <span>{{ userName }}</span></div>
+  </div>
 
-  <mat-form-field appearance="fill">
-    <mat-label>Score</mat-label>
-    <input matInput formControlName="score" type="number" required placeholder="Enter score" title="Score" />
-  </mat-form-field>
+  <div class="course-info-compact">
+    <div><strong>Course:</strong> <span>{{ scoreForm.get('scName')?.value || 'Not specified' }}</span></div>
+    <div><strong>Rating:</strong> <span>{{ scoreForm.get('scRating')?.value || 'Not specified' }}</span></div>
+    <div><strong>Slope:</strong> <span>{{ scoreForm.get('scSlope')?.value || 'Not specified' }}</span></div>
+  </div>
 
-  <mat-form-field appearance="fill">
-    <mat-label>Posted Score</mat-label>
-    <input matInput formControlName="postedScore" type="number" required placeholder="Enter posted score" title="Posted Score" />
-  </mat-form-field>
-
-  <mat-form-field appearance="fill">
-    <mat-label>Handicap</mat-label>
-    <input matInput formControlName="handicap" type="number" required placeholder="Enter handicap" title="Handicap" />
-  </mat-form-field>
-
-  <mat-form-field appearance="fill">
-    <mat-label>USGA Index</mat-label>
-    <input matInput formControlName="usgaIndex" type="number" step="0.1" min="-10" max="54" placeholder="Enter USGA Index (e.g. 12.5)" title="USGA Index" />
-    <mat-error *ngIf="isUsgaIndexMinError">
-      USGA Index cannot be less than -10.0
-    </mat-error>
-    <mat-error *ngIf="isUsgaIndexMaxError">
-      USGA Index cannot be greater than 54.0
-    </mat-error>
-  </mat-form-field>
-
-  <mat-form-field appearance="fill">
-    <mat-label>USGA Index for Today's Score</mat-label>
-    <input matInput formControlName="usgaIndexForTodaysScore" type="number" step="0.1" min="-10" max="54" placeholder="Enter USGA Index for today (e.g. 12.5)" title="USGA Index for Today" />
-    <mat-error *ngIf="isUsgaIndexForTodaysScoreMinError">
-      USGA Index cannot be less than -10.0
-    </mat-error>
-    <mat-error *ngIf="isUsgaIndexForTodaysScoreMaxError">
-      USGA Index cannot be greater than 54.0
-    </mat-error>
-  </mat-form-field>
-
-  <!-- Course Information (Auto-populated from Scorecard) -->
-  @if (scoreForm.get('scorecardId')?.value) {
-    <div class="course-info">
-    <mat-card class="course-details-card">
-      <mat-card-header>
-        <mat-card-title>Course Information</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="course-detail">
-          <strong>Course Name:</strong> 
-          <span>{{ scoreForm.get('scName')?.value || 'Not specified' }}</span>
-        </div>
-        <div class="course-detail">
-          <strong>Course Rating:</strong> 
-          <span>{{ scoreForm.get('scRating')?.value || 'Not specified' }}</span>
-        </div>
-        <div class="course-detail">
-          <strong>Course Slope:</strong> 
-          <span>{{ scoreForm.get('scSlope')?.value || 'Not specified' }}</span>
-        </div>
-      </mat-card-content>
-    </mat-card>
-    </div>
-  }
-
-  <mat-form-field appearance="fill">
-    <mat-label>Date Played</mat-label>
-    <input matInput [matDatepicker]="picker" formControlName="datePlayed" placeholder="Select date played" title="Date Played" />
-    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-    <mat-datepicker #picker></mat-datepicker>
-  </mat-form-field>
-
-  <mat-form-field appearance="fill">
-    <mat-label>Scorecard</mat-label>
-    <mat-select formControlName="scorecardId" (selectionChange)="onScorecardChange($event.value)" 
-                [disabled]="(scorecardsLoading$ | async) === true">
-      <mat-option value="">Select a scorecard</mat-option>
-      @for (scorecard of scorecards$ | async; track scorecard._id) {
-        <mat-option [value]="scorecard._id">
-          {{ scorecard.groupName }} - {{ scorecard.name }}
-        </mat-option>
-      }
-    </mat-select>
-    @if (scorecardsLoading$ | async) {
-      <mat-hint>Loading scorecards...</mat-hint>
-    }
-  </mat-form-field>
-
-  <!-- User Information -->
-  @if (userName) {
-    <div class="user-info">
-      <mat-form-field appearance="fill">
-        <mat-label>User</mat-label>
-        <input matInput [value]="userName" readonly placeholder="User name will appear here" title="User Name" />
-      </mat-form-field>
-    </div>
-  }
-
-  <div class="checkbox-group">
-    <mat-checkbox formControlName="wonTwoBall">Won Two Ball</mat-checkbox>
-    <mat-checkbox formControlName="wonOneBall">Won One Ball</mat-checkbox>
-    <mat-checkbox formControlName="wonIndo">Won Indo</mat-checkbox>
-    <mat-checkbox formControlName="isPaired">Is Paired</mat-checkbox>
-    <mat-checkbox formControlName="isScored">Is Scored</mat-checkbox>
+  <div class="checkbox-group-compact">
+    <mat-checkbox [checked]="scoreForm.get('wonTwoBall')?.value" disabled>Two Ball</mat-checkbox>
+    <mat-checkbox [checked]="scoreForm.get('wonOneBall')?.value" disabled>One Ball</mat-checkbox>
+    <mat-checkbox [checked]="scoreForm.get('wonIndo')?.value" disabled>Indo</mat-checkbox>
+    <mat-checkbox [checked]="scoreForm.get('isPaired')?.value" disabled>Paired</mat-checkbox>
+    <mat-checkbox [checked]="scoreForm.get('isScored')?.value" disabled>Scored</mat-checkbox>
   </div>
 
   <div class="array-section">
     <h3>Individual Hole Scores</h3>
-    <div formArrayName="scores">
-      @for (scoreControl of scoresArray.controls; track $index) {
-        <div class="array-item">
-          <mat-form-field appearance="fill">
-            <mat-label>Hole {{ $index + 1 }}</mat-label>
-            <input matInput [formControlName]="$index" type="number" placeholder="Enter score for hole {{ $index + 1 }}" />
-          </mat-form-field>
-          <button mat-icon-button type="button" color="warn" (click)="removeScore($index)">
-            <span>×</span>
-          </button>
-        </div>
-      }
+    <div class="hole-scores-block">
+      <div class="hole-scores-table">
+        <!-- Hole numbers and scores -->
+        <ng-container *ngFor="let num of [].constructor(18); let i = index">
+          <div class="hole-col">
+            <span class="hole-number">{{ i + 1 }}</span>
+            <span class="hole-score">{{ scoreForm.get('scores')?.value[i] }}</span>
+          </div>
+          <!-- Insert Front/Back labels after 9 and 18 -->
+          <ng-container *ngIf="i === 8">
+            <div class="hole-label-col front-label">
+              <span class="hole-label">Front</span>
+              <span class="hole-score front-score">{{ frontNineSum }}</span>
+            </div>
+          </ng-container>
+          <ng-container *ngIf="i === 17">
+            <div class="hole-label-col back-label">
+              <span class="hole-label">Back</span>
+              <span class="hole-score back-score">{{ backNineSum }}</span>
+            </div>
+            <div class="hole-label-col total-label">
+              <span class="hole-label">Total</span>
+              <span class="hole-score total-score">{{ totalSum }}</span>
+            </div>
+          </ng-container>
+        </ng-container>
+      </div>
     </div>
-    <button mat-button type="button" (click)="addScore()">Add Hole Score</button>
   </div>
 
   <div class="button-group">
-    <button mat-raised-button color="primary" type="submit" 
-            [disabled]="loading || scoreForm.invalid || isMatchCompleted">
-      {{ loading ? 'Updating...' : (isMatchCompleted ? 'Match Completed' : 'Update Score') }}
-    </button>
-    <button mat-button type="button" (click)="cancel()">Cancel</button>
+    <button mat-button type="button" (click)="cancel()">Close</button>
   </div>
 </form>

@@ -52,18 +52,18 @@
       </div>
       <span class="spacer"></span>
       <div class="button-group">
-        <button *ngIf="match.scorecardId" mat-button color="accent" (click)="printScorecard((match.id ?? match._id) || '')">
+        <button *ngIf="match.scorecardId" mat-button color="accent" (click)="printScorecard((match._id) || '')">
           <mat-icon>print</mat-icon>
           Print Scorecard
         </button>
-        <button *ngIf="isAdmin && match.scorecardId" mat-button color="primary" (click)="enterScores((match.id ?? match._id) || '')">
+        <button *ngIf="isAdmin && match.scorecardId" mat-button color="primary" (click)="enterScores((match._id) || '')">
           <mat-icon>scorecard</mat-icon>
           Enter Scores
         </button>
-        <button *ngIf="isAdmin" mat-button color="accent" (click)="editMatch((match.id ?? match._id) || '')">Edit</button>
-        <button mat-button color="primary" (click)="updateStatus((match.id ?? match._id) || '', 'completed')" 
+        <button *ngIf="isAdmin" mat-button color="accent" (click)="editMatch(( match._id) || '')">Edit</button>
+        <button mat-button color="primary" (click)="updateStatus((match._id) || '', 'completed')" 
                 *ngIf="match.status !== 'completed'">Complete</button>
-        <button *ngIf="isAdmin" mat-button color="warn" (click)="deleteMatch((match.id ?? match._id) || '')">Delete</button>
+        <button *ngIf="isAdmin" mat-button color="warn" (click)="deleteMatch((match._id) || '')">Delete</button>
       </div>
     </mat-list-item>
   </mat-list>

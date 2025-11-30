@@ -62,8 +62,8 @@ describe('DashboardStatsService', () => {
   describe('calculateLowestNetScore', () => {
     it('should return the correct member and score for the lowest net score', () => {
       const members = [
-        { id: '1', firstName: 'Alice', lastName: 'Smith' },
-        { id: '2', firstName: 'Bob', lastName: 'Jones' }
+        { _id: '1', firstName: 'Alice', lastName: 'Smith' },
+        { _id: '2', firstName: 'Bob', lastName: 'Jones' }
       ];
       const scores = [
         { memberId: '1', score: 72, datePlayed: '2025-11-01',handicap:2 },
@@ -90,8 +90,8 @@ describe('DashboardStatsService', () => {
   describe('calculateHighestNetScore', () => {
     it('should return the correct member and score for the highest net score', () => {
       const members = [
-        { id: '1', firstName: 'Alice', lastName: 'Smith' },
-        { id: '2', firstName: 'Bob', lastName: 'Jones' }
+        { _id: '1', firstName: 'Alice', lastName: 'Smith' },
+        { _id: '2', firstName: 'Bob', lastName: 'Jones' }
       ];
           const scores = [
       { memberId: '1', score: 72, handicap: 2, datePlayed: '2025-11-01' },
@@ -119,9 +119,9 @@ describe('DashboardStatsService', () => {
     it('should return the top 5 most active players in the past 12 months with correct round counts and member names', () => {
       const now = new Date('2025-11-29');
       const members = [
-        { id: '1', firstName: 'Alice', lastName: 'Smith' },
-        { id: '2', firstName: 'Bob', lastName: 'Jones' },
-        { id: '3', firstName: 'Carol', lastName: 'White' }
+        { _id: '1', firstName: 'Alice', lastName: 'Smith' },
+        { _id: '2', firstName: 'Bob', lastName: 'Jones' },
+        { _id: '3', firstName: 'Carol', lastName: 'White' }
       ];
       const scores = [
         { memberId: '1', score: 72, datePlayed: '2025-11-01' },

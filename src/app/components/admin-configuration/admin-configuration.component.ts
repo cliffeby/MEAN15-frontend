@@ -17,7 +17,8 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
 
 import { ConfigurationService } from '../../services/configuration.service';
 import { AppConfig, ConfigSection, ConfigField } from '../../models/app-config.interface';
-import { UserService, User } from '../../services/userService';
+import { UserService} from '../../services/userService';
+import { User } from '../../models/users';
 
 @Component({
   selector: 'app-admin-configuration',

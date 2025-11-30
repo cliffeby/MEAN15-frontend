@@ -1,3 +1,86 @@
+// Grid for main score info
+.score-view-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+// Compact course info row
+.course-info-compact {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+// Compact checkbox row
+.checkbox-group-compact {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.hole-scores-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.hole-scores-table {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.hole-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hole-number {
+  font-size: 0.9em;
+  color: #888;
+}
+
+.hole-score {
+  font-weight: bold;
+}
+
+.hole-label-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 8px;
+}
+.hole-label {
+  font-weight: bold;
+}
+.front-label .hole-label,
+.front-label .hole-score {
+  color: #1976d2;
+}
+.back-label .hole-label,
+.back-label .hole-score {
+  color: #1976d2;
+}
+.total-label .hole-label,
+.total-label .hole-score {
+  color: #388e3c;
+}
+.front-score {
+  color: #1976d2;
+}
+.back-score {
+  color: #1976d2;
+}
+.total-score {
+  color: #388e3c;
+}
+.score-view-grid span {
+  margin-left: 16px;
+}
 .score-edit {
   max-width: 600px;
   margin: 20px auto;

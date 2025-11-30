@@ -1,5 +1,4 @@
 export interface Score {
-  id?: string;
   _id?: string;
   name: string;
   score: number;
@@ -16,7 +15,7 @@ export interface Score {
   isScored?: boolean;
   matchId?: string | {
     _id?: string;
-    id?: string;
+    // id?: string;
     name: string;
     datePlayed?: string;
     status?: string;

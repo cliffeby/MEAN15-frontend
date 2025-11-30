@@ -45,6 +45,24 @@ import * as ScorecardSelectors from '../../store/selectors/scorecard.selectors';
   ]
 })
 export class ScoreEditComponent implements OnInit, OnDestroy {
+    // Getters for score sums
+    get frontNineSum(): number {
+      const scores = this.scoreForm.get('scores')?.value;
+      if (!Array.isArray(scores)) return 0;
+      return scores.slice(0, 9).reduce((a, b) => a + (Number(b) || 0), 0);
+    }
+
+    get backNineSum(): number {
+      const scores = this.scoreForm.get('scores')?.value;
+      if (!Array.isArray(scores)) return 0;
+      return scores.slice(9, 18).reduce((a, b) => a + (Number(b) || 0), 0);
+    }
+
+    get totalSum(): number {
+      const scores = this.scoreForm.get('scores')?.value;
+      if (!Array.isArray(scores)) return 0;
+      return scores.reduce((a, b) => a + (Number(b) || 0), 0);
+    }
   scoreForm: FormGroup;
   loading = false;
   scoreId: string | null = null;
@@ -147,7 +165,7 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
 
     // Check match status to determine if scores are locked
     if (score.matchId) {
-      const matchId = typeof score.matchId === 'string' ? score.matchId : score.matchId._id || score.matchId.id;
+      const matchId = typeof score.matchId === 'string' ? score.matchId : score.matchId._id;
       if (matchId) {
         this.matchService.getById(matchId).subscribe({
           next: (match) => {

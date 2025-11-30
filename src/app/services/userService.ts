@@ -3,14 +3,15 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from './authService';
+import { User } from '../models/users';
 
-export interface User {
-  _id?: string;
-  name?: string;
-  email?: string;
-  role?: string;
-  defaultLeague?: string;
-}
+// export interface User {
+//   _id?: string;
+//   name?: string;
+//   email?: string;
+//   role?: string;
+//   defaultLeague?: string;
+// }
 
 @Injectable({ providedIn: 'root' })
 export class UserService {

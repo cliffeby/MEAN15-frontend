@@ -227,7 +227,7 @@ export class ScoreListComponent implements OnInit {
 
   private extractMatchId(score: Score): string {
     if (typeof score.matchId === 'object' && score.matchId) {
-      return score.matchId._id || score.matchId.id || 'no-match';
+      return score.matchId._id || 'no-match';
     }
     return score.matchId || 'no-match';
   }
