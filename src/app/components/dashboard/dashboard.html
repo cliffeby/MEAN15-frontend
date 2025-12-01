@@ -2,7 +2,7 @@
   <h1>Rochester Golf Dashboard</h1>
 </div>
 
-<div *ngIf="auth.role === 'admin'" class="dashboard-container">
+<div class="dashboard-container">
   <!-- Overview Section -->
   <section class="overview-section">
     <h2>Overview</h2>
@@ -147,18 +147,3 @@
   </section>
 </div>
 
-<!-- User View (if needed) -->
-<div *ngIf="auth.role === 'user'" class="user-dashboard">
-  <mat-card>
-    <mat-card-header>
-      <mat-card-title>Welcome to Rochester Golf</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <p>Access your golf records and view match information.</p>
-      <button mat-raised-button color="primary" (click)="goTo('/matches')">
-        <mat-icon>event</mat-icon>
-        View Matches
-      </button>
-    </mat-card-content>
-  </mat-card>
-</div>

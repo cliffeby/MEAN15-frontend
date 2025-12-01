@@ -62,7 +62,7 @@
         </button>
         <button *ngIf="isAdmin" mat-button color="accent" (click)="editMatch(( match._id) || '')">Edit</button>
         <button mat-button color="primary" (click)="updateStatus((match._id) || '', 'completed')" 
-                *ngIf="match.status !== 'completed'">Complete</button>
+          *ngIf="isAdmin && match.status !== 'completed'">Complete</button>
         <button *ngIf="isAdmin" mat-button color="warn" (click)="deleteMatch((match._id) || '')">Delete</button>
       </div>
     </mat-list-item>

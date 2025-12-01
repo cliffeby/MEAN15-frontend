@@ -75,9 +75,7 @@ export class Dashboard implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    if (this.auth.role === 'admin') {
-      this.loadDashboardData();
-    }
+    this.loadDashboardData();
   }
 
   ngAfterViewInit() {
