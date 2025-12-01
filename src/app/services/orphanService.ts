@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from './authService';
+import { environment } from '../../environments/environment';
 
 export interface OrphanReport {
   summary: {
@@ -36,7 +37,7 @@ export interface CleanupResult {
 export class OrphanService {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
-  private baseUrl = 'http://localhost:5001/api/orphans';
+  private baseUrl = `${environment.apiUrl}/orphans`;
 
   private getHeaders() {
     const token = this.auth.token();

@@ -4,12 +4,13 @@ import { Observable, throwError, BehaviorSubject } from 'rxjs';
 import { catchError, map, shareReplay, tap } from 'rxjs/operators';
 import { AuthService } from './authService';
 import { Member } from '../models/member';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class MemberService {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
-  private baseUrl = 'http://localhost:5001/api/members';
+  private baseUrl = `${environment.apiUrl}/members`;
   
   // Cache for members data
   private membersCache$: Observable<Member[]> | null = null;

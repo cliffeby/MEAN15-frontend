@@ -4,12 +4,13 @@ import { Observable, throwError, lastValueFrom } from 'rxjs';
 import { catchError, shareReplay, tap, retryWhen, delay, take } from 'rxjs/operators';
 import { AuthService } from './authService';
 import { Score } from '../models/score';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ScoreService {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
-  private baseUrl = 'http://localhost:5001/api/scores';
+  private baseUrl = `${environment.apiUrl}/scores`;
   
   // Cache for scores data
   private scoresCache$: Observable<any> | null = null;

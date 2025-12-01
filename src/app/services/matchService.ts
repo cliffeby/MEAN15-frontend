@@ -4,12 +4,13 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, shareReplay, tap, retryWhen, delay, take } from 'rxjs/operators';
 import { AuthService } from './authService';
 import { Match } from '../models/match';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class MatchService {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
-  private baseUrl = 'http://localhost:5001/api/matches';
+  private baseUrl = `${environment.apiUrl}/matches`;
 
   // Cache for matches data
   private matchesCache$: Observable<any> | null = null;

@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from './authService';
+import { environment } from '../../environments/environment';
 
 export interface Scorecard {
   _id?: string;
@@ -29,7 +30,7 @@ export interface Scorecard {
 export class ScorecardService {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
-  private baseUrl = 'http://localhost:5001/api/scorecards';
+  private baseUrl = `${environment.apiUrl}/scorecards`;
 
   private getHeaders() {
     const token = this.auth.token();

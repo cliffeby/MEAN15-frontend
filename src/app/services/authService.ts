@@ -3,13 +3,14 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import jwt_decode from 'jwt-decode';
+import { environment } from '../../environments/environment'; 
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   token = signal<string | null>(null);
-  private baseUrl = 'http://localhost:5001/api/auth';
+  private baseUrl = `${environment.apiUrl}/auth`;
 
   constructor(private http: HttpClient) {
     const savedToken = localStorage.getItem('authToken');

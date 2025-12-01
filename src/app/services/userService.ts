@@ -4,20 +4,13 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from './authService';
 import { User } from '../models/users';
-
-// export interface User {
-//   _id?: string;
-//   name?: string;
-//   email?: string;
-//   role?: string;
-//   defaultLeague?: string;
-// }
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
-  private baseUrl = 'http://localhost:5001/api/users';
+  private baseUrl = `${environment.apiUrl}/users`;
 
   private getHeaders() {
     const token = this.auth.token();

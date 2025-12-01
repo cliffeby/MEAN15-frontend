@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from './authService';
+import { environment } from '../../environments/environment';
 
 export interface Customer {
   // ... existing interface
@@ -12,7 +13,7 @@ export interface Customer {
 export class CustomerService {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
-  private baseUrl = 'http://localhost:5001/api/customers';
+  private baseUrl = `${environment.apiUrl}/customers`;
 
   private getHeaders() {
     return { headers: new HttpHeaders({ Authorization: `Bearer ${this.auth.token()}` }) };
