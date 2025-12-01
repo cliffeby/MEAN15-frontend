@@ -1,17 +1,7 @@
 <div class="score-list">
-  <div class="header">
-    <h2>Scores by Match</h2>
-    <div class="header-buttons">
-      <button mat-stroked-button (click)="expandAllGroups()">
-        <mat-icon>expand_more</mat-icon>
-        Expand All
-      </button>
-      <button mat-stroked-button (click)="collapseAllGroups()">
-        <mat-icon>expand_less</mat-icon>
-        Collapse All
-      </button>
-    </div>
-  </div>
+  <h2>Scores by Match</h2>
+  
+  <div class="header"></div>
   <mat-divider></mat-divider>
   
   <div *ngIf="groupedScores.length" class="grouped-scores">
@@ -109,5 +99,110 @@
   </div>
   
   <div *ngIf="!groupedScores.length && !loading" class="no-data">No scores found.</div>
+
+  <!-- By Member Section -->
+  <h2 class="section-title">Scores by Member</h2>
+  
+  <div class="header">
+    <mat-form-field class="search-field">
+      <mat-label>Search Member</mat-label>
+      <input matInput [(ngModel)]="memberSearchTerm" (ngModelChange)="onMemberSearch()" placeholder="Type to search...">
+      <button mat-icon-button matSuffix *ngIf="memberSearchTerm" (click)="clearMemberSearch()">
+        <mat-icon>close</mat-icon>
+      </button>
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+    <p class="search-info" *ngIf="!memberSearchTerm">Showing top 5 members with most rounds in last 12 months</p>
+    <p class="search-info" *ngIf="memberSearchTerm">Found {{ filteredGroupedByMember.length }} member(s)</p>
+  </div>
+  <mat-divider></mat-divider>
+
+  <div *ngIf="filteredGroupedByMember.length" class="grouped-scores">
+          <mat-accordion>
+            <mat-expansion-panel 
+              *ngFor="let group of filteredGroupedByMember" 
+              [expanded]="group.expanded"
+              (expandedChange)="group.expanded = $event"
+              class="member-group">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <div class="group-title">
+                    <span class="member-name">{{ group.memberName }}</span>
+                    <span class="round-count">({{ group.roundCount }} round{{ group.roundCount !== 1 ? 's' : '' }})</span>
+                  </div>
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              
+              <div class="scores-table-container">
+                <table mat-table [dataSource]="group.scores" class="scores-table">
+                  <!-- Match Column -->
+                  <ng-container matColumnDef="match">
+                    <th mat-header-cell *matHeaderCellDef>Match</th>
+                    <td mat-cell *matCellDef="let score">
+                      {{ score.matchId && typeof score.matchId === 'object' ? score.matchId.name : 'N/A' }}
+                    </td>
+                  </ng-container>
+
+                  <!-- Score Column -->
+                  <ng-container matColumnDef="score">
+                    <th mat-header-cell *matHeaderCellDef>Score</th>
+                    <td mat-cell *matCellDef="let score">{{ formatScore(score.score) }}</td>
+                  </ng-container>
+
+                  <!-- Posted Score Column -->
+                  <ng-container matColumnDef="postedScore">
+                    <th mat-header-cell *matHeaderCellDef>Posted</th>
+                    <td mat-cell *matCellDef="let score">{{ formatScore(score.postedScore) }}</td>
+                  </ng-container>
+
+                  <!-- Date Played Column -->
+                  <ng-container matColumnDef="datePlayed">
+                    <th mat-header-cell *matHeaderCellDef>Date</th>
+                    <td mat-cell *matCellDef="let score">{{ formatDate(score.datePlayed) }}</td>
+                  </ng-container>
+
+                  <!-- Course Column -->
+                  <ng-container matColumnDef="course">
+                    <th mat-header-cell *matHeaderCellDef>Course</th>
+                    <td mat-cell *matCellDef="let score">{{ score.scName || 'N/A' }}</td>
+                  </ng-container>
+
+                  <!-- Handicap Column -->
+                  <ng-container matColumnDef="handicap">
+                    <th mat-header-cell *matHeaderCellDef>Handicap</th>
+                    <td mat-cell *matCellDef="let score">{{ score.handicap || 'N/A' }}</td>
+                  </ng-container>
+
+                  <!-- USGA Index Column -->
+                  <ng-container matColumnDef="usgaIndex">
+                    <th mat-header-cell *matHeaderCellDef>USGA Index</th>
+                    <td mat-cell *matCellDef="let score">{{ score.usgaIndex || 'N/A' }}</td>
+                  </ng-container>
+
+                  <!-- Actions Column -->
+                  <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef>Actions</th>
+                    <td mat-cell *matCellDef="let score" class="action-cell">
+                      <button mat-button color="accent" (click)="editScore((score.id ?? score._id) || '')">
+                        <mat-icon>view</mat-icon>
+                        View
+                      </button>
+                      <button *ngIf="isAdmin" mat-button color="warn" (click)="deleteScore((score.id ?? score._id) || '')">
+                        <mat-icon>delete</mat-icon>
+                        Delete
+                      </button>
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="memberDisplayedColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: memberDisplayedColumns;"></tr>
+                </table>
+              </div>
+            </mat-expansion-panel>
+          </mat-accordion>
+        </div>
+
+  <div *ngIf="!filteredGroupedByMember.length && !loading" class="no-data">No members found.</div>
+  
   <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
 </div>

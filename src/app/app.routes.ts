@@ -22,44 +22,110 @@ import { MatchEditComponent } from './components/match-edit/match-edit';
 import { ScoreEntryComponent } from './components/score-entry/score-entry';
 import { PrintableScorecardComponent } from './components/printable-scorecard/printable-scorecard';
 import { AdminConfigurationComponent } from './components/admin-configuration/admin-configuration.component';
+import { OrphanManagementComponent } from './components/orphan-management/orphan-management';
 
 export const routes: Routes = [
-    // Public
-    { path: '', component: Login },
-    { path: 'register', component: Register },
-  
-    // Protected layout
-    {
-      path: '',
-      component: MainLayoutComponent, // navbar + sidebar + footer
-      canActivate: [AuthGuard],       // protects all child routes
-      children: [
-        { path: 'dashboard', component: Dashboard, canActivate: [roleGuard], data: { role: 'admin' } },
-        { path: 'user-dashboard', component: Dashboard, canActivate: [roleGuard], data: { role: 'user' } },
-        { path: 'read-me', component: ReadMe },  
-        { path: 'apis', component: API },  
-         { path: 'members', component: MemberListComponent },
-         { path: 'members/add', component: MemberFormComponent, canActivate: [roleGuard], data: { role: 'admin' } },
-  { path: 'members/edit/:id', component: MemberEditComponent, canActivate: [roleGuard], data: { role: 'admin' } },
-  { path: 'users', component: UserListComponent, canActivate: [roleGuard], data: { role: 'admin' } },
-  { path: 'scorecards', component: ScorecardListComponent },
-  { path: 'scorecards/add', component: ScorecardFormComponent, canActivate: [roleGuard], data: { role: 'admin' } },
-  { path: 'scorecards/edit/:id', component: ScorecardFormComponent, canActivate: [roleGuard], data: { role: 'admin' } },
-  { path: 'scores', component: ScoreListComponent },
-  { path: 'scores/add', component: ScoreFormComponent },
-  { path: 'scores/edit/:id', component: ScoreEditComponent },
-  { path: 'matches', component: MatchListComponent },
-  { path: 'matches/add', component: MatchFormComponent, canActivate: [roleGuard], data: { role: 'admin' } },
-  { path: 'matches/edit/:id', component: MatchEditComponent, canActivate: [roleGuard], data: { role: 'admin' } },
-  { path: 'matches/:id/score-entry', component: ScoreEntryComponent, canActivate: [roleGuard], data: { role: 'admin' } },
-  { path: 'matches/:id/scoreentry', component: ScoreEntryComponent, canActivate: [roleGuard], data: { role: 'admin' } },
-  { path: 'matches/:id/printable-scorecard', component: PrintableScorecardComponent },
-  { path: 'admin/configuration', component: AdminConfigurationComponent, canActivate: [roleGuard], data: { role: 'admin' } },
-  { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
-      ]
-    },
-  
-    // Wildcard
-    { path: '**', redirectTo: '' }
-  ];
+  // Public
+  { path: '', component: Login },
+  { path: 'register', component: Register },
 
+  // Protected layout
+  {
+    path: '',
+    component: MainLayoutComponent, // navbar + sidebar + footer
+    canActivate: [AuthGuard], // protects all child routes
+    children: [
+      {
+        path: 'dashboard',
+        component: Dashboard,
+        canActivate: [roleGuard],
+        data: { role: 'admin' },
+      },
+      {
+        path: 'user-dashboard',
+        component: Dashboard,
+        canActivate: [roleGuard],
+        data: { role: 'user' },
+      },
+      { path: 'read-me', component: ReadMe },
+      { path: 'apis', component: API },
+      { path: 'members', component: MemberListComponent },
+      {
+        path: 'members/add',
+        component: MemberFormComponent,
+        canActivate: [roleGuard],
+        data: { role: 'admin' },
+      },
+      {
+        path: 'members/edit/:id',
+        component: MemberEditComponent,
+        canActivate: [roleGuard],
+        data: { role: 'admin' },
+      },
+      {
+        path: 'users',
+        component: UserListComponent,
+        canActivate: [roleGuard],
+        data: { role: 'admin' },
+      },
+      { path: 'scorecards', component: ScorecardListComponent },
+      {
+        path: 'scorecards/add',
+        component: ScorecardFormComponent,
+        canActivate: [roleGuard],
+        data: { role: 'admin' },
+      },
+      {
+        path: 'scorecards/edit/:id',
+        component: ScorecardFormComponent,
+        canActivate: [roleGuard],
+        data: { role: 'admin' },
+      },
+      { path: 'scores', component: ScoreListComponent },
+      { path: 'scores/add', component: ScoreFormComponent },
+      { path: 'scores/edit/:id', component: ScoreEditComponent },
+      { path: 'matches', component: MatchListComponent },
+      {
+        path: 'matches/add',
+        component: MatchFormComponent,
+        canActivate: [roleGuard],
+        data: { role: 'admin' },
+      },
+      {
+        path: 'matches/edit/:id',
+        component: MatchEditComponent,
+        canActivate: [roleGuard],
+        data: { role: 'admin' },
+      },
+      {
+        path: 'matches/:id/score-entry',
+        component: ScoreEntryComponent,
+        canActivate: [roleGuard],
+        data: { role: 'admin' },
+      },
+      {
+        path: 'matches/:id/scoreentry',
+        component: ScoreEntryComponent,
+        canActivate: [roleGuard],
+        data: { role: 'admin' },
+      },
+      { path: 'matches/:id/printable-scorecard', component: PrintableScorecardComponent },
+      {
+        path: 'admin/configuration',
+        component: AdminConfigurationComponent,
+        canActivate: [roleGuard],
+        data: { role: 'admin' },
+      },
+      {
+        path: 'admin/orphans',
+        component: OrphanManagementComponent,
+        canActivate: [roleGuard],
+        data: { role: 'admin' },
+      },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+    ],
+  },
+
+  // Wildcard
+  { path: '**', redirectTo: '' },
+];

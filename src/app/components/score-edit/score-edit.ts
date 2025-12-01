@@ -102,6 +102,7 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
       isPaired: [false],
       isScored: [false],
       matchId: [''],
+      matchName: [''], // For display only
       memberId: [''], // Keep for saving, but don't display
       scorecardId: [''],
       scSlope: [null],
@@ -170,9 +171,8 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
         this.matchService.getById(matchId).subscribe({
           next: (match) => {
             this.matchStatus = match.status;
-            this.matchName = match.name;
+            this.matchName = match.name || 'Unknown Match';
             this.isMatchCompleted = match.status === 'completed';
-            
             // Disable form if match is completed
             if (this.isMatchCompleted) {
               this.scoreForm.disable();
@@ -184,7 +184,11 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
             this.matchName = 'Unknown Match';
           }
         });
+      } else {
+        this.matchName = 'Unknown Match';
       }
+    } else {
+      this.matchName = 'Unknown Match';
     }
 
     // Populate form with score data
@@ -201,6 +205,7 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
       isPaired: score.isPaired,
       isScored: score.isScored,
       matchId: score.matchId,
+      matchName: this.matchName,
       memberId: typeof score.memberId === 'string' ? score.memberId : (score.memberId?._id || score.memberId?.id || ''),
       scorecardId: score.scorecardId,
       scSlope: score.scSlope,

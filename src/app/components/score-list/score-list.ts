@@ -9,11 +9,17 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ScoreService } from '../../services/scoreService';
 import { MatchService } from '../../services/matchService';
+import { MemberService } from '../../services/memberService';
 import { Score } from '../../models/score';
 import { Match } from '../../models/match';
+import { Member } from '../../models/member';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../services/authService';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
@@ -26,6 +32,14 @@ interface GroupedScores {
   expanded?: boolean;
   isOrphaned?: boolean;
   orphanType?: 'match' | 'member' | 'scorecard' | 'user';
+}
+
+interface GroupedByMember {
+  memberId: string;
+  memberName: string;
+  scores: Score[];
+  roundCount: number;
+  expanded?: boolean;
 }
 
 @Component({
@@ -43,19 +57,29 @@ interface GroupedScores {
     MatExpansionModule,
     MatIconModule,
     MatTableModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatTabsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    FormsModule
   ]
 })
 export class ScoreListComponent implements OnInit {
   scores: Score[] = [];
   groupedScores: GroupedScores[] = [];
   matches: Match[] = [];
+  members: Member[] = [];
+  groupedByMember: GroupedByMember[] = [];
+  filteredGroupedByMember: GroupedByMember[] = [];
+  memberSearchTerm = '';
   loading = false;
   displayedColumns: string[] = ['name', 'score', 'postedScore', 'datePlayed', 'course', 'handicap', 'usgaIndex', 'actions'];
+  memberDisplayedColumns: string[] = ['match', 'score', 'postedScore', 'datePlayed', 'course', 'handicap', 'usgaIndex', 'actions'];
 
   constructor(
     private scoreService: ScoreService,
     private matchService: MatchService,
+    private memberService: MemberService,
     private router: Router,
     private snackBar: MatSnackBar,
     private authService: AuthService,
@@ -67,7 +91,19 @@ export class ScoreListComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.loadMembers();
     this.loadMatches();
+  }
+
+  loadMembers() {
+    this.memberService.getAll().subscribe({
+      next: (res) => {
+        this.members = res;
+      },
+      error: () => {
+        this.snackBar.open('Error loading members', 'Close', { duration: 2000 });
+      }
+    });
   }
 
   loadMatches() {
@@ -93,6 +129,7 @@ export class ScoreListComponent implements OnInit {
         console.log('Scores loaded:', res);    
         this.scores = res.scores || res;
         this.groupScoresByMatch();
+        this.groupScoresByMember();
         this.loading = false;
       },
       error: () => {
@@ -115,7 +152,7 @@ export class ScoreListComponent implements OnInit {
     });
 
     // Convert to GroupedScores array
-    this.groupedScores = Array.from(grouped.entries()).map(([matchId, scores]) => {
+    let allGroups = Array.from(grouped.entries()).map(([matchId, scores]) => {
       // Get match info from populated object or find in matches array
       const matchInfo = this.extractMatchInfo(scores[0]) || 
         this.matches.find(m => (m._id) === matchId);
@@ -144,21 +181,23 @@ export class ScoreListComponent implements OnInit {
         scores: scores.sort((a, b) => new Date(b.datePlayed || '').getTime() - new Date(a.datePlayed || '').getTime()),
         expanded: isOrphaned, // Auto-expand orphaned groups for attention
         isOrphaned: isOrphaned,
-        orphanType: isOrphaned ? 'match' : (hasOrphanedMembers ? 'member' : undefined)
+        orphanType: isOrphaned ? 'match' : (hasOrphanedMembers ? 'member' : undefined) as 'match' | 'member' | 'scorecard' | 'user' | undefined
       };
     });
 
     // Sort groups by date (most recent first), but put orphaned groups at top
-    this.groupedScores.sort((a, b) => {
+    allGroups.sort((a, b) => {
       // Orphaned groups go to the top
       if (a.isOrphaned && !b.isOrphaned) return -1;
       if (!a.isOrphaned && b.isOrphaned) return 1;
-      
       // Then sort by date
       const dateA = a.matchDate || a.scores[0]?.datePlayed || '';
       const dateB = b.matchDate || b.scores[0]?.datePlayed || '';
       return new Date(dateB).getTime() - new Date(dateA).getTime();
     });
+
+    // Only show the four most recent matches
+    this.groupedScores = allGroups.slice(0, 4);
   }
 
   editScore(id: string) {
@@ -261,5 +300,80 @@ export class ScoreListComponent implements OnInit {
       return 'Member reference broken - member may have been deleted';
     }
     return '';
+  }
+
+  groupScoresByMember() {
+    // Get date 12 months ago
+    const twelveMonthsAgo = new Date();
+    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+
+    // Filter scores from last 12 months
+    const recentScores = this.scores.filter(score => {
+      const scoreDate = new Date(score.datePlayed || '');
+      return scoreDate >= twelveMonthsAgo;
+    });
+
+    // Count rounds per member
+    const memberRounds = new Map<string, { member: Member | null, scores: Score[], count: number }>();
+
+    recentScores.forEach(score => {
+      const memberId = this.extractMemberId(score);
+      if (memberId) {
+        if (!memberRounds.has(memberId)) {
+          const member = this.members.find(m => m._id === memberId) || null;
+          memberRounds.set(memberId, { member, scores: [], count: 0 });
+        }
+        const memberData = memberRounds.get(memberId)!;
+        memberData.scores.push(score);
+        memberData.count++;
+      }
+    });
+
+    // Convert to array and sort by round count
+    const allGrouped = Array.from(memberRounds.entries()).map(([memberId, data]) => ({
+      memberId,
+      memberName: data.member?.fullName || data.member?.firstName || this.extractMemberName(data.scores[0]) || 'Unknown Player',
+      scores: data.scores.sort((a, b) => new Date(b.datePlayed || '').getTime() - new Date(a.datePlayed || '').getTime()),
+      roundCount: data.count,
+      expanded: false
+    })).sort((a, b) => b.roundCount - a.roundCount);
+
+    // Store all grouped members
+    this.groupedByMember = allGrouped;
+    
+    // Initially show only top 5
+    this.filteredGroupedByMember = allGrouped.slice(0, 5);
+  }
+
+  onMemberSearch() {
+    if (!this.memberSearchTerm.trim()) {
+      // No search term - show top 5
+      this.filteredGroupedByMember = this.groupedByMember.slice(0, 5);
+    } else {
+      // Filter by search term
+      const searchLower = this.memberSearchTerm.toLowerCase();
+      this.filteredGroupedByMember = this.groupedByMember.filter(group =>
+        group.memberName.toLowerCase().includes(searchLower)
+      );
+    }
+  }
+
+  clearMemberSearch() {
+    this.memberSearchTerm = '';
+    this.onMemberSearch();
+  }
+
+  private extractMemberId(score: Score): string | null {
+    if (typeof score.memberId === 'object' && score.memberId) {
+      return (score.memberId as any)._id || null;
+    }
+    return score.memberId || null;
+  }
+
+  private extractMemberName(score: Score): string {
+    if (typeof score.memberId === 'object' && score.memberId) {
+      return (score.memberId as any).name || score.name || '';
+    }
+    return score.name || '';
   }
 }

@@ -17,6 +17,10 @@
           <mat-icon matListIcon>settings</mat-icon>
           <span>Configuration</span>
         </a>
+        <a *ngIf="showAdminLinks" mat-list-item [routerLink]="'/admin/orphans'" routerLinkActive="active-link">
+          <mat-icon matListIcon>cleaning_services</mat-icon>
+          <span>Orphan Management</span>
+        </a>
       </mat-nav-list>
     </mat-sidenav>
   

@@ -3,28 +3,57 @@
   max-width: 1200px;
   margin: 0 auto;
 
+  h2 {
+    margin: 0 0 15px 0;
+    color: #333;
+
+    &.section-title {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 2px solid #e0e0e0;
+    }
+  }
+
+  .tab-content {
+    padding-top: 15px;
+  }
+
   .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
-
-    h2 {
-      margin: 0;
-      color: #333;
-    }
+    flex-wrap: wrap;
+    gap: 12px;
 
     .header-buttons {
       display: flex;
       gap: 8px;
       align-items: center;
     }
+
+    .search-field {
+      min-width: 300px;
+      flex: 1;
+      max-width: 500px;
+    }
+
+    .search-info {
+      width: 100%;
+      margin: 0;
+      padding: 8px;
+      background-color: #e3f2fd;
+      border-radius: 4px;
+      color: #1565c0;
+      font-size: 0.875rem;
+    }
   }
 
   .grouped-scores {
     margin-top: 15px;
 
-    .match-group {
+    .match-group,
+    .member-group {
       margin-bottom: 8px;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -47,7 +76,8 @@
           align-items: center;
           gap: 8px;
 
-          .match-name {
+          .match-name,
+          .member-name {
             font-weight: 500;
             color: #333;
 
@@ -57,7 +87,8 @@
             }
           }
 
-          .score-count {
+          .score-count,
+          .round-count {
             font-size: 0.875rem;
             color: #666;
             background: #e3f2fd;
