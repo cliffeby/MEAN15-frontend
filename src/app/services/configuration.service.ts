@@ -32,7 +32,8 @@ export class ConfigurationService {
       minScore: 0,
       defaultHandicap: 0,
       handicapCalculationMethod: 'usga',
-      roundingPrecision: 1
+      roundingPrecision: 1,
+      scoreEntryMode: 'detailed'
     },
     ui: {
       theme: 'auto',
@@ -225,6 +226,18 @@ export class ConfigurationService {
         { value: 'custom', label: 'Custom Method' }
       ],
       defaultValue: 'usga'
+    },
+    {
+      key: 'scoreEntryMode',
+      label: 'Score entry mode',
+      description: 'Choose between detailed hole-by-hole entry or simple total score entry',
+      type: 'select',
+      section: 'scoring',
+      options: [
+        { value: 'detailed', label: 'Detailed (18 holes)' },
+        { value: 'simple', label: 'Simple (Total score only)' }
+      ],
+      defaultValue: 'detailed'
     },
 
     // UI settings

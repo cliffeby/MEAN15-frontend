@@ -137,7 +137,14 @@ export class MatchListComponent implements OnInit, OnDestroy {
       // Could add snackbar notification here if needed
       return;
     }
-    this.router.navigate(['/matches', id, 'score-entry']);
+    
+    // Check configuration for score entry mode
+    const scoringConfig = this.configService.scoringConfig();
+    const route = scoringConfig.scoreEntryMode === 'simple' 
+      ? ['/matches', id, 'simple-score-entry']
+      : ['/matches', id, 'score-entry'];
+    
+    this.router.navigate(route);
   }
 
   async printScorecard(id: string) {

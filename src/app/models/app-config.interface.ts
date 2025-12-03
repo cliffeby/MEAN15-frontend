@@ -30,6 +30,7 @@ export interface ScoringConfig {
   defaultHandicap: number;
   handicapCalculationMethod: 'usga' | 'ega' | 'custom';
   roundingPrecision: number;
+  scoreEntryMode: 'detailed' | 'simple';
 }
 
 export interface UIConfig {

@@ -20,6 +20,7 @@ import { MatchListComponent } from './components/match-list/match-list';
 import { MatchFormComponent } from './components/match-form/match-form';
 import { MatchEditComponent } from './components/match-edit/match-edit';
 import { ScoreEntryComponent } from './components/score-entry/score-entry';
+import { SimpleScoreEntryComponent } from './components/simple-score-entry/simple-score-entry';
 import { PrintableScorecardComponent } from './components/printable-scorecard/printable-scorecard';
 import { AdminConfigurationComponent } from './components/admin-configuration/admin-configuration.component';
 import { OrphanManagementComponent } from './components/orphan-management/orphan-management';
@@ -104,6 +105,12 @@ export const routes: Routes = [
       {
         path: 'matches/:id/score-entry',
         component: ScoreEntryComponent,
+        canActivate: [roleGuard],
+        data: { role: 'admin' },
+      },
+      {
+        path: 'matches/:id/simple-score-entry',
+        component: SimpleScoreEntryComponent,
         canActivate: [roleGuard],
         data: { role: 'admin' },
       },

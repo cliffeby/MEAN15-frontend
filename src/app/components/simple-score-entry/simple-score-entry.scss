@@ -1,0 +1,202 @@
+.simple-score-entry-container {
+  padding: 15px;
+  max-width: 100%;
+
+  mat-card {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  mat-card-header {
+    margin-bottom: 12px;
+
+    mat-card-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 1.25rem;
+    }
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px;
+
+  mat-spinner {
+    margin-bottom: 12px;
+  }
+}
+
+.match-completed-warning {
+  margin-bottom: 12px;
+
+  .warning-card {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-left: 3px solid #f39c12;
+
+    .warning-content {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+
+      .warning-icon {
+        color: #f39c12;
+        font-size: 24px;
+      }
+
+      .warning-text {
+        flex: 1;
+
+        strong {
+          color: #8b6914;
+          font-size: 16px;
+        }
+
+        p {
+          margin: 6px 0 12px 0;
+          color: #6c5ce7;
+        }
+      }
+    }
+  }
+}
+
+.course-info {
+  margin-bottom: 10px;
+
+  mat-chip-set {
+    mat-chip {
+      background-color: #e1f5fe;
+      color: #01579b;
+    }
+  }
+}
+
+.score-table-container {
+  margin: 15px 0;
+  overflow-x: auto;
+
+  .score-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    th {
+      background-color: #f5f5f5;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .player-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      strong {
+        font-size: 14px;
+      }
+
+      small {
+        color: #666;
+        font-size: 0.75rem;
+      }
+    }
+
+    .score-input {
+      width: 120px;
+
+      ::ng-deep {
+        .mat-mdc-form-field-subscript-wrapper {
+          display: none;
+        }
+
+        .mat-mdc-text-field-wrapper {
+          padding-bottom: 0;
+        }
+
+        input {
+          text-align: center;
+          font-size: 16px;
+          font-weight: 500;
+        }
+      }
+    }
+
+    .under-par {
+      color: #4caf50;
+    }
+
+    .over-par {
+      color: #f44336;
+    }
+  }
+}
+
+.no-players {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #999;
+  }
+
+  h3 {
+    margin: 16px 0 8px;
+    color: #333;
+  }
+
+  p {
+    color: #666;
+  }
+}
+
+mat-card-actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px;
+  border-top: 1px solid #e0e0e0;
+
+  button {
+    min-width: 120px;
+
+    mat-spinner {
+      display: inline-block;
+      margin-right: 8px;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .simple-score-entry-container {
+    padding: 10px;
+  }
+
+  .score-table-container {
+    .score-table {
+      th, td {
+        padding: 8px 12px;
+        font-size: 13px;
+      }
+
+      .score-input {
+        width: 100px;
+      }
+    }
+  }
+}
