@@ -90,7 +90,8 @@
                       <input matInput 
                              [formControlName]="field.key"
                              [attr.aria-label]="field.label"
-                             [attr.title]="field.label">
+                             [attr.title]="field.label"
+                             [attr.placeholder]="field.label">
                       <mat-error *ngIf="getFieldControl(section.key, field.key)?.hasError('required')">
                         This field is required
                       </mat-error>
@@ -107,12 +108,14 @@
 
                     <div class="field-actions" *ngIf="hasFieldChanged(section.key, field.key)">
                       <button mat-icon-button 
+                              type="button"
                               color="primary" 
                               (click)="saveField(section.key, field.key)"
                               matTooltip="Save this setting">
                         <mat-icon>save</mat-icon>
                       </button>
                       <button mat-icon-button 
+
                               color="warn" 
                               (click)="resetField(section.key, field.key, field.defaultValue)"
                               matTooltip="Reset to default">

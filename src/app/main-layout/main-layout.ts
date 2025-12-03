@@ -39,19 +39,23 @@ export class MainLayoutComponent {
   isSidebarCollapsed = false;
   someCondition = true; // Add this property for conditional rendering or testing
 
-  sidebarLinks = [
-    { label: 'Dashboard', route: '/dashboard' },
-    { label: 'Member List', route: '/members' },
-    // { label: 'Add Member', route: '/members/add' },
-    { label: 'Scorecard List', route: '/scorecards' }, // Added
-    // { label: 'Add Scorecard', route: '/scorecards/add' },     // Added
-    { label: 'Score List', route: '/scores' }, // Added
-    // { label: 'Add Score', route: '/scores/add' },     // Added
-    { label: 'Match List', route: '/matches' }, // Added
-    // { label: 'Add Match', route: '/matches/add' },     // Added
-    { label: 'API Details', route: '/apis' },
-    { label: 'Read Me', route: '/read-me' },
-  ];
+
+  get sidebarLinks() {
+    const links = [
+      { label: 'Dashboard', route: '/dashboard' },
+      { label: 'Member List', route: '/members' },
+      { label: 'Scorecard List', route: '/scorecards' },
+      { label: 'Score List', route: '/scores' },
+      { label: 'Match List', route: '/matches' },
+    ];
+    if (this.auth.role === 'developer') {
+      links.push({ label: 'Read Me', route: '/read-me' });
+    }
+    if (this.auth.role === 'developer') {
+      links.push({ label: 'API Details', route: '/apis' });
+    }
+    return links;
+  }
 
   get showUserListLink() {
     return this.auth.role === 'admin';

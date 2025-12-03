@@ -39,7 +39,7 @@ export const routes: Routes = [
         path: 'dashboard',
         component: Dashboard,
         canActivate: [roleGuard],
-        data: { role: 'admin' },
+        data: { role: ['admin', 'developer','fieldhand', 'user'] }, // 'developer' added here
       },
       {
         path: 'user-dashboard',
@@ -47,7 +47,11 @@ export const routes: Routes = [
         canActivate: [roleGuard],
         data: { role: 'user' },
       },
-      { path: 'read-me', component: ReadMe },
+      { path: 'read-me', 
+        component: ReadMe,
+        canActivate: [roleGuard],
+        data: { role: 'developer' }
+       },
       { path: 'apis', component: API },
       { path: 'members', component: MemberListComponent },
       {
@@ -73,7 +77,7 @@ export const routes: Routes = [
         path: 'scorecards/add',
         component: ScorecardFormComponent,
         canActivate: [roleGuard],
-        data: { role: 'admin' },
+        data: { role: ['admin', 'developer','fieldhand'] },
       },
       {
         path: 'scorecards/edit/:id',

@@ -44,6 +44,8 @@
         <mat-select formControlName="role">
           <mat-option value="user">User</mat-option>
           <mat-option value="admin">Admin</mat-option>
+          <mat-option value="fieldhand">Fieldhand</mat-option>
+          <mat-option value="developer">Developer</mat-option>
         </mat-select>
         <mat-error *ngIf="registerForm.get('role')?.hasError('required')">
           Role is required

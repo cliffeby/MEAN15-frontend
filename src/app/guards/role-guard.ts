@@ -5,8 +5,9 @@ import { inject } from '@angular/core';
 export const roleGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
-
-  const expectedRole = route.data['role'] as 'admin' | 'customer';
+  const expectedRoles = Array.isArray(route.data['role'])
+    ? route.data['role']
+    : [route.data['role']];
   const token = authService.token();
 
   if (!token) {
@@ -15,7 +16,7 @@ export const roleGuard: CanActivateFn = (route, state) => {
   }
 
   const payload = authService.payload();
-  if (!payload || payload.role !== expectedRole) {
+  if (!payload || !expectedRoles.includes(payload.role)) {
     router.navigate(['/']);
     return false;
   }

@@ -41,15 +41,16 @@ export class Login {
 
         // Access role after token is set
     setTimeout(() => {
-      const role = this.authService.role;
-      if (role === 'admin') {
-        this.router.navigate(['/dashboard']);
-      } else if (role === 'user') {
-        this.router.navigate(['/user-dashboard']);
-      } else {
-        this.router.navigate(['/']);
-      }
-    }, 0);
+        const role = this.authService.role;
+        console.log('User role:', role);
+  if (role === 'admin' || role === 'developer') {
+    this.router.navigate(['/dashboard']);
+  } else if (role === 'user') {
+    this.router.navigate(['/user-dashboard']);
+  } else {
+    this.router.navigate(['/']);
+  }
+}, 0);
       },
       error: (err) => {
         this.snackBar.open(err.error.message || 'Login failed', 'Close', { duration: 3000 });

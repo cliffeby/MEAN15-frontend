@@ -90,6 +90,11 @@ export class MemberListComponent implements OnInit, AfterViewInit {
     return this.authService.role === 'admin';
   }
 
+  isAllowed(roles: string[]): boolean {
+    const currentRole = this.authService.role;
+    return currentRole ? roles.includes(currentRole) : false;
+  }
+
   ngOnInit() {
     // Load pagination config from configuration
     const displayConfig = this.configService.displayConfig();
@@ -256,7 +261,7 @@ export class MemberListComponent implements OnInit, AfterViewInit {
   }
 
   editMember(id: string) {
-    if (!this.isAdmin) {
+    if (!this.isAllowed(['admin', 'developer', 'fieldhand'])) {
       this.snackBar.open('You are not authorized to edit members.', 'Close', { duration: 2500 });
       return;
     }
@@ -264,7 +269,7 @@ export class MemberListComponent implements OnInit, AfterViewInit {
   }
 
   addMember() {
-    if (!this.isAdmin) {
+    if (!this.isAllowed(['admin', 'developer', 'fieldhand'])) {
       this.snackBar.open('You are not authorized to add members.', 'Close', { duration: 2500 });
       return;
     }
@@ -273,7 +278,7 @@ export class MemberListComponent implements OnInit, AfterViewInit {
 
   deleteMember(id: string) {
     if (!id) return;
-    if (!this.isAdmin) {
+    if (!this.isAllowed(['admin'])) {
       this.snackBar.open('You are not authorized to delete members.', 'Close', { duration: 2500 });
       return;
     }
@@ -382,7 +387,7 @@ export class MemberListComponent implements OnInit, AfterViewInit {
   }
 
   removeDuplicateEmails() {
-    if (!this.isAdmin) {
+    if (!this.isAllowed(['admin'])) {
       this.snackBar.open('You are not authorized to remove duplicates.', 'Close', {
         duration: 2500,
       });
