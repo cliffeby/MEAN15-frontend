@@ -26,6 +26,7 @@ import { Score } from '../../models/score';
 interface SimplePlayerScore {
   member: Member;
   totalScore: number | null;
+  differential: number | null;
   handicap: number;
   netScore: number;
   existingScoreId?: string;
@@ -71,6 +72,7 @@ export class SimpleScoreEntryComponent implements OnInit {
   loading = false;
   saving = false;
   isMatchCompleted = false;
+  entryMode: 'totalScore' | 'differential' = 'totalScore';
 
   displayedColumns: string[] = ['player', 'handicap', 'totalScore', 'netScore'];
 
@@ -190,13 +192,15 @@ export class SimpleScoreEntryComponent implements OnInit {
     this.playerScores = members.map(member => ({
       member,
       totalScore: null,
+      differential: null,
       handicap: member.usgaIndex || 0,
       netScore: 0
     }));
 
     const playersFormArray = this.fb.array(
       this.playerScores.map(() => this.fb.group({
-        totalScore: [null, [Validators.min(this.scorecard?.par || 0), Validators.max(200)]]
+        totalScore: [null, [Validators.min(this.scorecard?.par || 0), Validators.max(200)]],
+        differential: [null, [Validators.min(-50), Validators.max(100)]]
       }))
     );
     this.scoreForm.setControl('players', playersFormArray);
@@ -225,11 +229,18 @@ export class SimpleScoreEntryComponent implements OnInit {
           );
           
           if (playerIndex >= 0) {
-            this.playerScores[playerIndex].totalScore = score.score || score.postedScore;
+            const totalScore = score.score || score.postedScore;
+            this.playerScores[playerIndex].totalScore = totalScore;
             this.playerScores[playerIndex].existingScoreId = score._id;
             
+            // Calculate differential from total score (reverse calculation)
+            const coursePar = this.getCoursePar();
+            const courseRating = this.scorecard?.rating || coursePar;
+            this.playerScores[playerIndex].differential = totalScore - courseRating;
+            
             const playerFormGroup = this.getPlayerFormGroup(playerIndex);
-            playerFormGroup.get('totalScore')?.setValue(score.score || score.postedScore);
+            playerFormGroup.get('totalScore')?.setValue(totalScore);
+            playerFormGroup.get('differential')?.setValue(this.playerScores[playerIndex].differential);
             
             this.calculateNetScore(playerIndex);
           }
@@ -250,7 +261,7 @@ export class SimpleScoreEntryComponent implements OnInit {
     return playersFormArray.at(index) as FormGroup;
   }
 
-  onScoreChange(playerIndex: number, event: any): void {
+  onTotalScoreChange(playerIndex: number, event: any): void {
     if (this.isMatchCompleted) {
       event.preventDefault();
       this.snackBar.open('Cannot modify scores - match is completed', 'Close', { duration: 3000 });
@@ -267,7 +278,53 @@ export class SimpleScoreEntryComponent implements OnInit {
     }
     
     this.playerScores[playerIndex].totalScore = score;
+    
+    // Update differential based on total score
+    if (score !== null) {
+      const courseRating = this.scorecard?.rating || this.getCoursePar();
+      this.playerScores[playerIndex].differential = score - courseRating;
+      const playerFormGroup = this.getPlayerFormGroup(playerIndex);
+      playerFormGroup.get('differential')?.setValue(this.playerScores[playerIndex].differential, { emitEvent: false });
+    } else {
+      this.playerScores[playerIndex].differential = null;
+    }
+    
     this.calculateNetScore(playerIndex);
+  }
+
+  onDifferentialChange(playerIndex: number, event: any): void {
+    if (this.isMatchCompleted) {
+      event.preventDefault();
+      this.snackBar.open('Cannot modify scores - match is completed', 'Close', { duration: 3000 });
+      return;
+    }
+
+    const inputValue = event.target.value.trim();
+    let differential: number | null = null;
+    
+    if (!inputValue) {
+      differential = null;
+    } else if (!isNaN(inputValue)) {
+      differential = parseFloat(inputValue);
+    }
+    
+    this.playerScores[playerIndex].differential = differential;
+    
+    // Calculate total score from differential
+    if (differential !== null) {
+      const courseRating = this.scorecard?.rating || this.getCoursePar();
+      this.playerScores[playerIndex].totalScore = Math.round(differential + courseRating);
+      const playerFormGroup = this.getPlayerFormGroup(playerIndex);
+      playerFormGroup.get('totalScore')?.setValue(this.playerScores[playerIndex].totalScore, { emitEvent: false });
+    } else {
+      this.playerScores[playerIndex].totalScore = null;
+    }
+    
+    this.calculateNetScore(playerIndex);
+  }
+
+  toggleEntryMode(): void {
+    this.entryMode = this.entryMode === 'totalScore' ? 'differential' : 'totalScore';
   }
 
   private calculateNetScore(playerIndex: number): void {
@@ -335,6 +392,10 @@ export class SimpleScoreEntryComponent implements OnInit {
 
   getCoursePar(): number {
     return this.scorecard?.par || 72;
+  }
+
+  getCourseRating(): number {
+    return this.scorecard?.rating || this.getCoursePar();
   }
 
   editMatch(): void {

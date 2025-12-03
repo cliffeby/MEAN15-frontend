@@ -67,11 +67,24 @@
 
 .course-info {
   margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 
   mat-chip-set {
     mat-chip {
       background-color: #e1f5fe;
       color: #01579b;
+    }
+  }
+
+  .entry-mode-toggle {
+    white-space: nowrap;
+    
+    mat-icon {
+      margin-right: 4px;
     }
   }
 }
@@ -96,6 +109,14 @@
       position: sticky;
       top: 0;
       z-index: 1;
+
+      .column-hint {
+        display: block;
+        font-weight: 400;
+        font-size: 0.7rem;
+        color: #666;
+        margin-top: 2px;
+      }
     }
 
     .player-info {
@@ -118,7 +139,17 @@
 
       ::ng-deep {
         .mat-mdc-form-field-subscript-wrapper {
-          display: none;
+          position: static;
+          margin-top: 2px;
+        }
+
+        .mat-mdc-form-field-hint-wrapper {
+          padding: 0;
+        }
+
+        .mat-mdc-form-field-hint {
+          font-size: 0.7rem;
+          color: #666;
         }
 
         .mat-mdc-text-field-wrapper {
