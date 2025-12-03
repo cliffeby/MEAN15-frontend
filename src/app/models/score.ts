@@ -5,6 +5,8 @@ export interface Score {
   postedScore: number;
   scores: number[];
   scoresToPost: number[];
+  scoringMethod: string;
+  scoreRecordType: 'byHole' | 'total' | 'differential';
   usgaIndex?: number;
   usgaIndexForTodaysScore?: number;
   handicap: number;

@@ -753,6 +753,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       postedScore: playerScore.total,
       scores: playerScore.scores.map((s: any) => s || 0),
       scoresToPost: playerScore.scores.map((s: any) => s || 0),
+      scoreRecordType: 'byHole',
       usgaIndex: playerScore.member.usgaIndex,
       handicap: calculateCourseHandicap(playerScore.handicap, this.scorecard?.slope),
       matchId: this.match?._id,

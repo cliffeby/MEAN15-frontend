@@ -73,6 +73,7 @@ export class SimpleScoreEntryComponent implements OnInit {
   saving = false;
   isMatchCompleted = false;
   entryMode: 'totalScore' | 'differential' = 'totalScore';
+  hasScoresRecordedByHole = false;
 
   displayedColumns: string[] = ['player', 'handicap', 'totalScore', 'netScore'];
 
@@ -217,6 +218,20 @@ export class SimpleScoreEntryComponent implements OnInit {
     this.scoreService.getScoresByMatch(matchId).subscribe({
       next: (response: any) => {
         const scores = response.scores || [];
+        
+        // Check if any scores were recorded by hole
+        const byHoleScores = scores.filter((s: any) => s.scoreRecordType === 'byHole');
+        if (byHoleScores.length > 0) {
+          this.hasScoresRecordedByHole = true;
+          const playerNames = byHoleScores
+            .map((s: any) => s.name)
+            .join(', ');
+          this.snackBar.open(
+            `Warning: ${byHoleScores.length} score(s) were recorded by hole (${playerNames}). Individual hole scores will be ignored if you save in simple mode.`,
+            'OK',
+            { duration: 10000 }
+          );
+        }
         
         scores.forEach((score: any) => {
           let memberIdToMatch = score.memberId;
@@ -367,6 +382,7 @@ export class SimpleScoreEntryComponent implements OnInit {
       postedScore: playerScore.totalScore || 0,
       scores: new Array(18).fill(0), // Empty hole scores for simple mode
       scoresToPost: new Array(18).fill(0),
+      scoreRecordType: this.entryMode === 'differential' ? 'differential' : 'total',
       usgaIndex: playerScore.member.usgaIndex,
       handicap: playerScore.handicap,
       matchId: this.match?._id,

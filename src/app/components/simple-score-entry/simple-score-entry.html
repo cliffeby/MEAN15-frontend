@@ -39,6 +39,21 @@
       <!-- Score entry form -->
       <form [formGroup]="scoreForm" *ngIf="!loading && playerScores.length > 0">
         
+        <!-- Warning for scores recorded by hole -->
+        <div *ngIf="hasScoresRecordedByHole" class="byhole-warning">
+          <mat-card class="warning-card">
+            <mat-card-content>
+              <div class="warning-content">
+                <mat-icon class="warning-icon">warning</mat-icon>
+                <div class="warning-text">
+                  <strong>Individual Hole Scores Detected</strong>
+                  <p>Some scores were entered hole-by-hole. If you save using simple mode, the individual hole scores will be replaced with total scores only.</p>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
         <!-- Course info -->
         <div class="course-info" *ngIf="scorecard">
           <mat-chip-set>
