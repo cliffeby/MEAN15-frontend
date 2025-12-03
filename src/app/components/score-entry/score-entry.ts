@@ -122,6 +122,9 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   saving = false;
   isMatchCompleted = false;  // Default to false to allow editing initially
   private saveSubject = new Subject<void>();
+  private playerSaveSubjects: Map<number, Subject<void>> = new Map();
+  playerSaveStatus: Map<number, 'saved' | 'saving' | 'unsaved' | 'error'> = new Map();
+  lastSaveTime: Map<number, Date> = new Map();
 
   displayedColumns: string[] = ['player', 'handicap'];
   holeColumns: string[] = [];
@@ -151,6 +154,21 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Debounced save error:', error);
         this.saving = false;
+      }
+    });
+  }
+
+  private setupPlayerAutoSave(playerIndex: number): void {
+    const subject = new Subject<void>();
+    this.playerSaveSubjects.set(playerIndex, subject);
+    
+    subject.pipe(
+      debounceTime(2000), // Wait 2 seconds after last input
+      switchMap(() => this.autoSavePlayer(playerIndex))
+    ).subscribe({
+      error: (error) => {
+        console.error(`Auto-save error for player ${playerIndex}:`, error);
+        this.playerSaveStatus.set(playerIndex, 'error');
       }
     });
   }
@@ -338,14 +356,24 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
     console.log('Processing scorecardId:', scorecardId);
     console.log('Scorecard data from population:', scorecardData);
     
+    // Check if match has members assigned
+    if (!match.lineUps || match.lineUps.length === 0) {
+      console.log('Match has no members assigned');
+      this.snackBar.open(
+        `Match "${match.name}" has no members assigned. Please edit the match and add members before entering scores.`, 
+        'Close', 
+        { duration: 8000, panelClass: ['warning-snackbar'] }
+      );
+      this.loading = false;
+      return;
+    }
+    
     // If we have populated data, use it directly, otherwise fetch it
     const scorecardObservable = scorecardData 
       ? of(scorecardData) 
       : this.scorecardService.getById(scorecardId);
       
-    const membersObservable = match.lineUps && match.lineUps.length > 0 
-      ? forkJoin(match.lineUps.map(memberId => this.memberService.getById(memberId)))
-      : forkJoin([]);
+    const membersObservable = forkJoin(match.lineUps.map(memberId => this.memberService.getById(memberId)));
 
     forkJoin({
       scorecard: scorecardObservable,
@@ -399,6 +427,12 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       this.playerScores.map(() => this.createPlayerFormGroup())
     );
     this.scoreForm.setControl('players', playersFormArray);
+    
+    // Setup auto-save for each player
+    this.playerScores.forEach((_, index) => {
+      this.setupPlayerAutoSave(index);
+      this.playerSaveStatus.set(index, 'unsaved');
+    });
     
     // Update form control states based on match completion status
     this.updateFormControlStates();
@@ -496,6 +530,10 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
             });
             
             this.calculatePlayerTotals(playerIndex);
+            
+            // Mark player as saved since scores were loaded from backend
+            this.playerSaveStatus.set(playerIndex, 'saved');
+            this.lastSaveTime.set(playerIndex, new Date());
           } else {
             console.warn(`Could not find player for score with memberId: ${memberIdToMatch}`);
           }
@@ -600,6 +638,13 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
     
     this.playerScores[playerIndex].scores[holeIndex] = score;
     this.calculatePlayerTotals(playerIndex);
+    
+    // Mark as unsaved and trigger auto-save
+    this.playerSaveStatus.set(playerIndex, 'unsaved');
+    const saveSubject = this.playerSaveSubjects.get(playerIndex);
+    if (saveSubject) {
+      saveSubject.next();
+    }
 
     // Auto-advance to next input if a valid digit (1-9) is entered
     if (score !== null && event && event.target && event.target.value.length === 1) {
@@ -645,6 +690,35 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // Clean up subscriptions to prevent memory leaks
     this.saveSubject.complete();
+    this.playerSaveSubjects.forEach(subject => subject.complete());
+    this.playerSaveSubjects.clear();
+  }
+
+  private async autoSavePlayer(playerIndex: number): Promise<void> {
+    if (!this.match || !this.scorecard || this.isMatchCompleted) {
+      return;
+    }
+
+    const playerScore = this.playerScores[playerIndex];
+    if (!playerScore) {
+      return;
+    }
+
+    this.playerSaveStatus.set(playerIndex, 'saving');
+    
+    try {
+      await this.savePlayerScore(playerScore);
+      this.playerSaveStatus.set(playerIndex, 'saved');
+      this.lastSaveTime.set(playerIndex, new Date());
+      console.log(`✅ Auto-saved player ${playerIndex} at`, new Date().toLocaleTimeString());
+    } catch (error) {
+      console.error(`❌ Auto-save failed for player ${playerIndex}:`, error);
+      this.playerSaveStatus.set(playerIndex, 'error');
+      this.snackBar.open(`Failed to save scores for ${playerScore.member.firstName}. Will retry on manual save.`, 'Close', { 
+        duration: 5000,
+        panelClass: ['error-snackbar']
+      });
+    }
   }
 
   private async performSave(): Promise<void> {
@@ -655,12 +729,15 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
     this.saving = true;
     try {
       // Save scores sequentially to avoid overwhelming the server
-      for (const playerScore of this.playerScores) {
-        await this.savePlayerScore(playerScore);
+      for (let i = 0; i < this.playerScores.length; i++) {
+        this.playerSaveStatus.set(i, 'saving');
+        await this.savePlayerScore(this.playerScores[i]);
+        this.playerSaveStatus.set(i, 'saved');
+        this.lastSaveTime.set(i, new Date());
         // Small delay between saves to further reduce server load
         await new Promise(resolve => setTimeout(resolve, 100));
       }
-      this.snackBar.open('Scores saved successfully!', 'Close', { duration: 3000 });
+      this.snackBar.open('All scores saved successfully!', 'Close', { duration: 3000 });
       this.router.navigate(['/matches']);
     } catch (error) {
       this.snackBar.open('Error saving scores. Please try again.', 'Close', { duration: 3000 });
@@ -705,6 +782,61 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
 
   getCoursePar(): number {
     return getCoursePar(this.scorecard?.par, this.scorecard?.pars);
+  }
+
+  getPlayerSaveStatus(playerIndex: number): string {
+    const status = this.playerSaveStatus.get(playerIndex);
+    const lastSave = this.lastSaveTime.get(playerIndex);
+    
+    switch (status) {
+      case 'saved':
+        if (lastSave) {
+          const timeAgo = Math.floor((Date.now() - lastSave.getTime()) / 1000);
+          if (timeAgo < 60) {
+            return `Saved ${timeAgo}s ago`;
+          } else {
+            return `Saved ${Math.floor(timeAgo / 60)}m ago`;
+          }
+        }
+        return 'Saved';
+      case 'saving':
+        return 'Saving...';
+      case 'error':
+        return 'Save failed';
+      case 'unsaved':
+      default:
+        return 'Unsaved';
+    }
+  }
+
+  getPlayerSaveIcon(playerIndex: number): string {
+    const status = this.playerSaveStatus.get(playerIndex);
+    switch (status) {
+      case 'saved':
+        return 'cloud_done';
+      case 'saving':
+        return 'cloud_upload';
+      case 'error':
+        return 'cloud_off';
+      case 'unsaved':
+      default:
+        return 'cloud_queue';
+    }
+  }
+
+  getPlayerSaveColor(playerIndex: number): string {
+    const status = this.playerSaveStatus.get(playerIndex);
+    switch (status) {
+      case 'saved':
+        return 'success';
+      case 'saving':
+        return 'primary';
+      case 'error':
+        return 'warn';
+      case 'unsaved':
+      default:
+        return 'accent';
+    }
   }
     getFrontNinePar(): number {
       // Returns the sum of pars for holes 1-9

@@ -38,7 +38,7 @@
       <div matListItemTitle>{{ match.name }}</div>
       <div matListItemLine>
         <span *ngIf="match.scGroupName">Course: {{ match.scGroupName }}</span>
-        <span *ngIf="match.players"> | Players: {{ match.players }}</span>
+        <span *ngIf="getPlayerCount(match) > 0"> | Players: {{ getPlayerCount(match) }}</span>
         <span> | Date: {{ formatDate(match.datePlayed) }}</span>
       </div>
       <div matListItemLine>

@@ -300,6 +300,13 @@ export class MatchListComponent implements OnInit, OnDestroy {
     }
   }
 
+  getPlayerCount(match: Match): number {
+    if (match.lineUps && Array.isArray(match.lineUps)) {
+      return match.lineUps.length;
+    }
+    return 0;
+  }
+
 
 
   private parseStringData(scorecard: any): void {
