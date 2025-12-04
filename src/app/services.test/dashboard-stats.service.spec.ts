@@ -1,4 +1,4 @@
-import { DashboardStatsService } from './dashboard-stats.service';
+import { DashboardStatsService } from '../services/dashboard-stats.service';
 import { signal } from '@angular/core';
 import { Match } from '../models/match';
 
