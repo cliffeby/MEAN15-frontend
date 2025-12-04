@@ -17,20 +17,17 @@ export interface Score {
   isScored?: boolean;
   matchId?: string | {
     _id?: string;
-    // id?: string;
     name: string;
     datePlayed?: string;
     status?: string;
   };
   memberId?: string | {
     _id?: string;
-    id?: string;
     name: string;
     email?: string;
   };
   scorecardId?: string | {
     _id?: string;
-    id?: string;
     name: string;
   };
   scSlope?: number;

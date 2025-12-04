@@ -506,7 +506,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
           // Try to find player by memberId (handle both string and object cases)
           let memberIdToMatch = score.memberId;
           if (typeof score.memberId === 'object' && score.memberId !== null) {
-            memberIdToMatch = score.memberId._id || score.memberId.id;
+            memberIdToMatch = score.memberId._id;
           }
           
           const playerIndex = this.playerScores.findIndex(

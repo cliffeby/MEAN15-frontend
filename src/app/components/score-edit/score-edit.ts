@@ -206,7 +206,7 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
       isScored: score.isScored,
       matchId: score.matchId,
       matchName: this.matchName,
-      memberId: typeof score.memberId === 'string' ? score.memberId : (score.memberId?._id || score.memberId?.id || ''),
+      memberId: typeof score.memberId === 'string' ? score.memberId : (score.memberId?._id || ''),
       scorecardId: score.scorecardId,
       scSlope: score.scSlope,
       scRating: score.scRating,

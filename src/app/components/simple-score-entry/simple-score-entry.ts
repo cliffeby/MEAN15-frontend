@@ -236,7 +236,7 @@ export class SimpleScoreEntryComponent implements OnInit {
         scores.forEach((score: any) => {
           let memberIdToMatch = score.memberId;
           if (typeof score.memberId === 'object' && score.memberId !== null) {
-            memberIdToMatch = score.memberId._id || score.memberId.id;
+            memberIdToMatch = score.memberId._id;
           }
           
           const playerIndex = this.playerScores.findIndex(
