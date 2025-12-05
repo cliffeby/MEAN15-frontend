@@ -275,11 +275,21 @@ export class MatchFormComponent implements OnInit, OnDestroy {
 
   private resetForm() {
     this.matchForm.reset();
-    // Reset to default values
+    // Reset simple control values
     this.matchForm.patchValue({
       status: 'open',
-      datePlayed: new Date(),
-      lineUps: {}
+      datePlayed: new Date()
     });
+
+    // Ensure the FormArray is cleared (patching with a non-array causes forEach errors)
+    try {
+      this.lineUpsArray.clear();
+    } catch (err) {
+      // Fallback: if lineUpsArray is not available for some reason, ensure the control value is an empty array
+      const control = this.matchForm.get('lineUps');
+      if (control) {
+        control.setValue([] as any);
+      }
+    }
   }
 }
