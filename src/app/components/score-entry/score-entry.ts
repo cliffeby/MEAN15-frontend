@@ -518,7 +518,8 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
           if (playerIndex >= 0 && score.scores) {
             console.log(`Updating player ${playerIndex} with scores:`, score.scores);
             this.playerScores[playerIndex].scores = [...score.scores];
-            this.playerScores[playerIndex].existingScoreId = score._id;
+            // Prefer `_id` but fall back to `id` if backend returns a different property name
+            this.playerScores[playerIndex].existingScoreId = score._id || (score.id as string) || undefined;
             
             // Update form with existing scores
             const playerFormGroup = this.getPlayerFormGroup(playerIndex);
