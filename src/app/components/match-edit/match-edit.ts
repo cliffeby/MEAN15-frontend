@@ -13,8 +13,8 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { Store } from '@ngrx/store';
-import { Observable, Subject, of } from 'rxjs';
-import { takeUntil, catchError } from 'rxjs/operators';
+import { Observable, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { Scorecard } from '../../services/scorecardService';
 import { Match } from '../../models/match';
 import { Member } from '../../models/member';
@@ -105,21 +105,11 @@ export class MatchEditComponent implements OnInit, OnDestroy {
     this.currentMatch$ = this.store.select(MatchSelectors.selectCurrentMatch);
     this.scorecards$ = this.store.select(ScorecardSelectors.selectAllScorecards);
     this.scorecardsLoading$ = this.store.select(ScorecardSelectors.selectScorecardsLoading);
-    // Try to load members, with fallback to mock data if service fails
-    this.members$ = this.memberService.getAll().pipe(
-      catchError((error: any) => {
-        console.error('Failed to load members from service, using mock data:', error);
-        // Return mock data for testing
-        return of([
-          { _id: '1', firstName: 'John', lastName: 'Doe', email: 'john@example.com', Email: 'john@example.com', user: 'admin', usgaIndex: 12.5 },
-          { _id: '2', firstName: 'Jane', lastName: 'Smith', email: 'jane@example.com', Email: 'jane@example.com', user: 'admin', usgaIndex: 8.2 },
-          { _id: '3', firstName: 'Bob', lastName: 'Wilson', email: 'bob@example.com', Email: 'bob@example.com', user: 'admin', usgaIndex: 15.7 }
-        ]);
-      })
-    );
+    // Try to load members from service (no mock fallback so tests receive real errors)
+    this.members$ = this.memberService.getAll();
     
-    // Debug: Log member data
-    this.members$.subscribe({
+    // Debug: Log member data (subscribe safely and auto-unsubscribe in ngOnDestroy)
+    this.members$.pipe(takeUntil(this.destroy$)).subscribe({
       next: (members) => console.log('Members loaded:', members),
       error: (error) => console.error('Error loading members:', error)
     });
