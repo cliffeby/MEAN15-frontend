@@ -109,8 +109,8 @@ export class ConfigurationService {
       description: 'Number of matches to show on the match list page',
       type: 'number',
       section: 'display',
-      validation: { min: 5, max: 100, required: true },
-      defaultValue: 10
+      validation: { min: 1, max: 20, required: true },
+      defaultValue: 3
     },
     {
       key: 'scoreListPageSize',

@@ -33,17 +33,80 @@
   }
 
   mat-list-item {
-    border-bottom: 1px solid #eee;
-    min-height: 80px;
-    
+    /* Use card-like spacing for each item so matches are easier to scan */
+    border-bottom: none;
+    min-height: 100px;
+    margin-bottom: 12px; /* increased spacing between items */
+    padding: 18px 22px;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    display: flex;
+    align-items: center;
+
     .spacer {
       flex: 1 1 auto;
     }
 
+    /* Tighten spacing inside a single match item */
+    .match-title {
+      margin: 0 0 4px 0;
+      line-height: 1.12;
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+
+    /* mat-line elements are part of the list content; keep them compact */
+    [mat-line], .mat-line {
+      margin: 0;
+      padding: 0;
+      line-height: 1.15;
+      display: block;
+    }
+
+    /* Status line: chips on the left, date pushed to the right */
+    .status-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .date-on-right {
+        margin-left: auto;
+        color: #666;
+        font-size: 0.95rem;
+        white-space: nowrap;
+      }
+    }
+
+    /* Make the chip row a flex row so actions can sit on the same line */
+    .line-with-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      /* ensure the mat-line keeps its intended spacing but allows actions on right */
+      .spacer {
+        flex: 1 1 auto;
+      }
+
+      .button-group {
+        margin-left: 8px;
+        /* don't let the button group wrap onto multiple lines */
+        flex-shrink: 0;
+      }
+    }
+
+    /* small gap between successive lines inside the same item */
+    [mat-line] + [mat-line], .mat-line + .mat-line {
+      margin-top: 4px;
+    }
+
     .button-group {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       align-items: center;
+      /* Make sure actions don't wrap and keep consistent spacing */
+      flex-shrink: 0;
 
       button {
         margin-bottom: 0;

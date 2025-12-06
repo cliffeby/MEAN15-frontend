@@ -29,19 +29,18 @@
     <mat-chip color="warn" selected>Error: {{ error.message || 'Something went wrong' }}</mat-chip>
   </div>
 
-  <!-- Matches list -->
-  <mat-list *ngIf="matches$ | async as matches">
-    <div *ngIf="matches.length === 0 && !(loading$ | async)" class="no-matches">
+  <!-- Matches list (paginated to configured page size) -->
+  <mat-list *ngIf="paginatedMatches$ | async as matches">
+    <div *ngIf="(totalMatches$ | async) === 0 && !(loading$ | async)" class="no-matches">
       No matches found.
     </div>
     <mat-list-item *ngFor="let match of matches">
-      <div matListItemTitle>{{ match.name }}</div>
-      <div matListItemLine>
+      <h3 mat-line class="match-title">{{ match.name }}</h3>
+      <p mat-line>
         <span *ngIf="match.scGroupName">Course: {{ match.scGroupName }}</span>
         <span *ngIf="getPlayerCount(match) > 0"> | Players: {{ getPlayerCount(match) }}</span>
-        <span> | Date: {{ formatDate(match.datePlayed) }}</span>
-      </div>
-      <div matListItemLine>
+      </p>
+      <p mat-line class="status-line">
         <mat-chip [color]="getStatusColor(match.status)" selected>
           {{ match.status | titlecase }}
         </mat-chip>
@@ -49,9 +48,10 @@
           <mat-icon>warning</mat-icon>
           No Scorecard
         </mat-chip>
-      </div>
+        <span class="date-on-right">{{ formatDate(match.datePlayed || match.createdAt) }}</span>
+      </p>
       <span class="spacer"></span>
-      <div class="button-group">
+      <div class="button-group" matListItemMeta>
         <button *ngIf="match.scorecardId" mat-button color="accent" (click)="printScorecard((match._id) || '')">
           <mat-icon>print</mat-icon>
           Print Scorecard
@@ -67,4 +67,14 @@
       </div>
     </mat-list-item>
   </mat-list>
+
+  <!-- Paginator: controls visible page size and page index -->
+  <mat-paginator
+    [length]="totalMatches$ | async"
+    [pageSize]="pageSize"
+    [pageIndex]="pageIndex"
+    [pageSizeOptions]="showPageSizeOptions ? pageSizeOptions : [pageSize]"
+    [showFirstLastButtons]="showFirstLastButtons"
+    (page)="onPageChange($event)">
+  </mat-paginator>
 </div>

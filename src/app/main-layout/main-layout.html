@@ -7,19 +7,19 @@
       </mat-toolbar>
       <mat-nav-list>
         <a mat-list-item *ngFor="let link of sidebarLinks" (click)="navigationEvent.emit(link); router.navigate([link.route])">
-          <span>{{ link.label }}</span>
+          <span mat-line>{{ link.label }}</span>
         </a>
         <a *ngIf="showUserListLink" mat-list-item [routerLink]="'/users'" routerLinkActive="active-link">
-          <span>User List</span>
+          <span mat-line>User List</span>
         </a>
         <mat-divider *ngIf="showAdminLinks"></mat-divider>
         <a *ngIf="showAdminLinks" mat-list-item [routerLink]="'/admin/configuration'" routerLinkActive="active-link">
           <mat-icon matListIcon>settings</mat-icon>
-          <span>Configuration</span>
+          <span mat-line>Configuration</span>
         </a>
         <a *ngIf="showAdminLinks" mat-list-item [routerLink]="'/admin/orphans'" routerLinkActive="active-link">
           <mat-icon matListIcon>cleaning_services</mat-icon>
-          <span>Orphan Management</span>
+          <span mat-line>Orphan Management</span>
         </a>
       </mat-nav-list>
     </mat-sidenav>

@@ -48,7 +48,7 @@ export class AdminConfigurationComponent implements OnInit, OnDestroy {
   users: User[] = [];
   selectedUser: User | null = null;
   leagueOptions = [
-    { value: 'Premier', label: 'Premier' },
+    { value: 'Premier', label: 'Friday' },
     { value: 'Championship', label: 'Swindle' },
     { value: 'League One', label: 'Rochester' }
   ];

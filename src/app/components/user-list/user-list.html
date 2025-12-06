@@ -2,9 +2,10 @@
   <h2>Users</h2>
   <mat-list *ngIf="users.length">
     <mat-list-item *ngFor="let user of users">
-      <span>{{ user.name }} ({{ user.email }}) - {{ user.role }}</span>
+      <div mat-line>{{ user.name }} ({{ user.email }})</div>
+      <div mat-line>{{ user.role }}</div>
       <span class="spacer"></span>
-      <button *ngIf="isAdmin" mat-button color="warn" (click)="deleteUser(user._id)">Delete</button>
+      <button *ngIf="isAdmin" mat-button color="warn" matListItemMeta (click)="deleteUser(user._id)">Delete</button>
     </mat-list-item>
   </mat-list>
   <div *ngIf="!users.length && !loading">No users found.</div>

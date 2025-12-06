@@ -64,6 +64,9 @@ export class MatchListComponent implements OnInit, OnDestroy {
   totalMatches$: Observable<number>;
   pageSize = 10;
   pageIndex = 0;
+  pageSizeOptions: number[] = [5, 10, 20, 50];
+  showFirstLastButtons = true;
+  showPageSizeOptions = true;
   
   private unsubscribe$ = new Subject<void>();
   private currentScorecard: Scorecard | null = null;
@@ -116,6 +119,34 @@ export class MatchListComponent implements OnInit, OnDestroy {
         return matches.slice(startIndex, startIndex + this.pageSize);
       })
     );
+
+    // Subscribe to configuration changes so pageSize and paginator options update dynamically
+    this.configService.config$
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(cfg => {
+        const newSize = cfg?.display?.matchListPageSize;
+        const newPageSizeOptions = cfg?.pagination?.pageSizeOptions;
+        const newShowFirstLast = cfg?.pagination?.showFirstLastButtons;
+        const newShowPageSizeOptions = cfg?.pagination?.showPageSizeOptions;
+
+        // Update page size options if changed
+        if (Array.isArray(newPageSizeOptions) && JSON.stringify(newPageSizeOptions) !== JSON.stringify(this.pageSizeOptions)) {
+          this.pageSizeOptions = newPageSizeOptions;
+        }
+
+        if (typeof newShowFirstLast === 'boolean') {
+          this.showFirstLastButtons = newShowFirstLast;
+        }
+
+        if (typeof newShowPageSizeOptions === 'boolean') {
+          this.showPageSizeOptions = newShowPageSizeOptions;
+        }
+
+        // Update pageSize and reset to first page when page size changes to avoid empty page
+        if (typeof newSize === 'number' && newSize > 0 && newSize !== this.pageSize) {
+          this.onPageChange({ pageIndex: 0, pageSize: newSize } as PageEvent);
+        }
+      });
   }
 
   ngOnDestroy() {
@@ -308,6 +339,11 @@ export class MatchListComponent implements OnInit, OnDestroy {
   }
 
   getPlayerCount(match: Match): number {
+    // Prefer an explicit players count if available (some backends provide this),
+    // otherwise fall back to the lineUps array length when populated.
+    if (typeof match.players === 'number') {
+      return match.players;
+    }
     if (match.lineUps && Array.isArray(match.lineUps)) {
       return match.lineUps.length;
     }
