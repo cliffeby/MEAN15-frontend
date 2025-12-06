@@ -3,6 +3,8 @@ export interface Member {
   firstName: string;
   lastName: string | null;
   usgaIndex?: number;
+  handicap?: number ;
+  GHIN?: string;
   lastDatePlayed?: string;
   scorecardsId?: string[];
   user: string;

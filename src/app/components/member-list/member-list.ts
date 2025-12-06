@@ -122,6 +122,8 @@ export class MemberListComponent implements OnInit, AfterViewInit {
       { key: 'fullName', label: 'Name', visible: true },
       { key: 'Email', label: 'Email', visible: true },
       { key: 'usgaIndex', label: 'USGA Index', visible: true },
+      { key: 'GHIN', label: 'GHIN', visible: true },
+      { key: 'handicap', label: 'Handicap', visible: true },
       { key: 'lastDatePlayed', label: 'Last Played', visible: true },
       { key: 'hidden', label: 'Hidden', visible: false },
       { key: 'actions', label: 'Actions', visible: true, fixed: true },
@@ -142,7 +144,8 @@ export class MemberListComponent implements OnInit, AfterViewInit {
     this.memberService.getAll().subscribe({
       next: (members) => {
         console.log('Members loaded:', members);
-        this.members = members;
+        // Use the handicap value as provided by the backend (do not calculate or override)
+        this.members = members || [];
         this.applyFilter();
         this.loading = false;
         // Set up paginator after view renders
@@ -207,6 +210,14 @@ export class MemberListComponent implements OnInit, AfterViewInit {
         case 'fullName':
           aValue = (a.fullName || `${a.firstName} ${a.lastName || ''}`.trim()).toLowerCase();
           bValue = (b.fullName || `${b.firstName} ${b.lastName || ''}`.trim()).toLowerCase();
+          break;
+        case 'GHIN':
+          aValue = (a as any).GHIN || '';
+          bValue = (b as any).GHIN || '';
+          break;
+        case 'handicap':
+          aValue = (a as any).handicap || 0;
+          bValue = (b as any).handicap || 0;
           break;
         case 'Email':
           aValue = (a.Email || '').toLowerCase();
@@ -342,6 +353,8 @@ export class MemberListComponent implements OnInit, AfterViewInit {
       { key: 'fullName', visible: true },
       { key: 'Email', visible: true },
       { key: 'usgaIndex', visible: true },
+      { key: 'GHIN', visible: true },
+      { key: 'handicap', visible: true },
       { key: 'lastDatePlayed', visible: true },
     ];
 
@@ -365,6 +378,20 @@ export class MemberListComponent implements OnInit, AfterViewInit {
       .map((col) => ({ key: col.key, visible: col.visible }));
 
     this.preferencesService.saveMemberListColumnPreferences(preferences);
+  }
+
+  /**
+   * trackBy function for column menu to avoid unnecessary re-renders
+   */
+  trackByColumn(_: number, column: { key: string }): string {
+    return column.key;
+  }
+
+  /**
+   * trackBy function for member rows to avoid re-rendering rows unnecessarily
+   */
+  trackByMember(_: number, member: Member): string {
+    return (member && ((member as any)._id || (member as any).id || member.Email || (member.firstName + ' ' + (member.lastName || '')))) as string;
   }
 
   clearAllPreferences() {

@@ -2,12 +2,10 @@
   <div class="header">
     <h2>Members</h2>
     <div class="header-buttons">
-      @if (isAllowed(['admin', 'developer', 'fieldhand'])) {
-        <button mat-raised-button color="primary" (click)="addMember()">
-          <mat-icon>add</mat-icon>
-          Add Member
-        </button>
-      }
+      <button *ngIf="isAllowed(['admin', 'developer', 'fieldhand'])" mat-raised-button color="primary" (click)="addMember()">
+        <mat-icon>add</mat-icon>
+        Add Member
+      </button>
       <button *ngIf="isAdmin" mat-raised-button color="warn" (click)="removeDuplicateEmails()" matTooltip="Remove members with duplicate email addresses, keeping the oldest">
         <mat-icon>content_copy</mat-icon>
         Remove Duplicates
@@ -34,23 +32,17 @@
     <mat-menu #columnMenu="matMenu" class="column-menu">
       <div class="menu-header">
         <strong>Show/Hide Columns</strong>
-        @if (hasCustomPreferences()) {
-          <small class="preferences-indicator">
-            • Customized
-          </small>
-        }
+        <small *ngIf="hasCustomPreferences()" class="preferences-indicator">• Customized</small>
       </div>
-      @for (column of allColumns; track column.key) {
-        <div class="column-menu-item">
-          <mat-checkbox 
-            [checked]="column.visible" 
-            [disabled]="column.fixed"
-            (change)="toggleColumnVisibility(column.key)"
-            class="column-checkbox">
-            {{ column.label }}
-          </mat-checkbox>
-        </div>
-      }
+      <div *ngFor="let column of allColumns" class="column-menu-item">
+        <mat-checkbox 
+          [checked]="column.visible" 
+          [disabled]="column.fixed"
+          (change)="toggleColumnVisibility(column.key)"
+          class="column-checkbox">
+          {{ column.label }}
+        </mat-checkbox>
+      </div>
       <mat-divider></mat-divider>
       <button mat-menu-item (click)="resetColumns()">
         <mat-icon>refresh</mat-icon>
@@ -71,13 +63,10 @@
   <mat-divider></mat-divider>
 
   <!-- Progress Bar -->
-  @if (loading) {
-    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-  }
+  <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
 
   <!-- Members Table -->
-  @if (!loading) {
-    <div class="table-container">
+  <div *ngIf="!loading" class="table-container">
     <table mat-table [dataSource]="pagedMembers" matSort (matSortChange)="sortData($event)" class="members-table">
       
       <!-- Name Column -->
@@ -94,11 +83,25 @@
         <td mat-cell *matCellDef="let member">{{ member.Email }}</td>
       </ng-container>
 
+      <!-- GHIN Column -->
+      <ng-container matColumnDef="GHIN">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="GHIN">GHIN</th>
+        <td mat-cell *matCellDef="let member">{{ (member.GHIN || member.ghin) || '-' }}</td>
+      </ng-container>
+
       <!-- USGA Index Column -->
       <ng-container matColumnDef="usgaIndex">
         <th mat-header-cell *matHeaderCellDef mat-sort-header="usgaIndex">USGA Index</th>
         <td mat-cell *matCellDef="let member">
           {{ member.usgaIndex !== undefined ? (member.usgaIndex | number:'1.1-1') : '-' }}
+        </td>
+      </ng-container>
+
+      <!-- Handicap Column -->
+      <ng-container matColumnDef="handicap">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="handicap">Handicap</th>
+        <td mat-cell *matCellDef="let member">
+          {{ member.handicap !== undefined && member.handicap !== null ? (member.handicap | number:'1.0-1') : '-' }}
         </td>
       </ng-container>
 
@@ -123,16 +126,12 @@
         <th mat-header-cell *matHeaderCellDef>Actions</th>
         <td mat-cell *matCellDef="let member" class="actions-cell">
           <div class="action-buttons">
-            @if (isAllowed(['admin', 'developer'])) {
-              <button mat-icon-button color="accent" (click)="editMember((member.id ?? member._id) || '')" matTooltip="Edit Member">
-                <mat-icon>edit</mat-icon>
-              </button>
-            }
-            @if (isAllowed(['admin'])) {
-              <button mat-icon-button color="warn" (click)="deleteMember((member.id ?? member._id) || '')" matTooltip="Delete Member">
-                <mat-icon>delete</mat-icon>
-              </button>
-            }
+            <button *ngIf="isAllowed(['admin', 'developer'])" mat-icon-button color="accent" (click)="editMember((member.id ?? member._id) || '')" matTooltip="Edit Member">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button *ngIf="isAllowed(['admin'])" mat-icon-button color="warn" (click)="deleteMember((member.id ?? member._id) || '')" matTooltip="Delete Member">
+              <mat-icon>delete</mat-icon>
+            </button>
           </div>
         </td>
       </ng-container>
@@ -143,15 +142,11 @@
     </table>
 
     <!-- No Data Message -->
-    @if (!filteredMembers.length && !loading) {
-      <div class="no-data">
-        <mat-icon>person_off</mat-icon>
-        <p>{{ searchTerm ? 'No members match your search criteria.' : 'No members found.' }}</p>
-        @if (searchTerm) {
-          <button mat-button (click)="searchTerm = ''; onSearchChange()">Clear Search</button>
-        }
-      </div>
-    }
+    <div *ngIf="!filteredMembers.length && !loading" class="no-data">
+      <mat-icon>person_off</mat-icon>
+      <p>{{ searchTerm ? 'No members match your search criteria.' : 'No members found.' }}</p>
+      <button *ngIf="searchTerm" mat-button (click)="searchTerm = ''; onSearchChange()">Clear Search</button>
+    </div>
 
     <!-- Pagination -->
     <mat-paginator 
@@ -161,5 +156,4 @@
       showFirstLastButtons>
     </mat-paginator>
     </div>
-  }
 </div>
