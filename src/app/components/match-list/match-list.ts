@@ -25,6 +25,7 @@ import { PrintablePlayer } from '../../models/printable-player.interface';
 import { MatchData, ScorecardData } from '../../models/scorecard.interface';
 import { ScorecardService, Scorecard } from '../../services/scorecardService';
 import * as MatchActions from '../../store/actions/match.actions';
+import { parseStringData } from '../../utils/string-utils';
 
 
 import { 
@@ -216,7 +217,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
       }
 
       // Parse string data if needed
-      this.parseStringData(finalScorecard);
+      parseStringData(finalScorecard);
 
       // Create printable players
       const players: PrintablePlayer[] = match.lineUps?.map((memberId: any) => {
@@ -350,40 +351,6 @@ export class MatchListComponent implements OnInit, OnDestroy {
     return 0;
   }
 
-
-
-  private parseStringData(scorecard: any): void {
-    if (!scorecard) return;
-    
-    // Parse par data from string if arrays are missing
-    if ((!scorecard.pars || !Array.isArray(scorecard.pars)) && scorecard.parInputString) {
-      scorecard.pars = this.parseNumberString(scorecard.parInputString);
-    }
-    
-    // Parse handicap data from string if arrays are missing
-    if ((!scorecard.hCaps || !Array.isArray(scorecard.hCaps)) && scorecard.hCapInputString) {
-      scorecard.hCaps = this.parseNumberString(scorecard.hCapInputString);
-    }
-    
-    // Parse yardage data from string if arrays are missing
-    if ((!scorecard.yards || !Array.isArray(scorecard.yards)) && scorecard.yardsInputString) {
-      scorecard.yards = this.parseNumberString(scorecard.yardsInputString);
-    }
-  }
-  
-  private parseNumberString(inputString: string): number[] {
-    if (!inputString) return [];
-    
-    const numbers = inputString
-      .split(/[,\s\t]+/)
-      .map(str => str.trim())
-      .filter(str => str.length > 0)
-      .map(str => parseInt(str, 10))
-      .filter(num => !isNaN(num));
-    
-    return numbers;
-  }
-
   private getPageGroups(players: PrintablePlayer[]): PrintablePlayer[][] {
     const pageGroups: PrintablePlayer[][] = [];
     const playersPerPage = 4;
@@ -400,56 +367,56 @@ export class MatchListComponent implements OnInit, OnDestroy {
     return pageGroups;
   }
 
-  private addPreviewControls(previewWindow: Window, pdfBlob: Blob, filename: string, match: Match, scorecard: Scorecard, players: PrintablePlayer[]): void {
-    setTimeout(() => {
-      const controlsHtml = `
-        <div style="position: fixed; top: 10px; right: 10px; z-index: 9999; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-family: Arial, sans-serif;">
-          <button id="downloadBtn" style="margin-right: 10px; padding: 8px 16px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
-            📥 Download
-          </button>
-          <button id="emailBtn" style="margin-right: 10px; padding: 8px 16px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
-            📧 Email
-          </button>
-          <button id="printBtn" style="padding: 8px 16px; background: #FF9800; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
-            🖨️ Print
-          </button>
-        </div>
-      `;
+  // private addPreviewControls(previewWindow: Window, pdfBlob: Blob, filename: string, match: Match, scorecard: Scorecard, players: PrintablePlayer[]): void {
+  //   setTimeout(() => {
+  //     const controlsHtml = `
+  //       <div style="position: fixed; top: 10px; right: 10px; z-index: 9999; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-family: Arial, sans-serif;">
+  //         <button id="downloadBtn" style="margin-right: 10px; padding: 8px 16px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+  //           📥 Download
+  //         </button>
+  //         <button id="emailBtn" style="margin-right: 10px; padding: 8px 16px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+  //           📧 Email
+  //         </button>
+  //         <button id="printBtn" style="padding: 8px 16px; background: #FF9800; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+  //           🖨️ Print
+  //         </button>
+  //       </div>
+  //     `;
 
-      const controlsDiv = previewWindow.document.createElement('div');
-      controlsDiv.innerHTML = controlsHtml;
-      previewWindow.document.body.appendChild(controlsDiv);
+  //     const controlsDiv = previewWindow.document.createElement('div');
+  //     controlsDiv.innerHTML = controlsHtml;
+  //     previewWindow.document.body.appendChild(controlsDiv);
 
-      const downloadBtn = previewWindow.document.getElementById('downloadBtn');
-      const emailBtn = previewWindow.document.getElementById('emailBtn');
-      const printBtn = previewWindow.document.getElementById('printBtn');
+  //     const downloadBtn = previewWindow.document.getElementById('downloadBtn');
+  //     const emailBtn = previewWindow.document.getElementById('emailBtn');
+  //     const printBtn = previewWindow.document.getElementById('printBtn');
 
-      if (downloadBtn) {
-        downloadBtn.addEventListener('click', () => {
-          const url = URL.createObjectURL(pdfBlob);
-          const a = previewWindow.document.createElement('a');
-          a.href = url;
-          a.download = filename;
-          previewWindow.document.body.appendChild(a);
-          a.click();
-          previewWindow.document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        });
-      }
+  //     if (downloadBtn) {
+  //       downloadBtn.addEventListener('click', () => {
+  //         const url = URL.createObjectURL(pdfBlob);
+  //         const a = previewWindow.document.createElement('a');
+  //         a.href = url;
+  //         a.download = filename;
+  //         previewWindow.document.body.appendChild(a);
+  //         a.click();
+  //         previewWindow.document.body.removeChild(a);
+  //         URL.revokeObjectURL(url);
+  //       });
+  //     }
 
-      if (emailBtn) {
-        emailBtn.addEventListener('click', () => {
-          this.emailScorecard(pdfBlob, filename, match, scorecard, players);
-        });
-      }
+  //     if (emailBtn) {
+  //       emailBtn.addEventListener('click', () => {
+  //         this.emailScorecard(pdfBlob, filename, match, scorecard, players);
+  //       });
+  //     }
 
-      if (printBtn) {
-        printBtn.addEventListener('click', () => {
-          previewWindow.print();
-        });
-      }
-    }, 1000);
-  }
+  //     if (printBtn) {
+  //       printBtn.addEventListener('click', () => {
+  //         previewWindow.print();
+  //       });
+  //     }
+  //   }, 1000);
+  // }
 
   private emailScorecard(pdfBlob: Blob, filename: string, match: Match, scorecard: Scorecard, players: PrintablePlayer[]): void {
     const courseName = scorecard?.name || 'Golf Course';
