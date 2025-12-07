@@ -429,8 +429,6 @@ export class MatchListComponent implements OnInit, OnDestroy {
           matchId: (score.matchId && (typeof score.matchId === 'string' ? score.matchId : score.matchId._id)) || matchId,
           memberId: memberId,
           user: currentUser,
-          username: member?.user || member?.Email || ''
-          // user: currentUserEmail
         };
 console.log('Preparing to create/update HCap record:', hcapRecord);
         // If existing HCap exists for the same member+match, update it instead of creating
