@@ -8,7 +8,9 @@
     "dev-ws": "ng serve --configuration development --live-reload --host localhost --port 4200 --verbose",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix"
   },
   "prettier": {
     "printWidth": 100,
@@ -51,14 +53,21 @@
     "@angular/build": "^20.1.6",
     "@angular/cli": "^20.1.6",
     "@angular/compiler-cli": "^20.1.0",
+    "@eslint/js": "^9.39.1",
     "@ngrx/schematics": "^20.0.0",
     "@types/jasmine": "~5.1.0",
+    "@typescript-eslint/eslint-plugin": "^8.48.1",
+    "@typescript-eslint/parser": "^8.48.1",
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0",
     "jasmine-core": "~5.8.0",
+    "jiti": "^2.6.1",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "~5.8.2"
+    "typescript": "~5.8.2",
+    "typescript-eslint": "^8.48.1"
   }
 }
