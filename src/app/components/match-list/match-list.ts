@@ -10,8 +10,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable, Subject, forkJoin, combineLatest } from 'rxjs';
+import { Observable, Subject, forkJoin, combineLatest, lastValueFrom } from 'rxjs';
 import { takeUntil, map } from 'rxjs/operators';
+import { ScoreService } from '../../services/scoreService';
+import { HCapService } from '../../services/hcapService';
 import { Match } from '../../models/match';
 import { Member } from '../../models/member';
 import { AuthService } from '../../services/authService';
@@ -79,6 +81,8 @@ export class MatchListComponent implements OnInit, OnDestroy {
   private pdfService = inject(ScorecardPdfService);
   private handicapService = inject(HandicapCalculationService);
   private configService = inject(ConfigurationService);
+  private scoreService = inject(ScoreService);
+  private hcapService = inject(HCapService);
 
   constructor(
     private store: Store,
@@ -309,7 +313,145 @@ export class MatchListComponent implements OnInit, OnDestroy {
   }
 
   updateStatus(id: string, status: string) {
+    // Warn user and create HCap records when completing a match
+    const completing = (status || '').toLowerCase() === 'completed' || (status || '').toLowerCase() === 'complete';
+    if (completing) {
+      this.confirmDialog
+        .confirmAction(
+          'Complete Match',
+          'Completing this match will create/update handicap records for players with posted score > 50. Do you want to continue?',
+          'Complete',
+          'Cancel'
+        )
+        .subscribe(async (confirmed) => {
+          if (!confirmed) return;
+          try {
+            await this.createHcapRecordsForMatch(id);
+            this.store.dispatch(MatchActions.updateMatchStatus({ id, status }));
+            this.snackBar.open('Match completed — handicaps updated (where applicable).', 'Close', { duration: 4000 });
+          } catch (err) {
+            console.error('Error creating HCap records:', err);
+            this.snackBar.open('Error creating handicap records. Match status not changed.', 'Close', { duration: 6000 });
+          }
+        });
+      return;
+    }
+
     this.store.dispatch(MatchActions.updateMatchStatus({ id, status }));
+  }
+
+    private getCurrentUserEmail(): string {
+    const user = this.authService.user;
+    return user?.email || user?.name || 'unknown';
+  }
+
+  private async createHcapRecordsForMatch(matchId: string): Promise<any> {
+    // Fetch scores for the match
+    const resp: any = await lastValueFrom(this.scoreService.getScoresByMatch(matchId));
+    const scores = resp?.scores || resp || [];
+    const currentUserEmail = await this.getCurrentUserEmail();
+
+    // Filter players with postedScore > 50 (or score if postedScore missing)
+    const eligible = scores.filter((s: any) => {
+      const posted = s.postedScore ?? s.score ?? 0;
+      return typeof posted === 'number' && posted > 50;
+    });
+
+    // Deduplicate by memberId (or score id when no memberId). If multiple scores exist for same member,
+    // prefer the one with higher postedScore or more recent datePlayed.
+    const uniqueMap = new Map<string, any>();
+    for (const s of eligible) {
+      const key = typeof s.memberId === 'string' ? s.memberId : (s.memberId?._id || s._id);
+      if (!key) {
+        // fallback to score id when memberId missing
+        const scoreKey = s._id || JSON.stringify(s);
+        if (!uniqueMap.has(scoreKey)) uniqueMap.set(scoreKey, s);
+        continue;
+      }
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, s);
+      } else {
+        const existing = uniqueMap.get(key);
+        const existingPosted = existing.postedScore ?? existing.score ?? 0;
+        const currentPosted = s.postedScore ?? s.score ?? 0;
+        const existingDate = new Date(existing.datePlayed || 0).getTime();
+        const currentDate = new Date(s.datePlayed || 0).getTime();
+        // Prefer higher posted score, then more recent date
+        if (currentPosted > existingPosted || currentDate > existingDate) {
+          uniqueMap.set(key, s);
+        }
+      }
+    }
+
+    const uniqueEligible = Array.from(uniqueMap.values());
+
+    // Load existing HCap records once so we can update instead of creating duplicates
+    let existingHcaps: any[] = [];
+    try {
+      const respAll: any = await lastValueFrom(this.hcapService.getAll());
+      existingHcaps = respAll?.hcaps || respAll || [];
+    } catch (e) {
+      console.warn('Failed to load existing HCap records for dedupe/update:', e);
+      existingHcaps = [];
+    }
+
+    const existingMap = new Map<string, any>();
+    for (const h of existingHcaps) {
+      const mId = typeof h.memberId === 'string' ? h.memberId : (h.memberId?._id || null);
+      const maId = typeof h.matchId === 'string' ? h.matchId : (h.matchId?._id || null);
+      if (mId && maId) existingMap.set(`${mId}:${maId}`, h);
+    }
+
+    const createPromises = uniqueEligible.map(async (score: any) => {
+      try {
+        const memberId = typeof score.memberId === 'string' ? score.memberId : (score.memberId?._id || null);
+        let member: any = null;
+        if (memberId) {
+          try {
+            member = await lastValueFrom(this.memberService.getById(memberId));
+          } catch (e) {
+            console.warn('Failed to load member for HCap creation:', memberId, e);
+          }
+        }
+
+        const hcapRecord: any = {
+          name: score.name || (member ? `${member.firstName} ${member.lastName || ''}`.trim() : ''),
+          postedScore: score.postedScore ?? score.score ?? null,
+          currentHCap: member?.handicap ?? member?.usgaIndex ?? null,
+          newHCap: null,
+          datePlayed: score.datePlayed || new Date().toISOString(),
+          usgaIndexForTodaysScore: score.usgaIndexForTodaysScore ?? score.usgaIndex ?? null,
+          handicap: member?.handicap ?? null,
+          scoreId: score._id || null,
+          scorecardId: (score.scorecardId && (typeof score.scorecardId === 'string' ? score.scorecardId : score.scorecardId._id)) || null,
+          matchId: (score.matchId && (typeof score.matchId === 'string' ? score.matchId : score.matchId._id)) || matchId,
+          memberId: memberId,
+          user: currentUserEmail,
+          username: member?.user || member?.Email || ''
+          // user: currentUserEmail
+        };
+console.log('Preparing to create/update HCap record:', hcapRecord);
+        // If existing HCap exists for the same member+match, update it instead of creating
+        const key = memberId && matchId ? `${memberId}:${matchId}` : null;
+        if (key && existingMap.has(key)) {
+          const existing = existingMap.get(key);
+          try {
+            return await lastValueFrom(this.hcapService.update(existing._id, hcapRecord));
+          } catch (e) {
+            console.warn('Failed to update existing HCap, will try create as fallback:', e);
+          }
+        }
+
+        // Call HCap service to create record
+        return await lastValueFrom(this.hcapService.create(hcapRecord));
+      } catch (err) {
+        console.error('Failed to create HCap for score:', score, err);
+        // continue without failing all
+        return null;
+      }
+    });
+
+    return Promise.all(createPromises);
   }
 
   refreshMatches() {
@@ -351,21 +493,21 @@ export class MatchListComponent implements OnInit, OnDestroy {
     return 0;
   }
 
-  private getPageGroups(players: PrintablePlayer[]): PrintablePlayer[][] {
-    const pageGroups: PrintablePlayer[][] = [];
-    const playersPerPage = 4;
+  // private getPageGroups(players: PrintablePlayer[]): PrintablePlayer[][] {
+  //   const pageGroups: PrintablePlayer[][] = [];
+  //   const playersPerPage = 4;
     
-    for (let i = 0; i < players.length; i += playersPerPage) {
-      const group = players.slice(i, i + playersPerPage);
-      pageGroups.push(group);
-    }
+  //   for (let i = 0; i < players.length; i += playersPerPage) {
+  //     const group = players.slice(i, i + playersPerPage);
+  //     pageGroups.push(group);
+  //   }
     
-    if (pageGroups.length === 0) {
-      pageGroups.push([]);
-    }
+  //   if (pageGroups.length === 0) {
+  //     pageGroups.push([]);
+  //   }
     
-    return pageGroups;
-  }
+  //   return pageGroups;
+  // }
 
   // private addPreviewControls(previewWindow: Window, pdfBlob: Blob, filename: string, match: Match, scorecard: Scorecard, players: PrintablePlayer[]): void {
   //   setTimeout(() => {

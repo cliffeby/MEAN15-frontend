@@ -24,6 +24,7 @@ import { SimpleScoreEntryComponent } from './components/simple-score-entry/simpl
 import { PrintableScorecardComponent } from './components/printable-scorecard/printable-scorecard';
 import { AdminConfigurationComponent } from './components/admin-configuration/admin-configuration.component';
 import { OrphanManagementComponent } from './components/orphan-management/orphan-management';
+import { HcapListComponent } from './components/hcap-list/hcap-list';
 
 export const routes: Routes = [
   // Public
@@ -89,6 +90,11 @@ export const routes: Routes = [
       { path: 'scores', component: ScoreListComponent },
       { path: 'scores/add', component: ScoreFormComponent },
       { path: 'scores/edit/:id', component: ScoreEditComponent },
+      { path: 'hcaps', 
+        component: HcapListComponent,
+        canActivate: [roleGuard],
+        data: { role: ['admin', 'developer','fieldhand'] }
+        },
       { path: 'matches', component: MatchListComponent },
       {
         path: 'matches/add',

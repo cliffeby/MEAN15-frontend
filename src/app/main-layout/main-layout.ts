@@ -46,6 +46,7 @@ export class MainLayoutComponent {
       { label: 'Member List', route: '/members' },
       { label: 'Scorecard List', route: '/scorecards' },
       { label: 'Score List', route: '/scores' },
+      { label: 'HCap List', route: '/hcaps' },
       { label: 'Match List', route: '/matches' },
     ];
     if (this.auth.role === 'developer') {

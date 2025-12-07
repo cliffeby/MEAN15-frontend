@@ -1,0 +1,49 @@
+<div class="hcap-list">
+  <div class="toolbar">
+    <mat-form-field appearance="outline" class="search">
+      <mat-label>Search</mat-label>
+      <input matInput [(ngModel)]="search" (ngModelChange)="applyFilter()" placeholder="Name or Member ID">
+      <button mat-icon-button matSuffix *ngIf="search" (click)="search=''; applyFilter();">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+  </div>
+
+  <table mat-table [dataSource]="paged" class="mat-elevation-z1">
+
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef> Name </th>
+      <td mat-cell *matCellDef="let row"> {{ row.name || '-' }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="postedScore">
+      <th mat-header-cell *matHeaderCellDef> Posted </th>
+      <td mat-cell *matCellDef="let row"> {{ row.postedScore ?? '-' }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="currentHCap">
+      <th mat-header-cell *matHeaderCellDef> Current HCap </th>
+      <td mat-cell *matCellDef="let row"> {{ row.currentHCap ?? '-' }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="newHCap">
+      <th mat-header-cell *matHeaderCellDef> New HCap </th>
+      <td mat-cell *matCellDef="let row"> {{ row.newHCap ?? '-' }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="datePlayed">
+      <th mat-header-cell *matHeaderCellDef> Date </th>
+      <td mat-cell *matCellDef="let row"> {{ row.datePlayed ? (row.datePlayed | date:'shortDate') : '-' }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="user">
+      <th mat-header-cell *matHeaderCellDef> User </th>
+      <td mat-cell *matCellDef="let row"> {{ row.userId ? (row.user.userName ? (row.userId.userName + ' ' + (row.userId.lastName||'')) : row.userId) : '-' }} </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  </table>
+
+  <mat-paginator [length]="filtered.length" [pageSize]="pageSize" [pageIndex]="pageIndex" [pageSizeOptions]="[5,10,20,50]" (page)="onPage($event)"></mat-paginator>
+</div>

@@ -11,7 +11,7 @@ When recommending actions, ensure that the correct folder (frontend or backend) 
 The frontend is built with Angular and uses NgRx for state management. Below are the key areas where Copilot can assist:
 - **Components**: Located in `frontend/src/app/components/`. Create and manage UI components for Members, Matches, and Scorecards.
 - **Services**: Located in `frontend/src/app/services/`. Implement services to interact with the backend API.  Services should include methods for fetching, creating, updating, and deleting data. They should adopt the name of the model they are servicing and include Service (e.g., MemberService, MatchService).
-
+Every service method that creates or updates a record should accept a userId parameter to log the user performing the action.
 - **Models**: Located in `frontend/src/app/models/`. Define TypeScript interfaces or classes for data models.
 - **NgRx Store**: Located in `frontend/src/app/store/`. Set up actions, reducers, selectors, and effects for state management.
 When generating code for the frontend:
