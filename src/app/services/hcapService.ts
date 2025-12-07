@@ -37,8 +37,9 @@ export class HCapService {
     return throwError(() => new Error(message));
   }
 
-  create(hcap: Partial<HCap>): Observable<any> {
-    return this.http.post(this.baseUrl, hcap, this.getHeaders()).pipe(
+  create(hcap: Partial<HCap>, userId?: string): Observable<any> {
+    const body = userId ? { ...hcap, userId } : hcap;
+    return this.http.post(this.baseUrl, body, this.getHeaders()).pipe(
       tap(() => this.clearCache()),
       catchError(this.handleError)
     );
@@ -59,8 +60,9 @@ export class HCapService {
     return this.http.get(`${this.baseUrl}/${id}`, this.getHeaders()).pipe(catchError(this.handleError));
   }
 
-  update(id: string, hcap: Partial<HCap>): Observable<any> {
-    return this.http.put(`${this.baseUrl}/${id}`, hcap, this.getHeaders()).pipe(
+  update(id: string, hcap: Partial<HCap>, userId?: string): Observable<any> {
+    const body = userId ? { ...hcap, userId } : hcap;
+    return this.http.put(`${this.baseUrl}/${id}`, body, this.getHeaders()).pipe(
       tap(() => this.clearCache()),
       catchError(this.handleError)
     );

@@ -40,7 +40,7 @@ export class HcapListComponent implements OnInit {
   pageSize = 20;
   pageIndex = 0;
 
-  displayedColumns: string[] = ['name', 'postedScore', 'currentHCap', 'newHCap', 'datePlayed', 'user'];
+  displayedColumns: string[] = ['name', 'postedScore', 'currentHCap', 'newHCap', 'datePlayed', 'username'];
 
   constructor(private hcapService: HCapService, private snackBar: MatSnackBar) {}
 

@@ -350,6 +350,8 @@ export class MatchListComponent implements OnInit, OnDestroy {
     const resp: any = await lastValueFrom(this.scoreService.getScoresByMatch(matchId));
     const scores = resp?.scores || resp || [];
     const currentUserEmail = await this.getCurrentUserEmail();
+    const currentUser = this.authService.user;
+    const currentUserId = currentUser?._id || currentUser?.id || currentUser?.userId || null;
 
     // Filter players with postedScore > 50 (or score if postedScore missing)
     const eligible = scores.filter((s: any) => {
@@ -426,7 +428,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
           scorecardId: (score.scorecardId && (typeof score.scorecardId === 'string' ? score.scorecardId : score.scorecardId._id)) || null,
           matchId: (score.matchId && (typeof score.matchId === 'string' ? score.matchId : score.matchId._id)) || matchId,
           memberId: memberId,
-          user: currentUserEmail,
+          user: currentUser,
           username: member?.user || member?.Email || ''
           // user: currentUserEmail
         };
@@ -436,14 +438,14 @@ console.log('Preparing to create/update HCap record:', hcapRecord);
         if (key && existingMap.has(key)) {
           const existing = existingMap.get(key);
           try {
-            return await lastValueFrom(this.hcapService.update(existing._id, hcapRecord));
+            return await lastValueFrom(this.hcapService.update(existing._id, hcapRecord, currentUserId));
           } catch (e) {
             console.warn('Failed to update existing HCap, will try create as fallback:', e);
           }
         }
 
         // Call HCap service to create record
-        return await lastValueFrom(this.hcapService.create(hcapRecord));
+        return await lastValueFrom(this.hcapService.create(hcapRecord, currentUserId));
       } catch (err) {
         console.error('Failed to create HCap for score:', score, err);
         // continue without failing all
