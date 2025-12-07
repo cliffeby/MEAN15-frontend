@@ -14,6 +14,7 @@ import { Store } from '@ngrx/store';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ScoreService } from '../../services/scoreService';
+import { AuthService } from '../../services/authService';
 import { Scorecard } from '../../services/scorecardService';
 import * as ScorecardActions from '../../store/actions/scorecard.actions';
 import * as ScorecardSelectors from '../../store/selectors/scorecard.selectors';
@@ -48,7 +49,8 @@ export class ScoreFormComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private scoreService: ScoreService,
     private snackBar: MatSnackBar,
-    private store: Store
+    private store: Store,
+    private authService: AuthService
   ) {
     this.scorecards$ = this.store.select(ScorecardSelectors.selectAllScorecards);
     this.scorecardsLoading$ = this.store.select(ScorecardSelectors.selectScorecardsLoading);
@@ -141,7 +143,9 @@ export class ScoreFormComponent implements OnInit, OnDestroy {
       formValue.datePlayed = formValue.datePlayed.toISOString();
     }
 
-    this.scoreService.create(formValue).subscribe({
+    const currentUserId = this.authService.user?.id || this.authService.user?._id;
+
+    this.scoreService.create(formValue, currentUserId).subscribe({
       next: () => {
         this.snackBar.open('Score created!', 'Close', { duration: 2000 });
         this.scoreForm.reset();

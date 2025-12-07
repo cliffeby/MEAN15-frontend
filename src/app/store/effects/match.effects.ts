@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { MatchService } from '../../services/matchService';
+import { AuthService } from '../../services/authService';
 import * as MatchActions from '../actions/match.actions';
 import { mergeMap, map, catchError, tap, filter } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -15,7 +16,8 @@ export class MatchEffects {
     private matchService: MatchService,
     private router: Router,
     private snackBar: MatSnackBar,
-    private confirmDialog: ConfirmDialogService
+    private confirmDialog: ConfirmDialogService,
+    private authService: AuthService
   ) {}
 
   // Load all matches
@@ -54,15 +56,16 @@ export class MatchEffects {
   createMatch$ = createEffect(() =>
     this.actions$.pipe(
       ofType(MatchActions.createMatch),
-      mergeMap((action) =>
-        this.matchService.create(action.match).pipe(
+      mergeMap((action) => {
+        const currentUserId = this.authService.user?.id || this.authService.user?._id;
+        return this.matchService.create(action.match, currentUserId).pipe(
           map((response) => {
             const match = response.match || response;
             return MatchActions.createMatchSuccess({ match });
           }),
           catchError((error) => of(MatchActions.createMatchFailure({ error })))
-        )
-      )
+        );
+      })
     )
   );
 
@@ -70,15 +73,16 @@ export class MatchEffects {
   updateMatch$ = createEffect(() =>
     this.actions$.pipe(
       ofType(MatchActions.updateMatch),
-      mergeMap((action) =>
-        this.matchService.update(action.id, action.match).pipe(
+      mergeMap((action) => {
+        const currentUserId = this.authService.user?.id || this.authService.user?._id;
+        return this.matchService.update(action.id, action.match, currentUserId).pipe(
           map((response) => {
             const match = response.match || response;
             return MatchActions.updateMatchSuccess({ match });
           }),
           catchError((error) => of(MatchActions.updateMatchFailure({ error })))
-        )
-      )
+        );
+      })
     )
   );
 

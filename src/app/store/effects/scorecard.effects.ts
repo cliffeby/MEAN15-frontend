@@ -5,6 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { of } from 'rxjs';
 import { map, mergeMap, catchError, tap } from 'rxjs/operators';
 import { ScorecardService } from '../../services/scorecardService';
+import { AuthService } from '../../services/authService';
 import * as ScorecardActions from '../actions/scorecard.actions';
 
 @Injectable()
@@ -14,7 +15,8 @@ export class ScorecardEffects {
     private actions$: Actions,
     private scorecardService: ScorecardService,
     private router: Router,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private authService: AuthService
   ) {}
 
   // Load all scorecards
@@ -59,8 +61,9 @@ export class ScorecardEffects {
   createScorecard$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ScorecardActions.createScorecard),
-      mergeMap((action) =>
-        this.scorecardService.create(action.scorecard).pipe(
+      mergeMap((action) => {
+        const currentUserId = this.authService.user?.id || this.authService.user?._id;
+        return this.scorecardService.create(action.scorecard, currentUserId).pipe(
           map((response) => {
             const scorecard = response.scorecard || response;
             return ScorecardActions.createScorecardSuccess({ scorecard });
@@ -69,8 +72,8 @@ export class ScorecardEffects {
             const errorMsg = error.message || 'Failed to create scorecard';
             return of(ScorecardActions.createScorecardFailure({ error: errorMsg }));
           })
-        )
-      )
+        );
+      })
     )
   );
 
@@ -78,8 +81,9 @@ export class ScorecardEffects {
   updateScorecard$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ScorecardActions.updateScorecard),
-      mergeMap((action) =>
-        this.scorecardService.update(action.id, action.scorecard).pipe(
+      mergeMap((action) => {
+        const currentUserId = this.authService.user?.id || this.authService.user?._id;
+        return this.scorecardService.update(action.id, action.scorecard, currentUserId).pipe(
           map((response) => {
             const scorecard = response.scorecard || response;
             return ScorecardActions.updateScorecardSuccess({ scorecard });
@@ -88,8 +92,8 @@ export class ScorecardEffects {
             const errorMsg = error.message || 'Failed to update scorecard';
             return of(ScorecardActions.updateScorecardFailure({ error: errorMsg }));
           })
-        )
-      )
+        );
+      })
     )
   );
 

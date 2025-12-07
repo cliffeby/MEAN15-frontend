@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MemberService } from '../../services/memberService';
+import { AuthService } from '../../services/authService';
 
 @Component({
   selector: 'app-member-form',
@@ -28,7 +29,8 @@ export class MemberFormComponent {
   constructor(
     private fb: FormBuilder,
     private memberService: MemberService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private authService: AuthService
   ) {
     this.memberForm = this.fb.group({
       firstName: ['', Validators.required],
@@ -58,7 +60,9 @@ export class MemberFormComponent {
   submit() {
     if (this.memberForm.invalid) return;
     this.loading = true;
-    this.memberService.create(this.memberForm.value).subscribe({
+    const currentUserId = this.authService.user?.id || this.authService.user?._id;
+
+    this.memberService.create(this.memberForm.value, currentUserId).subscribe({
       next: () => {
         this.snackBar.open('Member created!', 'Close', { duration: 2000 });
         this.memberForm.reset();

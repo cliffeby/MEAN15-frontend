@@ -8,6 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MemberService } from '../../services/memberService';
+import { AuthService } from '../../services/authService';
 import { Member } from '../../models/member';
 import { MatCheckbox } from '@angular/material/checkbox';
 
@@ -36,7 +37,8 @@ export class MemberEditComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private memberService: MemberService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private authService: AuthService
   ) {
     this.memberForm = this.fb.group({
       firstName: ['', Validators.required],
@@ -83,7 +85,9 @@ export class MemberEditComponent implements OnInit {
   submit() {
     if (this.memberForm.invalid || !this.memberId) return;
     this.loading = true;
-    this.memberService.update(this.memberId, this.memberForm.value).subscribe({
+    const currentUserId = this.authService.user?.id || this.authService.user?._id;
+
+    this.memberService.update(this.memberId, this.memberForm.value, currentUserId).subscribe({
       next: () => {
         this.snackBar.open('Member updated!', 'Close', { duration: 2000 });
         this.router.navigate(['/members']);

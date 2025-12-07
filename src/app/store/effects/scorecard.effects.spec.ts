@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Subject, of, throwError } from 'rxjs';
 import { ScorecardEffects } from './scorecard.effects';
+import { AuthService } from '../../services/authService';
 import { ScorecardService } from '../../services/scorecardService';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -15,6 +16,7 @@ describe('ScorecardEffects', () => {
   let router: jasmine.SpyObj<Router>;
 
   const mockScorecards = [{ _id: 's1', name: 'Round 1' }];
+  const auth = { user: { id: 'u1', _id: 'u1' } } as any;
 
   beforeEach(() => {
     actions$ = new Subject<any>();
@@ -31,7 +33,8 @@ describe('ScorecardEffects', () => {
         provideMockActions(() => actions$.asObservable()),
         { provide: ScorecardService, useValue: svc },
         { provide: MatSnackBar, useValue: snackBar },
-        { provide: Router, useValue: router }
+        { provide: Router, useValue: router },
+        { provide: AuthService, useValue: auth }
       ]
     });
 

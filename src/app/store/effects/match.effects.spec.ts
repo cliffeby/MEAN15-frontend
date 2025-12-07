@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Subject, of, throwError } from 'rxjs';
 import { MatchEffects } from './match.effects';
+import { AuthService } from '../../services/authService';
 import { MatchService } from '../../services/matchService';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -18,6 +19,7 @@ describe('MatchEffects', () => {
 
   const mockMatches = [{ _id: 'm1', name: 'A', user: 'u1', status: 'active' }, 
     { _id: 'm2', name: 'B', user: 'u2', status: 'inactive' }];
+  const auth = { user: { id: 'u1', _id: 'u1' } } as any;
 
   beforeEach(() => {
     actions$ = new Subject<any>();
@@ -36,7 +38,8 @@ describe('MatchEffects', () => {
         { provide: MatchService, useValue: matchSpy },
         { provide: MatSnackBar, useValue: snackBar },
         { provide: Router, useValue: router },
-        { provide: ConfirmDialogService, useValue: confirmDialog }
+        { provide: ConfirmDialogService, useValue: confirmDialog },
+        { provide: AuthService, useValue: auth }
       ]
     });
 
