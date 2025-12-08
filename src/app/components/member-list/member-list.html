@@ -19,7 +19,7 @@
 
   <!-- Filter Controls -->
   <div class="filter-container">
-    <mat-form-field appearance="outline" class="search-field">
+    <mat-form-field appearance="outline" class="search-field" floatLabel="always">
       <mat-label>Search members...</mat-label>
       <input matInput [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()" placeholder="Search by name or email">
       <mat-icon matSuffix>search</mat-icon>
