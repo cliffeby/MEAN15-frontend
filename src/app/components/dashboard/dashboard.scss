@@ -153,7 +153,7 @@ section {
         
         .player-name {
           font-weight: 500;
-          color: #333;
+          color: #353434;
           font-size: 0.85rem;
           line-height: 1.2;
           overflow: hidden;
@@ -387,6 +387,7 @@ section {
 [data-theme="dark"] {
   .overview-section h2,
   .activity-section h2,
+  .frequent-players-list .player-item .player-info .player-name,
   .performance-section h2 {
     color: #ffffff; // Set font color to white for better contrast in dark mode
   }

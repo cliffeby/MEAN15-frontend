@@ -37,3 +37,20 @@ body {
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* Global: make icons and action buttons inside table rows inherit the row text color
+   This ensures icons match row text in light, dark and hover/highlight states
+   without duplicating color rules in every component. Targets both MDC and legacy
+   mat-table class names. */
+.mat-mdc-row .mat-icon,
+.mat-mdc-row svg,
+.mat-mdc-row button,
+.mat-row .mat-icon,
+.mat-row svg,
+.mat-row button,
+tr.mat-mdc-row .mat-icon,
+tr.mat-mdc-row svg,
+tr.mat-mdc-row button {
+  color: inherit !important;
+  fill: currentColor !important;
+}

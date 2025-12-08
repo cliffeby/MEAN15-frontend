@@ -9,6 +9,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  
 
   h2 {
     margin: 0;
@@ -71,9 +72,16 @@
   .member-row {
     cursor: pointer;
     transition: background-color 0.2s;
+    background-color: #fcfafa;
 
     &:hover {
       background-color: #f5f5f5;
+    }
+    /* Icons inside a row should follow the row text color */
+    .mat-icon,
+    svg {
+      color: inherit;
+      fill: currentColor;
     }
   }
 
@@ -95,6 +103,15 @@
       justify-content: center;
       min-width: 40px;
       flex-shrink: 0;
+      /* inherit color so icon/button text matches row color */
+      color: inherit;
+    }
+
+    /* ensure icons inside action buttons inherit row color */
+    .mat-icon,
+    svg {
+      color: inherit;
+      fill: currentColor;
     }
   }
 }
@@ -211,5 +228,149 @@
       padding: 0.5rem;
       font-size: 0.9rem;
     }
+  }
+}
+
+/* Dark theme overrides when host has .dark-theme class */
+:host(.dark-theme) {
+  .member-list {
+    background: #0f1113;
+    color: #e6eef8;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.6);
+  }
+   .member-row {
+    cursor: pointer;
+    transition: background-color 0.2s;
+    background-color: #161414;
+
+    &:hover {
+      background-color: #f5f5f5;
+    }
+  }
+
+  .header {
+    h2 { color: #e6eef8; }
+    .header-buttons { color: #cde7ff; }
+    button { color: #e6eef8; }
+  }
+
+  .filter-container {
+    .sort-info { color: #b8cfe6; }
+    input, .mat-form-field-infix { color: #e6eef8; }
+
+    /* Improve contrast for search placeholder/hints */
+    input.mat-mdc-input-element,
+    input {
+      color: #e6eef8;
+    }
+
+    /* Placeholder text */
+    input::placeholder,
+    input.mat-mdc-input-element::placeholder {
+      color: rgba(230,238,248,0.65);
+      opacity: 1; /* ensure full opacity in browsers that respect it */
+    }
+
+    /* Material hint text and helper/hint wrappers */
+    .mat-mdc-form-field-hint-wrapper,
+    .mat-mdc-form-field-hint,
+    .mat-mdc-form-field-subscript-wrapper {
+      color: rgba(230,238,248,0.7);
+    }
+  }
+
+  .members-table {
+    .mat-mdc-header-cell {
+      color: #262a2e;
+      border-bottom-color: rgba(255,255,255,0.06);
+    }
+
+    .member-row {
+      &:hover { 
+        /* stronger hover overlay for better contrast */
+        background-color: rgba(255,255,255,0.06);
+      }
+
+      /* Darken text on hover/selection to preserve contrast when background lightens */
+      &.highlighted,
+      &.selected,
+      &:hover {
+        /* darker hover text for improved contrast against the lighter hover background */
+        color: #8fb2c7;
+      }
+
+      /* Ensure cell contents follow the row color when highlighted */
+      &.highlighted .mat-mdc-cell,
+      &.selected .mat-mdc-cell,
+      &:hover .mat-mdc-cell {
+        color: #0c0d0e;
+      }
+    }
+
+    .mat-mdc-cell {
+      color: #e6eef8;
+    }
+  }
+
+  .no-data {
+    color: #a9bfdb;
+    mat-icon { opacity: 0.6; color: #a9bfdb; }
+  }
+
+  .column-menu {
+    background: #0b0d0f;
+    color: #dbeeff;
+
+    .menu-header { border-bottom-color: rgba(255,255,255,0.04); color: #dbeeff; }
+    .column-checkbox .mat-checkbox-label { color: #dbeeff; }
+  }
+
+  /* Button contrast rules for dark theme */
+  /* General buttons: subtle text color and transparent background */
+  button,
+  a.mat-mdc-button-base,
+  .mat-mdc-button-base {
+    color: #e6eef8;
+    background: transparent;
+    border: 1px solid transparent;
+  }
+
+  /* Raised / contained buttons use primary blue for strong contrast */
+  .mat-mdc-raised-button,
+  .mat-mdc-button-base.mat-mdc-button-contained,
+  button.mat-mdc-raised-button {
+    background-color: #0d47a1;
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: none;
+  }
+
+  /* Outlined / stroked buttons */
+  .mat-mdc-stroked-button,
+  .mat-mdc-button-base.mat-mdc-button-outlined {
+    border-color: rgba(255,255,255,0.12);
+    color: #dbeeff;
+    background: transparent;
+  }
+
+  /* Small action buttons inside table rows */
+  .actions-cell button,
+  .action-buttons button {
+    background: transparent;
+    color: inherit;
+    border-radius: 4px;
+  }
+
+  /* Hover states */
+  button:hover,
+  a.mat-mdc-button-base:hover,
+  .mat-mdc-button-base:hover {
+    background-color: rgba(255,255,255,0.04);
+  }
+
+  .mat-mdc-raised-button:hover,
+  .mat-mdc-button-base.mat-mdc-button-contained:hover {
+    background-color: #0b3b86;
   }
 }

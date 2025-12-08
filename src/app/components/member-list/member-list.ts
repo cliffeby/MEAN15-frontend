@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, HostBinding, OnDestroy } from '@angular/core';
 import { MatListModule } from '@angular/material/list';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,6 +24,7 @@ import { AuthService } from '../../services/authService';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 import { UserPreferencesService, ColumnPreference } from '../../services/user-preferences.service';
 import { ConfigurationService } from '../../services/configuration.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-member-list',
@@ -50,7 +51,7 @@ import { ConfigurationService } from '../../services/configuration.service';
     MatPaginatorModule,
   ],
 })
-export class MemberListComponent implements OnInit, AfterViewInit {
+export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   
   members: Member[] = [];
@@ -62,6 +63,9 @@ export class MemberListComponent implements OnInit, AfterViewInit {
   pageSize = 20;
   pageSizeOptions: number[] = [10, 20, 50, 100];
 
+  @HostBinding('class.dark-theme')
+  isDarkTheme = false;
+
   // Filter properties
   searchTerm = '';
   sortField = 'firstName';
@@ -72,6 +76,9 @@ export class MemberListComponent implements OnInit, AfterViewInit {
 
   // Add a property to track hidden members toggle state
   showHiddenMembers = false;
+
+  private configSub: Subscription | null = null;
+  private mqListener: ((this: MediaQueryList, ev: MediaQueryListEvent) => any) | null = null;
 
   get displayedColumns(): string[] {
     return this.allColumns.filter((col) => col.visible).map((col) => col.key);
@@ -106,11 +113,62 @@ export class MemberListComponent implements OnInit, AfterViewInit {
     this.sortDirection = 'asc'; // Set initial sort direction to ascending
     this.initializeColumns();
     this.loadMembers();
+    // Apply theme from configuration and listen for changes
+    try {
+      const ui = this.configService.uiConfig();
+      this.applyTheme(ui.theme);
+    } catch (e) {
+      // ignore in test environments if signals are unavailable
+    }
+
+    this.configSub = this.configService.config$.subscribe(cfg => {
+      this.applyTheme(cfg.ui.theme);
+    });
   }
 
   ngAfterViewInit() {
     // Paginator is inside *ngIf so it won't be available here
     // Subscription is set up in loadMembers after data loads
+  }
+
+  ngOnDestroy(): void {
+    if (this.configSub) {
+      this.configSub.unsubscribe();
+      this.configSub = null;
+    }
+    if (this.mqListener && typeof window !== 'undefined' && (window as any).matchMedia) {
+      const mq = window.matchMedia('(prefers-color-scheme: dark)');
+      mq.removeEventListener('change', this.mqListener);
+      this.mqListener = null;
+    }
+  }
+
+  private applyTheme(theme: string) {
+    // theme: 'auto' | 'light' | 'dark'
+    if (!theme) theme = 'auto';
+    if (theme === 'dark') {
+      this.setDark(true);
+    } else if (theme === 'light') {
+      this.setDark(false);
+    } else {
+      // auto: follow system preference
+      if (typeof window !== 'undefined' && (window as any).matchMedia) {
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        this.setDark(!!mq.matches);
+        // remove previous listener
+        if (this.mqListener) {
+          mq.removeEventListener('change', this.mqListener);
+        }
+        this.mqListener = (e: MediaQueryListEvent) => this.setDark(!!e.matches);
+        mq.addEventListener('change', this.mqListener);
+      } else {
+        this.setDark(false);
+      }
+    }
+  }
+
+  private setDark(val: boolean) {
+    this.isDarkTheme = !!val;
   }
 
   private initializeColumns() {
