@@ -1,4 +1,3 @@
-
 import { ComponentFixture, TestBed, fakeAsync, tick, flush } from '@angular/core/testing';
 import { MemberListComponent } from './member-list';
 import { MemberService } from '../../services/memberService';
@@ -20,16 +19,41 @@ describe('MemberListComponent', () => {
   let routerSpy: jasmine.SpyObj<Router>;
 
   const mockMembers = [
-  { _id: '1', firstName: 'Alice', lastName: 'Smith', Email: 'alice@example.com', usgaIndex: 10, fullName: 'Alice Smith', user: 'user1' },
-  { _id: '2', firstName: 'Bob', lastName: 'Jones', Email: 'bob@example.com', usgaIndex: 20, fullName: 'Bob Jones', user: 'user2' }
-];
+    {
+      _id: '1',
+      firstName: 'Alice',
+      lastName: 'Smith',
+      Email: 'alice@example.com',
+      usgaIndex: 10,
+      fullName: 'Alice Smith',
+      user: 'user1',
+    },
+    {
+      _id: '2',
+      firstName: 'Bob',
+      lastName: 'Jones',
+      Email: 'bob@example.com',
+      usgaIndex: 20,
+      fullName: 'Bob Jones',
+      user: 'user2',
+    },
+  ];
 
   beforeEach(async () => {
-    memberServiceSpy = jasmine.createSpyObj('MemberService', ['getAll', 'delete', 'removeDuplicateEmails']);
+    memberServiceSpy = jasmine.createSpyObj('MemberService', [
+      'getAll',
+      'delete',
+      'removeDuplicateEmails',
+    ]);
     authServiceSpy = jasmine.createSpyObj('AuthService', [], { role: 'admin' });
-    confirmDialogSpy = jasmine.createSpyObj('ConfirmDialogService', ['confirmDelete', 'confirmAction']);
+    confirmDialogSpy = jasmine.createSpyObj('ConfirmDialogService', [
+      'confirmDelete',
+      'confirmAction',
+    ]);
     preferencesSpy = jasmine.createSpyObj('UserPreferencesService', [
-      'getMemberListColumnPreferences', 'saveMemberListColumnPreferences', 'clearUserPreferences'
+      'getMemberListColumnPreferences',
+      'saveMemberListColumnPreferences',
+      'clearUserPreferences',
     ]);
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
@@ -49,17 +73,15 @@ describe('MemberListComponent', () => {
         { provide: ConfirmDialogService, useValue: confirmDialogSpy },
         { provide: UserPreferencesService, useValue: preferencesSpy },
         { provide: MatSnackBar, useValue: snackBarSpy },
-        { provide: Router, useValue: routerSpy }
-      ]
+        { provide: Router, useValue: routerSpy },
+      ],
     })
-    .overrideComponent(MemberListComponent, {
-      set: {
-        providers: [
-          { provide: MatSnackBar, useValue: snackBarSpy }
-        ]
-      }
-    })
-    .compileComponents();
+      .overrideComponent(MemberListComponent, {
+        set: {
+          providers: [{ provide: MatSnackBar, useValue: snackBarSpy }],
+        },
+      })
+      .compileComponents();
 
     fixture = TestBed.createComponent(MemberListComponent);
     component = fixture.componentInstance;
@@ -77,7 +99,6 @@ describe('MemberListComponent', () => {
     expect(component.loading).toBeFalse();
   });
 
-  
   it('should filter members by search term', () => {
     component.searchTerm = 'alice';
     component.applyFilter();
@@ -92,34 +113,22 @@ describe('MemberListComponent', () => {
     expect(component.filteredMembers[0].usgaIndex).toBe(20);
   });
 
-it('should show snackbar if member loading fails', fakeAsync(() => {
-  memberServiceSpy.getAll.and.returnValue(throwError(() => new Error('fail')));
-  snackBarSpy.open.calls.reset();
-  component.loadMembers();
-  tick();
-  fixture.detectChanges();
-  expect(snackBarSpy.open.calls.count()).toBeGreaterThan(0);
-  const args = snackBarSpy.open.calls.mostRecent().args;
-  expect(args[0]).toBe('Error loading members');
-  expect(args[1]).toBe('Close');
-  expect(args[2]).toEqual({ duration: 2000 });
-  expect(component.loading).toBeFalse();
-}));
-  
-
   it('should show snackbar if member loading fails', fakeAsync(() => {
-      memberServiceSpy.getAll.and.returnValue(throwError(() => new Error('fail')));
-      snackBarSpy.open.calls.reset();
-      if (fixture.ngZone) {
-        fixture.ngZone.run(() => {
-          component.loadMembers();
-        });
-      } else {
-        component.loadMembers();
-      }
-      expect(snackBarSpy.open).toHaveBeenCalledWith('Error loading members', 'Close', { duration: 2000 });
-      expect(component.loading).toBeFalse();
-    }));
+    // Arrange: make service fail
+    memberServiceSpy.getAll.and.returnValue(throwError(() => new Error('fail')));
+    snackBarSpy.open.calls.reset();
+
+    // Act: call loadMembers and flush microtasks
+    component.loadMembers();
+    tick();
+    fixture.detectChanges();
+
+    // Assert: snackbar called with expected message and loading cleared
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Error loading members', 'Close', {
+      duration: 2000,
+    });
+    expect(component.loading).toBeFalse();
+  }));
 
   it('should navigate to edit member if admin', () => {
     component.editMember('1');
@@ -129,7 +138,11 @@ it('should show snackbar if member loading fails', fakeAsync(() => {
   it('should show snackbar if non-admin tries to edit member', () => {
     Object.defineProperty(authServiceSpy, 'role', { get: () => 'user' });
     component.editMember('1');
-    expect(snackBarSpy.open).toHaveBeenCalledWith('You are not authorized to edit members.', 'Close', { duration: 2500 });
+    expect(snackBarSpy.open).toHaveBeenCalledWith(
+      'You are not authorized to edit members.',
+      'Close',
+      { duration: 2500 }
+    );
   });
 
   it('should confirm and delete member if admin', fakeAsync(() => {
@@ -147,56 +160,78 @@ it('should show snackbar if member loading fails', fakeAsync(() => {
     memberServiceSpy.delete.and.returnValue(throwError(() => ({ status: 500 })));
     component.deleteMember('1');
     tick();
-    expect(snackBarSpy.open).toHaveBeenCalledWith('Error deleting member', 'Close', { duration: 2000 });
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Error deleting member', 'Close', {
+      duration: 2000,
+    });
   }));
 
   it('should show snackbar if unauthorized to delete', () => {
     memberServiceSpy.delete.and.returnValue(throwError(() => ({ status: 403 })));
     component.deleteMember('1');
-    expect(snackBarSpy.open).toHaveBeenCalledWith('You are not authorized to delete members.', 'Close', { duration: 2500 });
+    expect(snackBarSpy.open).toHaveBeenCalledWith(
+      'You are not authorized to delete members.',
+      'Close',
+      { duration: 2500 }
+    );
   });
 
   it('should prevent hiding all data columns', () => {
     component.allColumns = [
       { key: 'fullName', label: 'Name', visible: true, fixed: false },
-  { key: 'Email', label: 'Email', visible: false, fixed: false }
+      { key: 'Email', label: 'Email', visible: false, fixed: false },
     ];
     component.toggleColumnVisibility('fullName');
     fixture.detectChanges();
-    expect(snackBarSpy.open).toHaveBeenCalledWith('At least one data column must remain visible', 'Close', { duration: 2000 });
+    expect(snackBarSpy.open).toHaveBeenCalledWith(
+      'At least one data column must remain visible',
+      'Close',
+      { duration: 2000 }
+    );
   });
 
   it('should reset columns to default', () => {
-    component.allColumns.forEach(col => col.visible = false);
+    component.allColumns.forEach((col) => (col.visible = false));
     component.resetColumns();
-    expect(component.allColumns.every(col => col.visible)).toBeTrue();
+    expect(component.allColumns.every((col) => col.visible)).toBeTrue();
   });
 
   it('should clear all preferences after confirmation', () => {
     confirmDialogSpy.confirmAction.and.returnValue(of(true));
     component.clearAllPreferences();
     expect(preferencesSpy.clearUserPreferences).toHaveBeenCalled();
-    expect(snackBarSpy.open).toHaveBeenCalledWith('All preferences have been reset to defaults', 'Close', { duration: 3000 });
+    expect(snackBarSpy.open).toHaveBeenCalledWith(
+      'All preferences have been reset to defaults',
+      'Close',
+      { duration: 3000 }
+    );
   });
 
   it('should confirm and remove duplicate emails if admin', () => {
     component.removeDuplicateEmails();
     expect(confirmDialogSpy.confirmAction).toHaveBeenCalled();
     expect(memberServiceSpy.removeDuplicateEmails).toHaveBeenCalled();
-    expect(snackBarSpy.open).toHaveBeenCalledWith('Removed 1 duplicate members', 'Close', { duration: 4000 });
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Removed 1 duplicate members', 'Close', {
+      duration: 4000,
+    });
   });
 
   it('should show snackbar if no duplicates found', () => {
     memberServiceSpy.removeDuplicateEmails.and.returnValue(of({ deletedCount: 0 }));
     component.removeDuplicateEmails();
-    expect(snackBarSpy.open).toHaveBeenCalledWith('No duplicate email addresses found', 'Close', { duration: 3000 });
+    expect(snackBarSpy.open).toHaveBeenCalledWith('No duplicate email addresses found', 'Close', {
+      duration: 3000,
+    });
   });
 
   it('should show snackbar if unauthorized to remove duplicates', fakeAsync(() => {
     memberServiceSpy.removeDuplicateEmails.and.returnValue(throwError(() => ({ status: 403 })));
     component.removeDuplicateEmails();
     tick();
-    expect(snackBarSpy.open).toHaveBeenCalledWith('You are not authorized to remove duplicates.', 'Close', { duration: 2500 });
+    expect(snackBarSpy.open).toHaveBeenCalledWith(
+      'You are not authorized to remove duplicates.',
+      'Close',
+      { duration: 2500 }
+    );
   }));
 
   it('should not call delete if member id is missing', () => {
@@ -206,8 +241,8 @@ it('should show snackbar if member loading fails', fakeAsync(() => {
 
   it('should handle empty member list gracefully', () => {
     memberServiceSpy.getAll.and.returnValue(of([]));
-  component.loadMembers();
-  fixture.detectChanges();
+    component.loadMembers();
+    fixture.detectChanges();
     expect(component.members.length).toBe(0);
     expect(component.filteredMembers.length).toBe(0);
   });

@@ -53,7 +53,7 @@ import { Subscription } from 'rxjs';
 })
 export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
-  
+
   members: Member[] = [];
   filteredMembers: Member[] = [];
   pagedMembers: Member[] = [];
@@ -108,7 +108,7 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
     const paginationConfig = this.configService.paginationConfig();
     this.pageSize = displayConfig.memberListPageSize;
     this.pageSizeOptions = paginationConfig.pageSizeOptions;
-    
+
     this.sortField = 'lastName'; // Set initial sort field to lastName
     this.sortDirection = 'asc'; // Set initial sort direction to ascending
     this.initializeColumns();
@@ -121,7 +121,7 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
       // ignore in test environments if signals are unavailable
     }
 
-    this.configSub = this.configService.config$.subscribe(cfg => {
+    this.configSub = this.configService.config$.subscribe((cfg) => {
       this.applyTheme(cfg.ui.theme);
     });
   }
@@ -306,7 +306,7 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     this.filteredMembers = filtered;
-    
+
     // Reset to first page when filter changes
     if (this.paginator) {
       this.paginator.firstPage();
@@ -322,7 +322,9 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
     const startIndex = this.paginator.pageIndex * this.paginator.pageSize;
     const endIndex = startIndex + this.paginator.pageSize;
     this.pagedMembers = this.filteredMembers.slice(startIndex, endIndex);
-    console.log(`Paginator: pageIndex=${this.paginator.pageIndex}, pageSize=${this.paginator.pageSize}, showing ${startIndex}-${endIndex} of ${this.filteredMembers.length}`);
+    console.log(
+      `Paginator: pageIndex=${this.paginator.pageIndex}, pageSize=${this.paginator.pageSize}, showing ${startIndex}-${endIndex} of ${this.filteredMembers.length}`
+    );
   }
 
   onSearchChange() {
@@ -455,7 +457,11 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
    * trackBy function for member rows to avoid re-rendering rows unnecessarily
    */
   trackByMember(_: number, member: Member): string {
-    return (member && ((member as any)._id || (member as any).id || member.Email || (member.firstName + ' ' + (member.lastName || '')))) as string;
+    return (member &&
+      ((member as any)._id ||
+        (member as any).id ||
+        member.Email ||
+        member.firstName + ' ' + (member.lastName || ''))) as string;
   }
 
   clearAllPreferences() {
