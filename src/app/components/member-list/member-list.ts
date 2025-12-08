@@ -266,8 +266,13 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
           bValue = (b.lastName || '').toLowerCase();
           break;
         case 'fullName':
-          aValue = (a.fullName || `${a.firstName} ${a.lastName || ''}`.trim()).toLowerCase();
-          bValue = (b.fullName || `${b.firstName} ${b.lastName || ''}`.trim()).toLowerCase();
+          // Sort by last name primarily, then first name to keep name-sorts consistent
+          const aLast = (a.lastName || '').toLowerCase();
+          const bLast = (b.lastName || '').toLowerCase();
+          const aFirst = (a.firstName || '').toLowerCase();
+          const bFirst = (b.firstName || '').toLowerCase();
+          aValue = `${aLast} ${aFirst}`.trim();
+          bValue = `${bLast} ${bFirst}`.trim();
           break;
         case 'GHIN':
           aValue = (a as any).GHIN || '';
@@ -290,8 +295,9 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
           bValue = b.lastDatePlayed ? new Date(b.lastDatePlayed) : new Date(0);
           break;
         default:
-          aValue = a.firstName.toLowerCase();
-          bValue = b.firstName.toLowerCase();
+          // Default to lastName sort to keep name ordering consistent across the table
+          aValue = (a.lastName || '').toLowerCase();
+          bValue = (b.lastName || '').toLowerCase();
       }
 
       if (aValue < bValue) return this.sortDirection === 'asc' ? -1 : 1;
