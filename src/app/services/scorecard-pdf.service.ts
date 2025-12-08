@@ -184,7 +184,7 @@ export class ScorecardPdfService {
     totalColWidth: number
   ): number {
     let currentX = x;
-    let currentY = y;
+    const currentY = y;
 
     currentX = this.drawCell(pdf, currentX, currentY, playerColWidth, 8, 'HOLE');
     pdf.setFontSize(7);
@@ -217,7 +217,7 @@ export class ScorecardPdfService {
     totalColWidth: number
   ): number {
     let currentX = x;
-    let currentY = y;
+    const currentY = y;
 
     currentX = this.drawCell(pdf, currentX, currentY, playerColWidth, 8, 'PAR');
 
@@ -256,7 +256,7 @@ export class ScorecardPdfService {
     totalColWidth: number
   ): number {
     let currentX = x;
-    let currentY = y;
+    const currentY = y;
 
     currentX = this.drawCell(pdf, currentX, currentY, playerColWidth, 8, 'HCP');
 

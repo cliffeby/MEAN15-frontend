@@ -152,7 +152,7 @@ export class ScoreListComponent implements OnInit {
     });
 
     // Convert to GroupedScores array
-    let allGroups = Array.from(grouped.entries()).map(([matchId, scores]) => {
+    const allGroups = Array.from(grouped.entries()).map(([matchId, scores]) => {
       // Get match info from populated object or find in matches array
       const matchInfo = this.extractMatchInfo(scores[0]) || 
         this.matches.find(m => (m._id) === matchId);

@@ -12,9 +12,9 @@ import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatChipsModule } from '@angular/material/chips';
-import { forkJoin, Observable, of, Subject } from 'rxjs';
-import { map, catchError, debounceTime, distinctUntilChanged, switchMap, retryWhen, delay, take } from 'rxjs/operators';
-import { lastValueFrom } from 'rxjs';
+import { forkJoin, of, Subject } from 'rxjs';
+import {  debounceTime, distinctUntilChanged, switchMap, delay, take } from 'rxjs/operators';
+
 
 interface ScoresApiResponse {
   success: boolean;
@@ -105,7 +105,6 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private snackBar = inject(MatSnackBar);
-  private confirmDialog = inject(ConfirmDialogService);
   private matchService = inject(MatchService);
   private memberService = inject(MemberService);
   private scoreService = inject(ScoreService);

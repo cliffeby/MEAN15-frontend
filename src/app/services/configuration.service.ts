@@ -1,7 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { AppConfig, DisplayConfig, PaginationConfig, ScoringConfig, UIConfig, 
-  DataConfig, ConfigField, ConfigSection } from '../models/app-config.interface';
+import { BehaviorSubject } from 'rxjs';
+import { AppConfig, ConfigField, ConfigSection } from '../models/app-config.interface';
 
 @Injectable({
   providedIn: 'root'

@@ -11,12 +11,12 @@ describe('Login', () => {
 
   beforeEach(async () => {
     const mockAuth = {
-      login: (email: string, password: string) => of({ token: 'fake' }),
+      login: () => of({ token: 'fake' }),
       role: 'user',
       payload: () => ({ id: 'u1', name: 'Test' })
     } as Partial<AuthService> as AuthService;
 
-    const mockRouter = { navigate: (commands: any[]) => Promise.resolve(true) } as Partial<Router> as Router;
+    const mockRouter = { navigate: () => Promise.resolve(true) } as Partial<Router> as Router;
 
     await TestBed.configureTestingModule({
       imports: [Login],

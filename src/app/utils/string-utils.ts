@@ -1,4 +1,6 @@
-export function parseStringData(scorecard: any): void {
+import { Scorecard } from "../services/scorecardService";
+
+export function parseStringData(scorecard: Scorecard): void {
     if (!scorecard) return;
     
     // Parse par data from string if arrays are missing
