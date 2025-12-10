@@ -6,7 +6,7 @@ This document provides instructions for GitHub Copilot to assist in generating c
 - **Frontend**: Located in the `frontend/` directory, built with Angular.
 - **Backend**: Located in the `backend/` directory, built with Node.js, Express, and Mongoose.
 When recommending code snippets or documentation, please consider the context of the specific feature being worked on (Members, Matches, Scorecards).
-When recommending actions, ensure that the correct folder (frontend or backend) is targeted based on the task.
+IMPORTANT When recommending actions, ensure that the correct folder (frontend or backend) is targeted based on the task.
 ## Frontend Instructions
 The frontend is built with Angular and uses NgRx for state management. Below are the key areas where Copilot can assist:
 - **Components**: Located in `frontend/src/app/components/`. Create and manage UI components for Members, Matches, and Scorecards.
@@ -35,3 +35,86 @@ The `match-lineup` component is a critical part of the Matches feature. When gen
 - `openMemberSelectionDialog()`: This function should open a dialog for selecting members to add to the lineup. Ensure that it integrates with the member selection component and updates the lineup accordingly.
 - `pairing(groupIndex: number, memberIndex: number)`: This function should return a unique identifier for each pairing in the lineup. Various types of pairing will be available. The configuration component will set the type of pairing used.  Fourball pairing will create two-man teams which consist of an A and a B player. The combined handicap of each team should be as close as possible to other teams in the match. If there are an odd number of players, a low handicap player will be on two teams.
 - `getHandicap(memberId: string)`: This function should retrieve the USGAIndex for a given member. Ensure that it fetches the correct data from the member model or service.
+# Angular Copilot Instructions
+
+## **Purpose**
+These instructions guide AI-assisted code generation for Angular projects, ensuring best practices, maintainability, and scalability.
+
+---
+
+## **General Guidelines**
+- Always use **TypeScript** with strict type checking enabled.
+- Follow **Angular Style Guide** conventions for naming, file structure, and coding patterns.
+- Prefer **standalone components** and **Angular Signals** for state management when applicable.
+- Keep components **small, reusable, and testable**.
+- Use **RxJS** operators thoughtfully; avoid unnecessary subscriptions.
+- Use `input()` and `output()` functions instead of decorators
+- Use `computed()` for derived state
+- Set `changeDetection: ChangeDetectionStrategy.OnPush` in `@Component` decorator
+- Prefer inline templates for small components
+- Prefer Reactive forms instead of Template-driven ones
+- Do NOT use `ngClass`, use `class` bindings instead
+- Do NOT use `ngStyle`, use `style` bindings instead
+- When using external templates/styles, use paths relative to the component TS file.
+---
+
+
+---
+
+## **Component Guidelines**
+- Use **OnPush** change detection by default.
+- Inputs/Outputs should be **typed** and **readonly** where possible.
+- Avoid business logic in components — delegate to services.
+- Use **async pipe** instead of manual subscription/unsubscription.
+
+---
+
+## **Service Guidelines**
+- Keep services **stateless** unless managing state intentionally.
+- Use **providedIn: 'root'** unless scoped to a specific module.
+- For HTTP calls, use Angular’s `HttpClient` with typed responses.
+
+---
+
+## **Testing**
+- Write **unit tests** for components, services, and pipes.
+- Use **TestBed** for Angular-specific testing.
+- Mock dependencies with Jasmine spies or Angular testing utilities.
+
+---
+
+## **Code Examples**
+
+**Component Example**
+Use standalone components with clear inputs and outputs.
+See the `member-edit.ts` file for an example of a well-structured Angular component.
+
+## **Service Guidelines**
+- Keep services **stateless** unless managing state intentionally.
+- Use **providedIn: 'root'** unless scoped to a specific module.
+- For HTTP calls, use Angular’s `HttpClient` with typed responses.
+
+---
+
+## **Testing**
+- Write **unit tests** for components, services, and pipes.
+- Use **TestBed** for Angular-specific testing.
+- Mock dependencies with Jasmine spies or Angular testing utilities.
+
+---
+
+## Templates
+- Keep templates simple and avoid complex logic
+- Use native control flow (`@if`, `@for`, `@switch`) instead of `*ngIf`, `*ngFor`, `*ngSwitch`
+- Use the async pipe to handle observables
+- Do not assume globals like (`new Date()`) are available.
+- Do not write arrow functions in templates (they are not supported).
+
+
+
+Don’ts
+Avoid direct DOM manipulation — use Angular directives.
+Don’t store sensitive data in the frontend.
+Avoid deeply nested component trees without need.
+These instructions ensure AI-generated Angular code is clean, maintainable, and aligned with modern Angular practices.
+
