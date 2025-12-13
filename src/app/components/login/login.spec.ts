@@ -1,27 +1,35 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { Router } from '@angular/router';
 
 import { Login } from './login';
-import { AuthService } from '../../services/authService';
+import { MsalService, MsalBroadcastService } from '@azure/msal-angular';
+import { InteractionStatus } from '@azure/msal-browser';
 
 describe('Login', () => {
   let component: Login;
   let fixture: ComponentFixture<Login>;
 
   beforeEach(async () => {
-    const mockAuth = {
-      login: () => of({ token: 'fake' }),
-      role: 'user',
-      payload: () => ({ id: 'u1', name: 'Test' })
-    } as Partial<AuthService> as AuthService;
+    const mockMsalService = {
+      instance: {
+        getAllAccounts: () => [],
+        loginRedirect: jasmine.createSpy('loginRedirect')
+      } as any
+    } as any;
+
+    const mockMsalBroadcastService = {
+      msalSubject$: new Subject(),
+      inProgress$: of(InteractionStatus.None)
+    } as Partial<MsalBroadcastService> as MsalBroadcastService;
 
     const mockRouter = { navigate: () => Promise.resolve(true) } as Partial<Router> as Router;
 
     await TestBed.configureTestingModule({
       imports: [Login],
       providers: [
-        { provide: AuthService, useValue: mockAuth },
+        { provide: MsalService, useValue: mockMsalService },
+        { provide: MsalBroadcastService, useValue: mockMsalBroadcastService },
         { provide: Router, useValue: mockRouter }
       ]
     })
@@ -35,11 +43,9 @@ describe('Login', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
-    it('should render title', () => {
-    const fixture = TestBed.createComponent(Login);
-    fixture.detectChanges();
+  
+  it('should render title', () => {
     const compiled = fixture.nativeElement as HTMLElement;
-    console.log(compiled);
-    expect(compiled.querySelector('h1')?.textContent).toContain('Welcome to Rochester - Login');
+    expect(compiled.querySelector('h1')?.textContent).toContain('Welcome to Rochester');
   });
 });

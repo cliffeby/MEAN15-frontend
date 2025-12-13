@@ -4,6 +4,7 @@ import { Register } from './components/register/register';
 import { Dashboard } from './components/dashboard/dashboard';
 import { AuthGuard } from './guards/auth-guard';
 import { roleGuard } from './guards/role-guard';
+import { MsalGuard } from '@azure/msal-angular';
 import { MainLayoutComponent } from './main-layout/main-layout';
 import { ReadMe } from './read-me/read-me';
 import { API } from './apis/apis';
@@ -31,11 +32,11 @@ export const routes: Routes = [
   { path: '', component: Login },
   { path: 'register', component: Register },
 
-  // Protected layout
+  // Protected layout - using MsalGuard for Entra authentication
   {
     path: '',
     component: MainLayoutComponent, // navbar + sidebar + footer
-    canActivate: [AuthGuard], // protects all child routes
+    canActivate: [MsalGuard], // MSAL guard protects all child routes
     children: [
       {
         path: 'dashboard',

@@ -3,7 +3,8 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import jwt_decode from 'jwt-decode';
-import { environment } from '../../environments/environment'; 
+import { environment } from '../../environments/environment';
+import { MsalService } from '@azure/msal-angular'; 
 
 @Injectable({
   providedIn: 'root'
@@ -11,6 +12,7 @@ import { environment } from '../../environments/environment';
 export class AuthService {
   token = signal<string | null>(null);
   private baseUrl = `${environment.apiUrl}/auth`;
+  private msalService = inject(MsalService);
 
   constructor(private http: HttpClient) {
     const savedToken = localStorage.getItem('authToken');
@@ -106,8 +108,35 @@ export class AuthService {
   }
 
   get role(): string | null {
-    if (!this.token()) return null;
-    const payload: any = jwt_decode(this.token()!);
-    return payload.role || null;
+    const accounts = this.msalService.instance.getAllAccounts();
+    if (accounts.length === 0) return null;
+    
+    const idTokenClaims = accounts[0].idTokenClaims as any;
+    const roles = idTokenClaims?.roles || idTokenClaims?.extension_Roles || [];
+    
+    // Return first role if available
+    return roles.length > 0 ? roles[0] : null;
+  }
+
+  roles = signal<string[]>([]);
+
+  getRoles(): string[] {
+    const accounts = this.msalService.instance.getAllAccounts();
+    if (accounts.length === 0) return [];
+    
+    const account = accounts[0];
+    console.log('JWT ID Token:', account.idToken);
+    console.log('JWT Token Claims:', account.idTokenClaims);
+    
+    const idTokenClaims = account.idTokenClaims as any;
+    const roles = idTokenClaims?.roles || idTokenClaims?.extension_Roles || [];
+    console.log('Extracted roles:', roles);
+    
+    this.roles.set(roles);
+    return roles;
+  }
+
+  updateRoles(): void {
+    this.getRoles();
   }
 }

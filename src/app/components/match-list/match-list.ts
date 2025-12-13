@@ -15,7 +15,7 @@ import { takeUntil, map } from 'rxjs/operators';
 import { ScoreService } from '../../services/scoreService';
 import { HCapService } from '../../services/hcapService';
 import { Match } from '../../models/match';
-import { Member } from '../../models/member';
+// import { Member } from '../../models/member';
 import { AuthService } from '../../services/authService';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 import { ConfigurationService } from '../../services/configuration.service';
@@ -72,7 +72,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
   showPageSizeOptions = true;
   
   private unsubscribe$ = new Subject<void>();
-  private currentScorecard: Scorecard | null = null;
+  // private currentScorecard: Scorecard | null = null;
 
   private snackBar = inject(MatSnackBar);
   private matchService = inject(MatchService);

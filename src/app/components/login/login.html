@@ -1,23 +1,30 @@
 
 <div class="login-container">
-  <h1>Welcome to Rochester - Login</h1>
-    <form [formGroup]="loginForm" (ngSubmit)="submit()">
-      <mat-form-field appearance="fill" class="full-width">
-        <mat-label>Email</mat-label>
-        <input matInput formControlName="email" type="email" placeholder="Enter your email" title="Email" />
-        <mat-error *ngIf="loginForm.get('email')?.hasError('required')">Email is required</mat-error>
-        <mat-error *ngIf="loginForm.get('email')?.hasError('email')">Invalid email</mat-error>
-      </mat-form-field>
+  <h1>Welcome to Rochester</h1>
+  <p *ngIf="!isLoggedIn">Sign in with your Microsoft account to continue</p>
+  <p *ngIf="isLoggedIn">You are currently signed in</p>
   
-      <mat-form-field appearance="fill" class="full-width">
-        <mat-label>Password</mat-label>
-        <input matInput formControlName="password" type="password" placeholder="Enter your password" title="Password" />
-        <mat-error *ngIf="loginForm.get('password')?.hasError('required')">Password is required</mat-error>
-        <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">Minimum 6 characters</mat-error>
-      </mat-form-field>
-  
-      <button mat-raised-button color="primary" type="submit">Login</button>
-    </form>
+  <div class="login-actions">
+    <button 
+      *ngIf="!isLoggedIn"
+      mat-raised-button 
+      color="primary" 
+      type="button"
+      (click)="loginWithMicrosoft()"
+      [disabled]="isLoading">
+      <span *ngIf="!isLoading">Sign in with Microsoft</span>
+      <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+    </button>
+    
+    <button 
+      *ngIf="isLoggedIn"
+      mat-raised-button 
+      color="warn" 
+      type="button"
+      (click)="logoutWithMicrosoft()">
+      Sign out
+    </button>
   </div>
+</div>
   
   

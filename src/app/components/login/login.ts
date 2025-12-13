@@ -1,66 +1,114 @@
-import { Component, inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/authService';
 import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MsalService, MsalBroadcastService } from '@azure/msal-angular';
+import { InteractionStatus, EventType } from '@azure/msal-browser';
+import { Subject } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-login',
+  standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatInputModule,
     MatButtonModule,
     MatSnackBarModule,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './login.html',
   styleUrls: ['./login.scss'],
 })
-export class Login {
-  fb = inject(FormBuilder);
-  authService = inject(AuthService);
-  router = inject(Router);
-  snackBar = inject(MatSnackBar);
+export class Login implements OnInit, OnDestroy {
+  private msalService = inject(MsalService);
+  private msalBroadcastService = inject(MsalBroadcastService);
+  private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
+  private destroy$ = new Subject<void>();
+  
+  isLoading = false;
+  isLoggedIn = false;
 
-  loginForm: FormGroup;
+  ngOnInit(): void {
+    // Handle redirect response after login
+    this.msalService.instance.handleRedirectPromise()
+      .then((response) => {
+        if (response) {
+          this.snackBar.open('Login successful!', 'Close', { duration: 2000 });
+          this.router.navigate(['/dashboard']);
+        }
+      })
+      .catch((error) => {
+        console.error('Login error:', error);
+        this.snackBar.open('Login failed. Please try again.', 'Close', { duration: 3000 });
+      });
 
-  constructor() {
-    this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+    // Listen for login success events
+    this.msalBroadcastService.msalSubject$
+      .pipe(
+        filter((msg: any) => msg.eventType === EventType.LOGIN_SUCCESS),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((result: any) => {
+        this.snackBar.open('Login successful!', 'Close', { duration: 2000 });
+        this.router.navigate(['/dashboard']);
+      });
+
+    // Check if user is already logged in only when no interaction is in progress
+    this.msalBroadcastService.inProgress$
+      .pipe(
+        filter((status: InteractionStatus) => status === InteractionStatus.None),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        const accounts = this.msalService.instance.getAllAccounts();
+        if (accounts.length > 0) {
+          this.isLoggedIn = true;
+          this.router.navigate(['/dashboard']);
+        } else {
+          this.isLoggedIn = false;
+        }
+      });
+  }
+
+  loginWithMicrosoft(): void {
+    // Check if interaction is already in progress
+    if (this.isLoading) {
+      return;
+    }
+
+    this.isLoading = true;
+    
+    this.msalService.loginRedirect({
+      scopes: ['openid', 'profile', 'email', 'User.Read']
+    }).subscribe({
+      error: (error: any) => {
+        console.error('Login redirect error:', error);
+        this.isLoading = false;
+        this.snackBar.open('Failed to initiate login. Please try again.', 'Close', { duration: 3000 });
+      }
     });
   }
 
-  submit() {
-    if (this.loginForm.invalid) return;
-
-    const { email, password } = this.loginForm.value;
-
-    this.authService.login(email, password).subscribe({
+  logoutWithMicrosoft(): void {
+    this.msalService.logoutRedirect({
+      postLogoutRedirectUri: 'http://localhost:4200'
+    }).subscribe({
       next: () => {
-        this.snackBar.open('Login successful!', 'Close', { duration: 2000 });
-
-        // Access role after token is set
-        setTimeout(() => {
-          const role = this.authService.role;
-          console.log('User role:', role);
-          if (role === 'admin' || role === 'developer') {
-            this.router.navigate(['/dashboard']);
-          } else if (role === 'user') {
-            this.router.navigate(['/user-dashboard']);
-          } else {
-            this.router.navigate(['/']);
-          }
-        }, 0);
+        this.isLoggedIn = false;
+        this.snackBar.open('Logged out successfully', 'Close', { duration: 2000 });
       },
-      error: (err) => {
-        this.snackBar.open(err.error.message || 'Login failed', 'Close', { duration: 3000 });
-      },
+      error: (error: any) => {
+        console.error('Logout error:', error);
+        this.snackBar.open('Logout failed', 'Close', { duration: 3000 });
+      }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

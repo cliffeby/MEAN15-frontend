@@ -1,5 +1,11 @@
 <div class="dashboard-title">
   <h1>Rochester Golf Dashboard</h1>
+  @if (auth.roles().length > 0) {
+    <div class="user-role">
+      <mat-icon>badge</mat-icon>
+      <span>{{ auth.roles().join(', ') }}</span>
+    </div>
+  }
 </div>
 
 <div class="dashboard-container">

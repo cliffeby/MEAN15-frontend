@@ -1,13 +1,15 @@
 import { CanActivateFn } from '@angular/router';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '../services/authService';
+import { MsalService } from '@azure/msal-angular';
 
 export const AuthGuard: CanActivateFn = (_route, _state) => {
-  const authService = inject(AuthService);
+  const msalService = inject(MsalService);
   const router = inject(Router);
 
-  if (authService.token()) {
+  const accounts = msalService.instance.getAllAccounts();
+  
+  if (accounts.length > 0) {
     return true;
   } else {
     router.navigate(['/']);

@@ -62,8 +62,6 @@ export class Dashboard implements OnInit, AfterViewInit {
   currentTheme = this.configService.uiConfig().theme;
 
   constructor() {
-    console.log('Dashboard constructor - User role:', this.auth.role);
-    
     // Add effect to debug signal changes
     effect(() => {
       console.log('Signal updates:', {
@@ -75,6 +73,7 @@ export class Dashboard implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
+    this.auth.updateRoles();
     this.loadDashboardData();
   }
 
