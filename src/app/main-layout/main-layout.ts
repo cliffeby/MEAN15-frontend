@@ -11,6 +11,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from '../services/authService';
 import { MatSidenav } from '@angular/material/sidenav';
+import { MsalService } from '@azure/msal-angular';
 
 @Component({
   selector: 'app-main-layout',
@@ -33,6 +34,7 @@ import { MatSidenav } from '@angular/material/sidenav';
 export class MainLayoutComponent {
   auth = inject(AuthService);
   router = inject(Router);
+  private msalService = inject(MsalService);
 
   @ViewChild('drawer') drawer!: MatSidenav; // Add definite assignment assertion
 
@@ -67,8 +69,10 @@ export class MainLayoutComponent {
   }
 
   logout() {
-    this.auth.logout();
-    this.router.navigate(['/login']);
+    // MSAL logout will redirect, no need to navigate manually
+    this.msalService.logoutRedirect({
+      postLogoutRedirectUri: 'http://localhost:4200/login'
+    });
   }
 
   toggleSidebar() {

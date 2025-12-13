@@ -41,6 +41,8 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
 export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
   const apiScope = `api://aa1ad4fb-4f38-46ba-970d-9af33e9a2e52/access_as_user`;
   
+  console.log('MSAL Interceptor configured with scope:', apiScope);
+  
   return {
     interactionType: InteractionType.Redirect,
     protectedResourceMap: new Map([

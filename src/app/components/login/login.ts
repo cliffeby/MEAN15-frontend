@@ -93,17 +93,12 @@ export class Login implements OnInit, OnDestroy {
   }
 
   logoutWithMicrosoft(): void {
+    // Clear local state immediately
+    this.isLoggedIn = false;
+    
+    // Logout redirect will navigate away, no need to handle response
     this.msalService.logoutRedirect({
-      postLogoutRedirectUri: 'http://localhost:4200'
-    }).subscribe({
-      next: () => {
-        this.isLoggedIn = false;
-        this.snackBar.open('Logged out successfully', 'Close', { duration: 2000 });
-      },
-      error: (error: any) => {
-        console.error('Logout error:', error);
-        this.snackBar.open('Logout failed', 'Close', { duration: 3000 });
-      }
+      postLogoutRedirectUri: 'http://localhost:4200/login'
     });
   }
 
