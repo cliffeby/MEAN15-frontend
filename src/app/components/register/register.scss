@@ -13,4 +13,28 @@
       width: 100%;
     }
   }
+  .local-account-warning {
+    margin: 1em 0;
+     color: #b71c1c;
+      font-weight: 500;
+  }
+  .universal-auth-options {
+    margin-top: 20px;
+    text-align: center;
   
+    p {
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: #555;
+    }
+  
+    .auth-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+    }
+  }
+  .center {
+    text-align:center
+  }

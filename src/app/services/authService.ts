@@ -139,4 +139,8 @@ export class AuthService {
   updateRoles(): void {
     this.getRoles();
   }
+
+  public getMsalService() {
+    return this.msalService;
+  }
 }

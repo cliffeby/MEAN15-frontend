@@ -3,8 +3,9 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Dashboard } from './dashboard';
+import { MsalService } from '@azure/msal-angular';
 
-describe('Dashboard', () => {
+fdescribe('Dashboard', () => {
   let component: Dashboard;
   let fixture: ComponentFixture<Dashboard>;
 

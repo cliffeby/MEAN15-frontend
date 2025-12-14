@@ -1,11 +1,6 @@
+
 <div class="dashboard-title">
   <h1>Rochester Golf Dashboard</h1>
-  @if (auth.roles().length > 0) {
-    <div class="user-role">
-      <mat-icon>badge</mat-icon>
-      <span>{{ auth.roles().join(', ') }}</span>
-    </div>
-  }
 </div>
 
 <div class="dashboard-container">
@@ -13,6 +8,19 @@
   <section class="overview-section">
     <h2>Overview</h2>
     <div class="stats-grid">
+      <mat-card class="stat-card profile-card">
+        <mat-card-header>
+          <mat-icon class="stat-icon">person</mat-icon>
+          <mat-card-title>Profile</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div><b>Name:</b> {{ auth.user?.name || auth.user?.fullName || auth.user?.given_name || auth.user?.firstName || 'Unknown' }}</div>
+          <div><b>Email:</b> {{ auth.user?.email || auth.user?.Email || 'Unknown' }}</div>
+          <div *ngIf="auth.roles().length > 0">
+            <b>Authorized Role:</b> <span>{{ auth.roles().join(', ') }}</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
       <mat-card class="stat-card">
         <mat-card-header>
           <mat-icon class="stat-icon">group</mat-icon>

@@ -1,5 +1,23 @@
-<div style="text-align:center">
+<div *ngIf="currentAccount" class="registration-insight">
+  <mat-icon>person</mat-icon>
+  <span>Currently registering as: <b>{{ currentAccount.username }}</b></span>
+  <span *ngIf="currentAccount.name">({{ currentAccount.name }})</span>
+</div>
+<div class = "center">
   <h1>Welcome to Rochester - Register</h1>
+  <div class="universal-auth-options">
+    <button mat-raised-button color="primary" class="ms-signup-btn" (click)="signUpWithMicrosoft()" [disabled]="msalInProgress">
+      <mat-icon>account_circle</mat-icon> Sign up with Microsoft
+    </button>
+    <button mat-raised-button color="accent" style="margin: 0 0.5em;" (click)="signUpWithGoogle()" [disabled]="msalInProgress">
+      <mat-icon svgIcon="google"></mat-icon> Sign up with Google
+    </button>
+    <!-- Add more social providers as needed -->
+  </div>
+  <div class="local-account-warning">
+    <p>Or create a <b>RochesterSPA Local Account</b> below.</p> 
+    <p>Not Implemented.</p>
+  </div>
 </div>
 
 <div class="register-container">
@@ -58,4 +76,3 @@
       </button>
     </form>
   </div>
-  
