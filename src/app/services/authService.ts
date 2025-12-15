@@ -1,3 +1,4 @@
+  
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
@@ -153,5 +154,24 @@ export class AuthService {
 
   public getMsalService() {
     return this.msalService;
+  }
+  /**
+   * Returns the authenticated user's email address from the Entra/MSAL token.
+   */
+  getUserEmail(): string | null {
+    const accounts = this.msalService.instance.getAllAccounts();
+    if (accounts.length === 0) return null;
+    const idTokenClaims = accounts[0].idTokenClaims as any;
+    return idTokenClaims?.email || idTokenClaims?.preferred_username || null;
+  }
+
+  /**
+   * Returns the authenticated user's display name from the Entra/MSAL token.
+   */
+  getUserName(): string | null {
+    const accounts = this.msalService.instance.getAllAccounts();
+    if (accounts.length === 0) return null;
+    const idTokenClaims = accounts[0].idTokenClaims as any;
+    return idTokenClaims?.name || null;
   }
 }

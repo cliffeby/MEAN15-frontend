@@ -14,10 +14,10 @@
           <mat-card-title>Profile</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <div><b>Name:</b> {{ auth.user?.name || auth.user?.fullName || auth.user?.given_name || auth.user?.firstName || 'Unknown' }}</div>
-          <div><b>Email:</b> {{ auth.user?.email || auth.user?.Email || 'Unknown' }}</div>
-          <div *ngIf="auth.roles().length > 0">
-            <b>Authorized Role:</b> <span>{{ auth.roles().join(', ') }}</span>
+          <div><b>Name:</b> {{ auth.getUserName() || 'Unknown' }}</div>
+          <div><b>Email:</b> {{ auth.getUserEmail() || 'Unknown' }}</div>
+          <div *ngIf="auth.getRoles().length > 0">
+            <b>Authorized Role:</b> <span>{{ auth.getRoles().join(', ') }}</span>
           </div>
         </mat-card-content>
       </mat-card>
