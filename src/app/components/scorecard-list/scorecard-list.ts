@@ -54,7 +54,7 @@ export class ScorecardListComponent implements OnInit {
   }
 
   get isAdmin(): boolean {
-    return this.auth.role === 'admin';
+    return this.auth.hasMinRole('admin');
   }
 
   addScorecard(): void {

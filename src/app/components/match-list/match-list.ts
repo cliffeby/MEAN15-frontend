@@ -101,7 +101,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
   }
 
   get isAdmin(): boolean {
-    return this.authService.role === 'admin';
+    return this.authService.hasMinRole('admin');
   }
 
   ngOnInit() {

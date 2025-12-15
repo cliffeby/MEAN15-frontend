@@ -94,7 +94,7 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
     private configService: ConfigurationService
   ) {}
   get isAdmin(): boolean {
-    return this.authService.role === 'admin';
+    return this.authService.hasMinRole('admin');
   }
 
   isAllowed(roles: string[]): boolean {

@@ -4,51 +4,65 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import jwt_decode from 'jwt-decode';
 import { environment } from '../../environments/environment';
-import { MsalService } from '@azure/msal-angular'; 
+import { MsalService } from '@azure/msal-angular';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  token = signal<string | null>(null);
-  private baseUrl = `${environment.apiUrl}/auth`;
-  private msalService = inject(MsalService);
+    token = signal<string | null>(null);
+    private baseUrl = `${environment.apiUrl}/auth`;
+    private msalService = inject(MsalService);
 
-  constructor(private http: HttpClient) {
-    const savedToken = localStorage.getItem('authToken');
-    if (savedToken) {
-      this.token.set(savedToken);
+    constructor(private http: HttpClient) {
+      const savedToken = localStorage.getItem('authToken');
+      if (savedToken) {
+        this.token.set(savedToken);
+      }
     }
+  // Role hierarchy: admin > editor > user
+  private readonly ROLE_LEVELS: Record<string, number> = {
+    'user': 1,
+    'fieldhand': 2,
+    'admin': 3,
+    'developer': 4
+  };
+
+  private getRoleLevel(role: string): number {
+    return this.ROLE_LEVELS[role] || 0;
   }
 
-  login(email: string, password: string) {
-    return this.http.post<{ token: string }>(`${this.baseUrl}/login`, { email, password })
-      .pipe(
-        tap(res => {
-          this.token.set(res.token);
-
-          // Save token to localStorage
-          localStorage.setItem('authToken', res.token);
-        }),
-        catchError(err => {
-          console.error('Login error:', err);
-          console.log('Error details:', email, err.error);
-
-          // You can customize error messages here based on backend response
-          let errorMsg = 'An error occurred during login. Please try again.';
-
-          if (err.error?.message) {
-            errorMsg = err.error.message; // e.g., "Invalid credentials"
-          }
-
-          // Optionally clear any stale tokens
-          localStorage.removeItem('authToken');
-          this.token.set(null);
-
-          return throwError(() => new Error(errorMsg));
-        })
-      );
+  /**
+   * Returns the highest role of the current user based on hierarchy.
+   */
+  getHighestRole(): string | null {
+    const roles = this.getRoles();
+    if (!roles || roles.length === 0) return null;
+    return roles.reduce((highest: string, role: string) => {
+      return this.getRoleLevel(role) > this.getRoleLevel(highest) ? role : highest;
+    }, roles[0]);
   }
+
+  /**
+   * Checks if the current user has at least the given minimum role (hierarchy-aware).
+   * @param minRole The minimum role required (e.g., 'editor', 'admin')
+   */
+  hasMinRole(minRole: string): boolean {
+    const roles = this.getRoles();
+    if (!roles || roles.length === 0) return false;
+    const minLevel = this.getRoleLevel(minRole);
+    return roles.some((role: string) => this.getRoleLevel(role) >= minLevel);
+  }
+
+  /**
+   * Checks if the current user has a specific role (no hierarchy).
+   * @param role The role to check for (e.g., 'admin')
+   */
+  hasRole(role: string): boolean {
+    const roles = this.getRoles();
+    return roles.includes(role);
+  }
+// ...existing code...
 
   register(userData: any) {
     return this.http.post<{ token: string }>(`${this.baseUrl}/register`, userData)
@@ -125,14 +139,11 @@ export class AuthService {
     if (accounts.length === 0) return [];
     
     const account = accounts[0];
-    console.log('JWT ID Token:', account.idToken);
-    console.log('JWT Token Claims:', account.idTokenClaims);
-    
+    // console.log('JWT ID Token:', account.idToken);
+    // console.log('JWT Token Claims:', account.idTokenClaims);
     const idTokenClaims = account.idTokenClaims as any;
     const roles = idTokenClaims?.roles || idTokenClaims?.extension_Roles || [];
-    console.log('Extracted roles:', roles);
-    
-    this.roles.set(roles);
+    // console.log('Extracted roles:', roles);
     return roles;
   }
 

@@ -25,7 +25,7 @@ export class UserListComponent implements OnInit {
   ) {}
 
   get isAdmin() {
-    return this.authService.role === 'admin';
+    return this.authService.hasMinRole('admin');
   }
 
   ngOnInit() {

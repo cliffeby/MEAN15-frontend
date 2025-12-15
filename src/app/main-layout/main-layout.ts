@@ -51,21 +51,19 @@ export class MainLayoutComponent {
       { label: 'HCap List', route: '/hcaps' },
       { label: 'Match List', route: '/matches' },
     ];
-    if (this.auth.role === 'developer') {
+    if (this.auth.hasRole && this.auth.hasRole('developer')) {
       links.push({ label: 'Read Me', route: '/read-me' });
-    }
-    if (this.auth.role === 'developer') {
       links.push({ label: 'API Details', route: '/apis' });
     }
     return links;
   }
 
   get showUserListLink() {
-    return this.auth.role === 'admin';
+    return this.auth.hasMinRole && this.auth.hasMinRole('admin');
   }
 
   get showAdminLinks() {
-    return this.auth.role === 'admin';
+    return this.auth.hasMinRole && this.auth.hasMinRole('admin');
   }
 
   logout() {
