@@ -5,7 +5,20 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Dashboard } from './dashboard';
 import { MsalService } from '@azure/msal-angular';
 
-fdescribe('Dashboard', () => {
+// Mock MsalService
+const mockMsalService = {
+  instance: {
+    getAllAccounts: () => [{
+      idTokenClaims: {
+        name: 'Test User',
+        email: 'test@example.com',
+        roles: ['user']
+      }
+    }]
+  }
+};
+
+describe('Dashboard', () => {
   let component: Dashboard;
   let fixture: ComponentFixture<Dashboard>;
 
@@ -15,7 +28,8 @@ fdescribe('Dashboard', () => {
       imports: [Dashboard],
       providers: [
         provideHttpClient(),
-        provideHttpClientTesting()
+        provideHttpClientTesting(),
+        { provide: MsalService, useValue: mockMsalService }
       ]
     })
     .compileComponents();

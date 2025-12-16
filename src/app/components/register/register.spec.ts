@@ -2,6 +2,9 @@
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MsalService, MsalBroadcastService, MSAL_INSTANCE } from '@azure/msal-angular';
+import { InteractionStatus } from '@azure/msal-browser';
+import { of, Subject } from 'rxjs';
 import { Register } from './register';
 
 describe('Register', () => {
@@ -10,11 +13,41 @@ describe('Register', () => {
 
 
   beforeEach(async () => {
+    const mockMsalService = {
+      instance: {
+        getAllAccounts: () => [],
+        loginRedirect: jasmine.createSpy('loginRedirect'),
+        handleRedirectPromise: jasmine.createSpy('handleRedirectPromise').and.returnValue(Promise.resolve(null)),
+        addEventCallback: jasmine.createSpy('addEventCallback'),
+        removeEventCallback: jasmine.createSpy('removeEventCallback'),
+        setActiveAccount: jasmine.createSpy('setActiveAccount'),
+        getActiveAccount: jasmine.createSpy('getActiveAccount').and.returnValue(null)
+      }
+    };
+
+    const mockMsalBroadcastService = {
+      msalSubject$: new Subject(),
+      inProgress$: of(InteractionStatus.None)
+    };
+
+    const mockMsalInstance = {
+      getAllAccounts: () => [],
+      loginRedirect: jasmine.createSpy('loginRedirect'),
+      handleRedirectPromise: jasmine.createSpy('handleRedirectPromise').and.returnValue(Promise.resolve(null)),
+      addEventCallback: jasmine.createSpy('addEventCallback'),
+      removeEventCallback: jasmine.createSpy('removeEventCallback'),
+      setActiveAccount: jasmine.createSpy('setActiveAccount'),
+      getActiveAccount: jasmine.createSpy('getActiveAccount').and.returnValue(null)
+    };
+
     await TestBed.configureTestingModule({
       imports: [Register],
       providers: [
         provideHttpClient(),
-        provideHttpClientTesting()
+        provideHttpClientTesting(),
+        { provide: MsalService, useValue: mockMsalService },
+        { provide: MsalBroadcastService, useValue: mockMsalBroadcastService },
+        { provide: MSAL_INSTANCE, useValue: mockMsalInstance }
       ]
     })
     .compileComponents();

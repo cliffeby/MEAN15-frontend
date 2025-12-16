@@ -14,7 +14,8 @@ describe('Login', () => {
     const mockMsalService = {
       instance: {
         getAllAccounts: () => [],
-        loginRedirect: jasmine.createSpy('loginRedirect')
+        loginRedirect: jasmine.createSpy('loginRedirect'),
+        handleRedirectPromise: jasmine.createSpy('handleRedirectPromise').and.returnValue(Promise.resolve(null))
       } as any
     } as any;
 
@@ -30,7 +31,9 @@ describe('Login', () => {
       providers: [
         { provide: MsalService, useValue: mockMsalService },
         { provide: MsalBroadcastService, useValue: mockMsalBroadcastService },
-        { provide: Router, useValue: mockRouter }
+        { provide: Router, useValue: mockRouter },
+        { provide: MsalService, useValue: mockMsalService }
+      
       ]
     })
     .compileComponents();

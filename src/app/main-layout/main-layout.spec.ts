@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { MainLayoutComponent } from './main-layout';
 import { AuthService } from '../services/authService';
+import { MsalService } from '@azure/msal-angular';
 import { of } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
@@ -12,7 +13,15 @@ describe('MainLayout', () => {
   let fixture: ComponentFixture<MainLayoutComponent>;
 
   beforeEach(async () => {
-    const mockAuth = { logout: () => {}, get role() { return 'admin'; } } as Partial<AuthService> as AuthService;
+    const mockAuth = { 
+      logout: () => {}, 
+      get role() { return 'admin'; },
+      hasRole: jasmine.createSpy('hasRole').and.returnValue(true),
+      hasMinRole: jasmine.createSpy('hasMinRole').and.returnValue(true),
+      getRoles: jasmine.createSpy('getRoles').and.returnValue(['admin']),
+      getUserName: jasmine.createSpy('getUserName').and.returnValue('Test User'),
+      getUserEmail: jasmine.createSpy('getUserEmail').and.returnValue('test@example.com')
+    } as Partial<AuthService> as AuthService;
     const robustActivatedRoute = {
       params: of({}),
       queryParams: of({}),
@@ -28,6 +37,14 @@ describe('MainLayout', () => {
       navigateByUrl: () => Promise.resolve(true)
     };
 
+    const mockMsalService = {
+      logoutRedirect: jasmine.createSpy('logoutRedirect'),
+      instance: {
+        getAllAccounts: () => [],
+        handleRedirectPromise: jasmine.createSpy('handleRedirectPromise').and.returnValue(Promise.resolve(null))
+      }
+    };
+
     await TestBed.configureTestingModule({
       imports: [
         MainLayoutComponent       
@@ -37,7 +54,8 @@ describe('MainLayout', () => {
         { provide: AuthService, useValue: mockAuth },
         { provide: ActivatedRoute, useValue: robustActivatedRoute },
         { provide: 'MatIconRegistry', useValue: {} },
-        { provide: 'Overlay', useValue: {} }
+        { provide: 'Overlay', useValue: {} },
+        { provide: MsalService, useValue: mockMsalService }
       ]
     }).compileComponents();
 
