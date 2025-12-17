@@ -15,7 +15,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { Store } from '@ngrx/store';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { Scorecard } from '../../services/scorecardService';
+import { Scorecard } from '../../models/scorecard.interface';
 import { Match } from '../../models/match';
 import { Member } from '../../models/member';
 import { MemberService } from '../../services/memberService';

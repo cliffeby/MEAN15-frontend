@@ -10,6 +10,11 @@ export interface Match {
   partnerIdsTEMP?: string[][];
   datePlayed?: string;
   user: string;
+  author?: {
+    id: string;
+    email: string;
+    name: string;
+  };
   createdAt?: string;
   updatedAt?: string;
 }

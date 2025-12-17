@@ -25,7 +25,8 @@ interface ScoresApiResponse {
 import { MatchService } from '../../services/matchService';
 import { MemberService } from '../../services/memberService';
 import { ScoreService } from '../../services/scoreService';
-import { ScorecardService, Scorecard } from '../../services/scorecardService';
+import { ScorecardService } from '../../services/scorecardService';
+import { Scorecard } from '../../models/scorecard.interface';
 import { AuthService } from '../../services/authService';
 import { Match } from '../../models/match';
 import { Member } from '../../models/member';

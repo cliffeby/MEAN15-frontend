@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { Scorecard } from '../../services/scorecardService';
+import { Scorecard } from '../../models/scorecard.interface';
 
 // Load all scorecards
 export const loadScorecards = createAction('[Scorecard] Load Scorecards');

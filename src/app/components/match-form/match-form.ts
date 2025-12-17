@@ -13,7 +13,7 @@ import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { Observable, Subject, of } from 'rxjs';
 import { takeUntil, catchError } from 'rxjs/operators';
-import { Scorecard } from '../../services/scorecardService';
+import { Scorecard } from '../../models/scorecard.interface';
 import { Member } from '../../models/member';
 import { MemberService } from '../../services/memberService';
 import { AuthService } from '../../services/authService';

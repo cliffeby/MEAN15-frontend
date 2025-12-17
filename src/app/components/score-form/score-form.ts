@@ -15,7 +15,7 @@ import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ScoreService } from '../../services/scoreService';
 import { AuthService } from '../../services/authService';
-import { Scorecard } from '../../services/scorecardService';
+import { Scorecard } from '../../models/scorecard.interface';
 import * as ScorecardActions from '../../store/actions/scorecard.actions';
 import * as ScorecardSelectors from '../../store/selectors/scorecard.selectors';
 

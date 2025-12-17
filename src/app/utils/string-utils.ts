@@ -1,4 +1,4 @@
-import { Scorecard } from "../services/scorecardService";
+import { Scorecard } from "../models/scorecard.interface";
 
 export function parseStringData(scorecard: Scorecard): void {
     if (!scorecard) return;

@@ -20,7 +20,7 @@ import { ScoreService } from '../../services/scoreService';
 import { UserService } from '../../services/userService';
 import { MatchService } from '../../services/matchService';
 import { Score } from '../../models/score';
-import { Scorecard } from '../../services/scorecardService';
+import { Scorecard } from '../../models/scorecard.interface';
 import * as ScorecardActions from '../../store/actions/scorecard.actions';
 import * as ScorecardSelectors from '../../store/selectors/scorecard.selectors';
 

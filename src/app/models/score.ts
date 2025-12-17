@@ -39,6 +39,11 @@ export interface Score {
   foursomeIds?: string[];
   partnerIds?: string[];
   user: string;
+  author?: {
+    id: string;
+    email: string;
+    name: string;
+  };
   createdAt?: string;
   updatedAt?: string;
 }

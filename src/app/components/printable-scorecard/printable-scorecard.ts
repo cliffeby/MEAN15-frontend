@@ -10,7 +10,8 @@ import { forkJoin } from 'rxjs';
 
 import { MatchService } from '../../services/matchService';
 import { MemberService } from '../../services/memberService';
-import { ScorecardService, Scorecard } from '../../services/scorecardService';
+import { ScorecardService } from '../../services/scorecardService';
+import { Scorecard } from '../../models/scorecard.interface';
 import { ScorecardPdfService } from '../../services/scorecard-pdf.service';
 import { HandicapCalculationService } from '../../services/handicap-calculation.service';
 import { Match } from '../../models/match';

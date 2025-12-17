@@ -25,7 +25,8 @@ import { ScorecardPdfService } from '../../services/scorecard-pdf.service';
 import { HandicapCalculationService } from '../../services/handicap-calculation.service';
 import { PrintablePlayer } from '../../models/printable-player.interface';
 import { MatchData, ScorecardData } from '../../models/scorecard.interface';
-import { ScorecardService, Scorecard } from '../../services/scorecardService';
+import { ScorecardService } from '../../services/scorecardService';
+import { Scorecard } from '../../models/scorecard.interface';
 import * as MatchActions from '../../store/actions/match.actions';
 import { parseStringData } from '../../utils/string-utils';
 

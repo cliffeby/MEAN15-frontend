@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { ScorecardService, Scorecard } from '../services/scorecardService';
+import { ScorecardService } from '../services/scorecardService';
+import { Scorecard } from '../models/scorecard.interface';
 import { AuthService } from '../services/authService';
 import { environment } from '../../environments/environment';
 

@@ -4,27 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from './authService';
 import { environment } from '../../environments/environment';
-
-export interface Scorecard {
-  _id?: string;
-  groupName?: string;
-  name?: string;
-  rating?: number;
-  slope?: number;
-  parInputString?: string;
-  pars?: number[];
-  par?: number;
-  hCapInputString?: string;
-  hCaps?: number[];
-  yardsInputString?: string;
-  yards?: number[];
-  scorecardsId?: string[];
-  scorecardId?: string;
-  user?: string;
-  courseTeeName?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
+import { Scorecard } from '../models/scorecard.interface';
 
 @Injectable({ providedIn: 'root' })
 export class ScorecardService {

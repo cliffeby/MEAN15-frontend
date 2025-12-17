@@ -1,6 +1,6 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 import { ScorecardState, adapter } from '../reducers/scorecard.reducer';
-import { Scorecard } from '../../services/scorecardService';
+import { Scorecard } from '../../models/scorecard.interface';
 
 // Feature selector
 export const selectScorecardState = createFeatureSelector<ScorecardState>('scorecards');
