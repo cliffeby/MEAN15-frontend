@@ -9,7 +9,7 @@ export interface Match {
   foursomeIdsTEMP?: string[][];
   partnerIdsTEMP?: string[][];
   datePlayed?: string;
-  user: string;
+  user?: string;
   author?: {
     id: string;
     email: string;

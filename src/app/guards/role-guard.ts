@@ -2,7 +2,7 @@ import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { MsalService } from '@azure/msal-angular';
 
-export const roleGuard: CanActivateFn = (route, state) => {
+export const roleGuard: CanActivateFn = (route, _state) => {
   const msalService = inject(MsalService);
   const router = inject(Router);
   
