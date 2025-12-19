@@ -34,7 +34,7 @@ export class ScorecardListComponent implements OnInit {
   scorecards$: Observable<Scorecard[]>;
   loading$: Observable<boolean>;
   error$: Observable<string | null>;
-  displayedColumns: string[] = ['name', 'rating', 'slope', 'par', 'user', 'actions'];
+  displayedColumns: string[] = ['name', 'rating', 'slope', 'par', 'author', 'actions'];
 
   constructor(
     private store: Store,

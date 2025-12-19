@@ -13,3 +13,24 @@
     margin-top: 8px;
   }
 }
+.match-form {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+  h2 {
+    margin-bottom: 20px;
+    color: #333;
+    text-align: center;
+  }
+
+  mat-form-field {
+    width: 100%;
+  }
+
+
+  

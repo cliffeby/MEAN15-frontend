@@ -57,8 +57,7 @@ export class MatchEffects {
     this.actions$.pipe(
       ofType(MatchActions.createMatch),
       mergeMap((action) => {
-        const currentUserId = this.authService.user?.id || this.authService.user?._id;
-        return this.matchService.create(action.match, currentUserId).pipe(
+        return this.matchService.create(action.match).pipe(
           map((response) => {
             const match = response.match || response;
             return MatchActions.createMatchSuccess({ match });
@@ -74,8 +73,7 @@ export class MatchEffects {
     this.actions$.pipe(
       ofType(MatchActions.updateMatch),
       mergeMap((action) => {
-        const currentUserId = this.authService.user?.id || this.authService.user?._id;
-        return this.matchService.update(action.id, action.match, currentUserId).pipe(
+        return this.matchService.update(action.id, action.match).pipe(
           map((response) => {
             const match = response.match || response;
             return MatchActions.updateMatchSuccess({ match });

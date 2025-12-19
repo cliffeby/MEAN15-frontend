@@ -38,7 +38,7 @@ export interface Score {
   datePlayed?: string;
   foursomeIds?: string[];
   partnerIds?: string[];
-  user: string;
+  // user: string;
   author?: {
     id: string;
     email: string;

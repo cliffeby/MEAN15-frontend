@@ -174,4 +174,20 @@ export class AuthService {
     const idTokenClaims = accounts[0].idTokenClaims as any;
     return idTokenClaims?.name || null;
   }
+
+  /**
+   * Returns the complete author object for the authenticated user from Entra/MSAL token.
+   * This should be used when creating or updating records that require author information.
+   */
+  getAuthorObject(): { id: string; email: string; name: string } {
+    const email = this.getUserEmail() || '';
+    const name = this.getUserName() || '';
+    const id = this.user?.id || this.user?._id || email; // Fallback to email if no explicit id
+    
+    return {
+      id,
+      email,
+      name
+    };
+  }
 }

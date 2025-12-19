@@ -30,9 +30,8 @@ export class ScorecardService {
     return throwError(() => new Error(errorMsg));
   }
 
-  create(scorecard: Scorecard, userId?: string): Observable<any> {
-    const body = userId ? { ...scorecard, userId } : scorecard;
-    return this.http.post(this.baseUrl, body, this.getHeaders())
+  create(scorecard: Scorecard): Observable<any> {
+    return this.http.post(this.baseUrl, scorecard, this.getHeaders())
       .pipe(catchError(this.handleError));
   }
 
@@ -46,9 +45,8 @@ export class ScorecardService {
       .pipe(catchError(this.handleError));
   }
 
-  update(id: string, scorecard: Scorecard, userId?: string): Observable<any> {
-    const body = userId ? { ...scorecard, userId } : scorecard;
-    return this.http.put(`${this.baseUrl}/${id}`, body, this.getHeaders())
+  update(id: string, scorecard: Scorecard): Observable<any> {
+    return this.http.put(`${this.baseUrl}/${id}`, scorecard, this.getHeaders())
       .pipe(catchError(this.handleError));
   }
 

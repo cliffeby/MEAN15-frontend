@@ -437,14 +437,14 @@ console.log('Preparing to create/update HCap record:', hcapRecord);
         if (key && existingMap.has(key)) {
           const existing = existingMap.get(key);
           try {
-            return await lastValueFrom(this.hcapService.update(existing._id, hcapRecord, currentUserId));
+            return await lastValueFrom(this.hcapService.update(existing._id, hcapRecord));
           } catch (e) {
             console.warn('Failed to update existing HCap, will try create as fallback:', e);
           }
         }
 
         // Call HCap service to create record
-        return await lastValueFrom(this.hcapService.create(hcapRecord, currentUserId));
+        return await lastValueFrom(this.hcapService.create(hcapRecord));
       } catch (err) {
         console.error('Failed to create HCap for score:', score, err);
         // continue without failing all

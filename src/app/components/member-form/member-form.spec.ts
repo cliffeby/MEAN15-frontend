@@ -14,7 +14,8 @@ describe('MemberFormComponent', () => {
 
   beforeEach(async () => {
     memberServiceSpy = jasmine.createSpyObj('MemberService', ['create']);
-    authServiceSpy = jasmine.createSpyObj('AuthService', [], { user: { id: 'u1' } });
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['getAuthorObject']);
+    authServiceSpy.getAuthorObject.and.returnValue({ id: 'u1', email: 'test@example.com', name: 'Test User' });
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
 
     await TestBed.configureTestingModule({
@@ -68,7 +69,7 @@ describe('MemberFormComponent', () => {
     tick();
     fixture.detectChanges();
 
-    expect(memberServiceSpy.create).toHaveBeenCalledWith(jasmine.objectContaining(payload), 'u1');
+    expect(memberServiceSpy.create).toHaveBeenCalledWith(jasmine.objectContaining(payload));
     expect(snackBarSpy.open).toHaveBeenCalledWith('Member created!', 'Close', { duration: 2000 });
     expect(component.memberForm.reset).toHaveBeenCalled();
     expect(component.loading).toBeFalse();

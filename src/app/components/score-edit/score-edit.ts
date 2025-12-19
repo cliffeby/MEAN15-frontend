@@ -66,8 +66,7 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
   scoreForm: FormGroup;
   loading = false;
   scoreId: string | null = null;
-  userName = '';
-  userId = ''; // Store the userId for saving
+  authorName = '';
   matchStatus = '';
   matchName = '';
   isMatchCompleted = false;
@@ -150,19 +149,8 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
     this.scoresArray.clear();
     this.scoresToPostArray.clear();
 
-    // Store userId for saving and load user name for display
-    if (score.user) {
-      this.userId = score.user;
-      this.userService.getById(score.user).subscribe({
-        next: (user) => {
-          this.userName = user.name || 'Unknown User';
-        },
-        error: (err) => {
-          console.error('Error loading user:', err);
-          this.userName = 'Unknown User';
-        }
-      });
-    }
+    // Get author name directly from score object
+    this.authorName = score.author?.name || 'Unknown Author';
 
     // Check match status to determine if scores are locked
     if (score.matchId) {
@@ -285,9 +273,9 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
     }
     
     // Include the userId for saving
-    if (this.userId) {
-      formValue.user = this.userId;
-    }
+    // if (this.userId) {
+    //   formValue.user = this.userId;
+    // }
 
     this.scoreService.update(this.scoreId, formValue).subscribe({
       next: () => {

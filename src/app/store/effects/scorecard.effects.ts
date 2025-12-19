@@ -62,8 +62,7 @@ export class ScorecardEffects {
     this.actions$.pipe(
       ofType(ScorecardActions.createScorecard),
       mergeMap((action) => {
-        const currentUserId = this.authService.user?.id || this.authService.user?._id;
-        return this.scorecardService.create(action.scorecard, currentUserId).pipe(
+        return this.scorecardService.create(action.scorecard).pipe(
           map((response) => {
             const scorecard = response.scorecard || response;
             return ScorecardActions.createScorecardSuccess({ scorecard });
@@ -82,8 +81,7 @@ export class ScorecardEffects {
     this.actions$.pipe(
       ofType(ScorecardActions.updateScorecard),
       mergeMap((action) => {
-        const currentUserId = this.authService.user?.id || this.authService.user?._id;
-        return this.scorecardService.update(action.id, action.scorecard, currentUserId).pipe(
+        return this.scorecardService.update(action.id, action.scorecard).pipe(
           map((response) => {
             const scorecard = response.scorecard || response;
             return ScorecardActions.updateScorecardSuccess({ scorecard });

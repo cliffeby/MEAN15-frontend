@@ -54,10 +54,9 @@ export class MatchService {
     return throwError(() => new Error(errorMsg));
   }
 
-  create(match: Match, userId?: string): Observable<any> {
+  create(match: Match): Observable<any> {
     this.clearCache(); // Clear cache when creating new match
-    const body = userId ? { ...match, userId } : match;
-    return this.http.post(this.baseUrl, body, this.getHeaders())
+    return this.http.post(this.baseUrl, match, this.getHeaders())
       .pipe(catchError(this.handleError));
   }
 
@@ -114,10 +113,9 @@ export class MatchService {
     return match$;
   }
 
-  update(id: string, match: Partial<Match>, userId?: string): Observable<any> {
+  update(id: string, match: Partial<Match>): Observable<any> {
     this.clearCache(); // Clear cache when updating
-    const body = userId ? { ...match, userId } : match;
-    return this.http.put(`${this.baseUrl}/${id}`, body, this.getHeaders())
+    return this.http.put(`${this.baseUrl}/${id}`, match, this.getHeaders())
       .pipe(catchError(this.handleError));
   }
 

@@ -26,7 +26,8 @@ describe('MemberEditComponent', () => {
 
   beforeEach(async () => {
     memberServiceSpy = jasmine.createSpyObj('MemberService', ['getById', 'update']);
-    authServiceSpy = jasmine.createSpyObj('AuthService', [], { user: { id: 'u1' } });
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['getAuthorObject']);
+    authServiceSpy.getAuthorObject.and.returnValue({ id: 'u1', email: 'test@example.com', name: 'Test User' });
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
@@ -97,7 +98,7 @@ describe('MemberEditComponent', () => {
     component.submit();
     tick();
     fixture.detectChanges();
-    expect(memberServiceSpy.update).toHaveBeenCalledWith('1', jasmine.any(Object), 'u1');
+    expect(memberServiceSpy.update).toHaveBeenCalledWith('1', jasmine.any(Object));
     expect(snackBarSpy.open).toHaveBeenCalledWith('Member updated!', 'Close', { duration: 2000 });
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/members']);
     expect(component.loading).toBeFalse();

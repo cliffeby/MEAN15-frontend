@@ -40,9 +40,8 @@ export class ScoreService {
     return throwError(() => new Error(errorMsg));
   }
 
-  create(score: Score, userId?: string): Observable<any> {
-    const body = userId ? { ...score, userId } : score;
-    return this.http.post(this.baseUrl, body, this.getHeaders())
+  create(score: Score): Observable<any> {
+    return this.http.post(this.baseUrl, score, this.getHeaders())
       .pipe(
         retryWhen(errors => 
           errors.pipe(
@@ -79,9 +78,8 @@ export class ScoreService {
       .pipe(catchError(this.handleError));
   }
 
-  update(id: string, score: Score, userId?: string): Observable<any> {
-    const body = userId ? { ...score, userId } : score;
-    return this.http.put(`${this.baseUrl}/${id}`, body, this.getHeaders())
+  update(id: string, score: Score): Observable<any> {
+    return this.http.put(`${this.baseUrl}/${id}`, score, this.getHeaders())
       .pipe(
         retryWhen(errors => 
           errors.pipe(

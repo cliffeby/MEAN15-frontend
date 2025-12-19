@@ -46,7 +46,6 @@ export class MemberEditComponent implements OnInit {
       usgaIndex: [null, [Validators.min(-10), Validators.max(54)]],
       lastDatePlayed: [''],
       Email: ['', [Validators.required, Validators.email]],
-      user: [''],
       scorecardsId: [[]],
       hidden: [false],
     });
@@ -85,9 +84,10 @@ export class MemberEditComponent implements OnInit {
   submit() {
     if (this.memberForm.invalid || !this.memberId) return;
     this.loading = true;
-    const currentUserId = this.authService.user?.id || this.authService.user?._id;
+    const author = this.authService.getAuthorObject();
+    const memberData = { ...this.memberForm.value, author };
 
-    this.memberService.update(this.memberId, this.memberForm.value, currentUserId).subscribe({
+    this.memberService.update(this.memberId, memberData).subscribe({
       next: () => {
         this.snackBar.open('Member updated!', 'Close', { duration: 2000 });
         this.router.navigate(['/members']);

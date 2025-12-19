@@ -45,9 +45,8 @@ export class MemberService {
     return throwError(() => new Error(errorMsg));
   }
 
-  create(member: Member, userId?: string): Observable<Member> {
-    const body = userId ? { ...member, userId } : member;
-    return this.http.post<{success: boolean, member: Member}>(this.baseUrl, body, this.getHeaders())
+  create(member: Member): Observable<Member> {
+    return this.http.post<{success: boolean, member: Member}>(this.baseUrl, member, this.getHeaders())
       .pipe(
         map(response => response.member), // Extract the member from the response
         tap(() => this.clearCache()), // Clear cache after creating
@@ -83,9 +82,8 @@ export class MemberService {
       );
   }
 
-  update(id: string, member: Member, userId?: string): Observable<Member> {
-    const body = userId ? { ...member, userId } : member;
-    return this.http.put<{success: boolean, member: Member}>(`${this.baseUrl}/${id}`, body, this.getHeaders())
+  update(id: string, member: Member): Observable<Member> {
+    return this.http.put<{success: boolean, member: Member}>(`${this.baseUrl}/${id}`, member, this.getHeaders())
       .pipe(
         map(response => response.member), // Extract the member from the response
         tap(() => this.clearCache()), // Clear cache after updating

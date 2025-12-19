@@ -30,10 +30,6 @@
   <input matInput formControlName="Email" type="email" required placeholder="Enter email" title="Email" />
   </mat-form-field>
 
-  <mat-form-field appearance="fill">
-    <mat-label>User</mat-label>
-    <input matInput formControlName="user" placeholder="Enter user" title="User" />
-  </mat-form-field>
 
   <button mat-raised-button color="primary" type="submit" [disabled]="loading || memberForm.invalid">
     {{ loading ? 'Saving...' : 'Save Member' }}

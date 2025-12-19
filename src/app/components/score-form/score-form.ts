@@ -79,8 +79,7 @@ export class ScoreFormComponent implements OnInit, OnDestroy {
       scName: [''],
       datePlayed: [new Date()],
       foursomeIds: this.fb.array([]),
-      partnerIds: this.fb.array([]),
-      user: ['', Validators.required]
+      partnerIds: this.fb.array([])
     });
   }
 
@@ -143,9 +142,10 @@ export class ScoreFormComponent implements OnInit, OnDestroy {
       formValue.datePlayed = formValue.datePlayed.toISOString();
     }
 
-    const currentUserId = this.authService.user?.id || this.authService.user?._id;
+    const author = this.authService.getAuthorObject();
+    const scoreData = { ...formValue, author };
 
-    this.scoreService.create(formValue, currentUserId).subscribe({
+    this.scoreService.create(scoreData).subscribe({
       next: () => {
         this.snackBar.open('Score created!', 'Close', { duration: 2000 });
         this.scoreForm.reset();

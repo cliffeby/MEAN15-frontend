@@ -54,7 +54,6 @@ export class ScorecardFormComponent implements OnInit, OnDestroy {
       rating: [0, [Validators.required, Validators.min(50), Validators.max(85)]],
       slope: [0, [Validators.required, Validators.min(55), Validators.max(155)]],
       par: [0, [Validators.required, Validators.min(60), Validators.max(80)]],
-      user: ['', [Validators.required, Validators.minLength(2)]],
       parInputString: [''],
       hCapInputString: [''],
       yardsInputString: ['']
@@ -90,7 +89,6 @@ export class ScorecardFormComponent implements OnInit, OnDestroy {
       rating: scorecard.rating,
       slope: scorecard.slope,
       par: scorecard.par,
-      user: scorecard.user,
       parInputString: scorecard.pars ? scorecard.pars.join(',') : '',
       hCapInputString: scorecard.hCaps ? scorecard.hCaps.join(',') : '',
       yardsInputString: scorecard.yards ? scorecard.yards.join(',') : ''

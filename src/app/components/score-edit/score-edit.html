@@ -29,7 +29,7 @@
       <div><strong>Match:</strong> <span>{{ matchName }}</span></div>
       <div><strong>Match:</strong> <span>{{ scoreForm.get('matchName')?.value }}</span></div>
       <div><strong>Date Played:</strong> <span>{{ scoreForm.get('datePlayed')?.value | date:'mediumDate' }}</span></div>
-    <div *ngIf="userName"><strong>User:</strong> <span>{{ userName }}</span></div>
+    <div *ngIf="authorName"><strong>Author:</strong> <span>{{ authorName }}</span></div>
   </div>
 
   <div class="course-info-compact">

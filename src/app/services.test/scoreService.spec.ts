@@ -9,8 +9,8 @@ const baseUrl = `${environment.apiUrl}/scores`;
 const mockToken = 'mock-jwt-token';
 
 const mockScores: Score[] = [
-  { _id: 's1', name: 'u1', score: 72, scoreRecordType: 'byHole', scoresToPost: [], postedScore: 70 ,scores: [],handicap: 10, usgaIndex: 12.5, scoringMethod: 'byHole', user:'u1' },
-  { _id: 's2', name: 'u2', score: 66, scoreRecordType: 'byHole', scoresToPost: [], postedScore: 70 ,scores: [],handicap: 10, usgaIndex: 12.5, scoringMethod: 'byHole', user:'u1' },
+  { _id: 's1', name: 'Score 1', score: 72, scoreRecordType: 'byHole', scoresToPost: [], postedScore: 70, scores: [], handicap: 10, usgaIndex: 12.5, scoringMethod: 'byHole', author: { id: 'u1', email: 'u1@email.com', name: 'u1' } },
+  { _id: 's2', name: 'Score 2', score: 66, scoreRecordType: 'byHole', scoresToPost: [], postedScore: 70, scores: [], handicap: 10, usgaIndex: 12.5, scoringMethod: 'byHole', author: { id: 'u1', email: 'u1@email.com', name: 'u1' } },
 ];
 
 describe('ScoreService', () => {
@@ -69,7 +69,7 @@ describe('ScoreService', () => {
   describe('create', () => {
     it('creates a score and clears cache', () => {
       authService.token.and.returnValue(mockToken);
-      const newScore: Partial<Score> = { user: 'u3', score: 70 };
+      const newScore: Partial<Score> = { author: { id: 'u3', email: 'u3@email.com', name: 'u3' }, score: 70 };
 
       // populate cache
       service.getAll().subscribe();
@@ -88,12 +88,12 @@ describe('ScoreService', () => {
       // cache cleared, next getAll should make a request
       service.getAll().subscribe();
       const req3 = httpMock.expectOne(baseUrl);
-      req3.flush({ success: true, count: 3, scores: [...mockScores, { _id: 's3', user: 'u3', total: 70 }] });
+      req3.flush({ success: true, count: 3, scores: [...mockScores, { _id: 's3', author: { name: 'u3' }, total: 70 }] });
     });
 
     it('retries on failure and surfaces 409 conflict', () => {
       authService.token.and.returnValue(mockToken);
-      const dup: Partial<Score> = { user: 'u1', score: 72 };
+      const dup: Partial<Score> = { author: { id: 'u1', email: 'u1@email.com', name: 'u1' }, score: 72 };
 
       service.create(dup as Score).subscribe({
         next: () => fail('should have failed with 409'),
@@ -246,7 +246,7 @@ describe('ScoreService', () => {
   describe('savePlayerScore', () => {
     it('creates a new score when existingScoreId is not provided', async () => {
       authService.token.and.returnValue(mockToken);
-      const newScore: Partial<Score> = { user: 'u3', score: 71 };
+      const newScore: Partial<Score> = { author: { id: 'u3', email: 'u3@email.com', name: 'u3' }, score: 71 };
 
       const promise = service.savePlayerScore(newScore);
 
