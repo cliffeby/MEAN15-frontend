@@ -52,14 +52,14 @@ export class API {
       endpoint: '/api/members',
       method: 'POST',
       description: 'Create new member (admin only)',
-      request: '{ "firstName": "string", "lastName": "string", "email": "string", "usgaIndex": number, ... }',
+      request: '{ "firstName": "string", "lastName": "string", "email": "string", "usgaIndex": number, ... , "author": { "id": "string", "email": "string", "name": "string" } }',
       response: '{ "success": true, "member": {...} }'
     },
     {
       endpoint: '/api/members/:id',
       method: 'PUT',
       description: 'Update member (admin only)',
-      request: '{ "firstName": "string", "lastName": "string", ... }',
+      request: '{ "firstName": "string", "lastName": "string", ... , "author": { "id": "string", "email": "string", "name": "string" } }',
       response: '{ "success": true, "member": {...} }'
     },
     {
@@ -77,11 +77,69 @@ export class API {
       response: '{ "success": true, "removed": number }'
     },
 
+    // Match Endpoints
+    {
+      endpoint: '/api/matches',
+      method: 'GET',
+      description: 'Get all matches (requires auth)',
+      request: 'Headers: { "Authorization": "Bearer <token>" }',
+      response: '{ "success": true, "matches": [...] }'
+    },
+    {
+      endpoint: '/api/matches/:id',
+      method: 'GET',
+      description: 'Get single match by ID (requires auth)',
+      request: 'Headers: { "Authorization": "Bearer <token>" }',
+      response: '{ "success": true, "match": {...} }'
+    },
+    {
+      endpoint: '/api/matches',
+      method: 'POST',
+      description: 'Create new match (admin only)',
+      request: '{ "name": "string", "scGroupName": "string", "datePlayed": "ISO date", "status": "open|completed", "scorecardId": "string", "author": { "id": "string", "email": "string", "name": "string" }, ... }',
+      response: '{ "success": true, "match": {...} }'
+    },
+    {
+      endpoint: '/api/matches/:id',
+      method: 'PUT',
+      description: 'Update match (admin only)',
+      request: '{ ...match fields..., "author": { "id": "string", "email": "string", "name": "string" } }',
+      response: '{ "success": true, "match": {...} }'
+    },
+    {
+      endpoint: '/api/matches/:id/status',
+      method: 'PATCH',
+      description: 'Update match status (admin only)',
+      request: '{ "status": "open|completed" }',
+      response: '{ "success": true, "match": {...} }'
+    },
+    {
+      endpoint: '/api/matches/:id',
+      method: 'DELETE',
+      description: 'Delete match (admin only)',
+      request: 'Headers: { "Authorization": "Bearer <token>" }',
+      response: '{ "success": true, "message": "Match deleted" }'
+    },
+    {
+      endpoint: '/api/matches/user/:userId',
+      method: 'GET',
+      description: 'Get matches for a specific user',
+      request: 'Headers: { "Authorization": "Bearer <token>" }',
+      response: '{ "success": true, "matches": [...] }'
+    },
+    {
+      endpoint: '/api/matches/status/:status',
+      method: 'GET',
+      description: 'Get matches filtered by status',
+      request: 'Headers: { "Authorization": "Bearer <token>" }',
+      response: '{ "success": true, "matches": [...] }'
+    },
+
     // Score Endpoints
     {
       endpoint: '/api/scores',
       method: 'GET',
-      description: 'Get all scores with populated member/match data (requires auth)',
+      description: 'Get all scores (requires auth)',
       request: 'Headers: { "Authorization": "Bearer <token>" }',
       response: '{ "success": true, "count": number, "scores": [...] }'
     },
@@ -135,64 +193,6 @@ export class API {
       response: '{ "success": true, "message": "Score deleted" }'
     },
 
-    // Match Endpoints
-    {
-      endpoint: '/api/matches',
-      method: 'GET',
-      description: 'Get all matches (requires auth)',
-      request: 'Headers: { "Authorization": "Bearer <token>" }',
-      response: '{ "success": true, "count": number, "matches": [...] }'
-    },
-    {
-      endpoint: '/api/matches/:id',
-      method: 'GET',
-      description: 'Get single match by ID (requires auth)',
-      request: 'Headers: { "Authorization": "Bearer <token>" }',
-      response: '{ "success": true, "match": {...} }'
-    },
-    {
-      endpoint: '/api/matches',
-      method: 'POST',
-      description: 'Create new match (requires auth)',
-      request: '{ "name": "string", "datePlayed": "Date", "status": "string", ... }',
-      response: '{ "success": true, "match": {...} }'
-    },
-    {
-      endpoint: '/api/matches/:id',
-      method: 'PUT',
-      description: 'Update match (requires auth)',
-      request: '{ "name": "string", "status": "string", ... }',
-      response: '{ "success": true, "match": {...} }'
-    },
-    {
-      endpoint: '/api/matches/:id',
-      method: 'DELETE',
-      description: 'Delete match (admin only)',
-      request: 'Headers: { "Authorization": "Bearer <token>" }',
-      response: '{ "success": true, "message": "Match deleted" }'
-    },
-    {
-      endpoint: '/api/matches/user/:userId',
-      method: 'GET',
-      description: 'Get matches by user (requires auth)',
-      request: 'Headers: { "Authorization": "Bearer <token>" }',
-      response: '{ "success": true, "count": number, "matches": [...] }'
-    },
-    {
-      endpoint: '/api/matches/status/:status',
-      method: 'GET',
-      description: 'Get matches by status (requires auth)',
-      request: 'Headers: { "Authorization": "Bearer <token>" }',
-      response: '{ "success": true, "count": number, "matches": [...] }'
-    },
-    {
-      endpoint: '/api/matches/:id/status',
-      method: 'PATCH',
-      description: 'Update match status (requires auth)',
-      request: '{ "status": "string" }',
-      response: '{ "success": true, "match": {...} }'
-    },
-
     // Scorecard Endpoints
     {
       endpoint: '/api/scorecards',
@@ -244,29 +244,6 @@ export class API {
       description: 'Delete user by ID (admin only)',
       request: 'Headers: { "Authorization": "Bearer <token>" }',
       response: '{ "success": true, "message": "User deleted" }'
-    },
-
-    // Customer Endpoints
-    {
-      endpoint: '/api/customers',
-      method: 'POST',
-      description: 'Create new customer (requires auth)',
-      request: '{ "name": "string", "email": "string", ... }',
-      response: '{ "success": true, "customer": {...} }'
-    },
-    {
-      endpoint: '/api/customers',
-      method: 'GET',
-      description: 'Get all customers (requires auth)',
-      request: 'Headers: { "Authorization": "Bearer <token>" }',
-      response: '{ "success": true, "count": number, "customers": [...] }'
-    },
-    {
-      endpoint: '/api/customers/:id',
-      method: 'GET',
-      description: 'Get single customer by ID (requires auth)',
-      request: 'Headers: { "Authorization": "Bearer <token>" }',
-      response: '{ "success": true, "customer": {...} }'
     },
 
     // Orphan Management Endpoints

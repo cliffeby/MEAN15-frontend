@@ -1,7 +1,7 @@
 # Matches Feature Documentation
 
 ## Overview
-The Matches feature enables users to create, view, edit, and manage golf matches, including player lineups, scorecards, and match status. It is tightly integrated with NgRx for state management in the frontend.
+The Matches feature enables users to create, view, edit, and manage golf matches, including player lineups, scorecard selection, and match status. It is tightly integrated with NgRx for state management in the frontend.
 
 ---
 

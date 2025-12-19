@@ -45,11 +45,11 @@ export class MainLayoutComponent {
   get sidebarLinks() {
     const links = [
       { label: 'Dashboard', route: '/dashboard' },
-      { label: 'Member List', route: '/members' },
-      { label: 'Scorecard List', route: '/scorecards' },
-      { label: 'Score List', route: '/scores' },
-      { label: 'HCap List', route: '/hcaps' },
-      { label: 'Match List', route: '/matches' },
+      { label: 'Members', route: '/members' },
+      { label: 'Scorecards', route: '/scorecards' },
+      { label: 'Scores', route: '/scores' },
+      { label: 'HCaps', route: '/hcaps' },
+      { label: 'Matches', route: '/matches' },
     ];
     if (this.auth.hasRole && this.auth.hasRole('developer')) {
       links.push({ label: 'Read Me', route: '/read-me' });

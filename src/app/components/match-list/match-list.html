@@ -38,7 +38,7 @@
       <h3 mat-line class="match-title">{{ match.name }}</h3>
       <p mat-line>
         <span *ngIf="match.scGroupName">Course: {{ match.scGroupName }}</span>
-        <span *ngIf="getPlayerCount(match) > 0"> | Players: {{ getPlayerCount(match) }}</span>
+        <span *ngIf="getPlayerCount(match) > 0"> | {{ getPlayerCount(match) }} Players</span>
       </p>
       <p mat-line class="status-line">
         <mat-chip [color]="getStatusColor(match.status)" selected>
