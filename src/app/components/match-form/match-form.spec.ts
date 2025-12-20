@@ -25,6 +25,11 @@ describe('MatchFormComponent', () => {
     dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
     memberServiceSpy = jasmine.createSpyObj('MemberService', ['getAll']);
     authServiceSpy = jasmine.createSpyObj('AuthService', [], { user: { email: 'test@example.com', name: 'Test User', id: 'u1' } });
+    authServiceSpy.getAuthorObject = jasmine.createSpy('getAuthorObject').and.returnValue({
+      id: 'u1',
+      email: 'test@example.com',
+      name: 'Test User'
+    });
     scorecardServiceSpy = jasmine.createSpyObj('ScorecardService', ['getAll']);
 
     storeSpy.select.and.returnValue(of([]));

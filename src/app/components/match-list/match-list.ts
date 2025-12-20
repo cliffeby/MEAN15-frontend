@@ -10,12 +10,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable, Subject, forkJoin, combineLatest, lastValueFrom } from 'rxjs';
+import { Observable, Subject, forkJoin, lastValueFrom } from 'rxjs';
 import { takeUntil, map } from 'rxjs/operators';
 import { ScoreService } from '../../services/scoreService';
 import { HCapService } from '../../services/hcapService';
 import { Match } from '../../models/match';
-// import { Member } from '../../models/member';
 import { AuthService } from '../../services/authService';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 import { ConfigurationService } from '../../services/configuration.service';
@@ -101,7 +100,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
     this.paginatedMatches$ = this.matches$; // Will be updated in ngOnInit
   }
 
-  get isAdmin(): boolean {
+  get isAuthorized(): boolean {
     return this.authService.hasMinRole('admin');
   }
 
@@ -161,7 +160,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
   }
 
   editMatch(id: string) {
-    if (!this.isAdmin) {
+    if (!this.isAuthorized) {
       // Could add snackbar notification here if needed
       return;
     }
@@ -170,7 +169,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
 
   enterScores(id: string) {
     if (!id) return;
-    if (!this.isAdmin) {
+    if (!this.isAuthorized) {
       // Could add snackbar notification here if needed
       return;
     }
@@ -191,7 +190,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
 
     try {
       // Load match data
-      const matchResponse = await this.matchService.getById(id).toPromise();
+      const matchResponse = await lastValueFrom(this.matchService.getById(id));
       const match = matchResponse?.match || matchResponse;
 
       if (!match) {
@@ -209,10 +208,10 @@ export class MatchListComponent implements OnInit, OnDestroy {
       const finalScorecardId = typeof scorecardId === 'string' ? scorecardId.trim() : scorecardId._id;
 
       // Load scorecard and members in parallel
-      const { scorecard, members } = await forkJoin({
+      const { scorecard, members } = await lastValueFrom(forkJoin({
         scorecard: this.scorecardService.getById(finalScorecardId),
         members: this.memberService.getAll()
-      }).toPromise() || {};
+      })) || {};
 
       const finalScorecard = scorecard?.scorecard || scorecard;
       
@@ -283,7 +282,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
   }
 
   addMatch() {
-    if (!this.isAdmin) {
+    if (!this.isAuthorized) {
       // Could add snackbar notification here if needed
       return;
     }
@@ -292,7 +291,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
 
   deleteMatch(id: string) {
     if (!id) return;
-    if (!this.isAdmin) {
+    if (!this.isAuthorized) {
       // The effects will handle the error snackbar display
       return;
     }

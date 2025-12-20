@@ -25,6 +25,7 @@ import { selectMatchesLoading, selectMatchesError } from '../../store/selectors/
 import * as ScorecardSelectors from '../../store/selectors/scorecard.selectors';
 import { ScorecardService } from '../../services/scorecardService';
 import { getWeekNumber } from '../../utils/date-utils';
+import { MATCH_STATUS_OPTIONS } from '../../models/match-status-options';
 
 @Component({
   selector: 'app-match-form',
@@ -43,17 +44,17 @@ import { getWeekNumber } from '../../utils/date-utils';
     MatSnackBarModule,
     MatDialogModule,
     MatIconModule,
-    MatchLineupComponent
-  ]
+    MatchLineupComponent,
+  ],
 })
 export class MatchFormComponent implements OnInit, OnDestroy {
-    onRemoveGroup(startIndex: number): void {
-      this.removeGroup(startIndex);
-    }
+  onRemoveGroup(startIndex: number): void {
+    this.removeGroup(startIndex);
+  }
 
-    onAddMembers(): void {
-      this.openMemberSelectionDialog();
-    }
+  onAddMembers(): void {
+    this.openMemberSelectionDialog();
+  }
   defaultName: string = '';
   matchForm: FormGroup;
   loading$: Observable<boolean>;
@@ -66,12 +67,7 @@ export class MatchFormComponent implements OnInit, OnDestroy {
   scorecards: Scorecard[] = [];
   private unsubscribe$ = new Subject<void>();
 
-  statusOptions = [
-    { value: 'open', label: 'Open' },
-    { value: 'closed', label: 'Closed' },
-    { value: 'completed', label: 'Completed' },
-    { value: 'cancelled', label: 'Cancelled' }
-  ];
+  statusOptions = MATCH_STATUS_OPTIONS;
 
   constructor(
     private fb: FormBuilder,
@@ -91,17 +87,41 @@ export class MatchFormComponent implements OnInit, OnDestroy {
         console.error('Failed to load members from service, using mock data:', error);
         // Return mock data for testing
         return of([
-          { _id: '1', firstName: 'John', lastName: 'Doe', email: 'john@example.com', Email: 'john@example.com', user: 'admin', usgaIndex: 12.5 },
-          { _id: '2', firstName: 'Jane', lastName: 'Smith', email: 'jane@example.com', Email: 'jane@example.com', user: 'admin', usgaIndex: 8.2 },
-          { _id: '3', firstName: 'Bob', lastName: 'Wilson', email: 'bob@example.com', Email: 'bob@example.com', user: 'admin', usgaIndex: 15.7 }
+          {
+            _id: '1',
+            firstName: 'John',
+            lastName: 'Doe',
+            email: 'john@example.com',
+            Email: 'john@example.com',
+            user: 'admin',
+            usgaIndex: 12.5,
+          },
+          {
+            _id: '2',
+            firstName: 'Jane',
+            lastName: 'Smith',
+            email: 'jane@example.com',
+            Email: 'jane@example.com',
+            user: 'admin',
+            usgaIndex: 8.2,
+          },
+          {
+            _id: '3',
+            firstName: 'Bob',
+            lastName: 'Wilson',
+            email: 'bob@example.com',
+            Email: 'bob@example.com',
+            user: 'admin',
+            usgaIndex: 15.7,
+          },
         ]);
       })
     );
-    
+
     // Debug: Log member data
     this.members$.subscribe({
       next: (members) => console.log('Members loaded:', members),
-      error: (error) => console.error('Error loading members:', error)
+      error: (error) => console.error('Error loading members:', error),
     });
     this.matchForm = this.fb.group({
       name: ['', Validators.required],
@@ -110,42 +130,43 @@ export class MatchFormComponent implements OnInit, OnDestroy {
       status: ['open', Validators.required],
       lineUps: this.fb.array([]),
       datePlayed: [new Date(), Validators.required],
-      user: [this.getCurrentUserEmail(), Validators.required]
+      author: [this.authService.getAuthorObject(), Validators.required],
     });
   }
 
   ngOnInit() {
-  // Load default name from localStorage
-  this.defaultName = localStorage.getItem('defaultMatchName') || '';
+    // Load default name from localStorage
+    this.defaultName = localStorage.getItem('defaultMatchName') || '';
 
-  // Generate proposed match name
-  // const now = new Date();
-  // const month = now.toLocaleString('en-US', { month: 'short' });
-  // const day = String(now.getDate()).padStart(2, '0');
-  // const proposedName = `${this.defaultName}${this.defaultName ? '_' : ''}${month}${day}`;
-  const proposedName = `${this.defaultName}${this.defaultName ? '_' : ''}${getWeekNumber(new Date())}`;
-  this.matchForm.get('name')?.setValue(proposedName);
+    // Generate proposed match name
+    const proposedName = `${this.defaultName}${this.defaultName ? '_' : ''}${getWeekNumber(
+      new Date()
+    )}`;
+    this.matchForm.get('name')?.setValue(proposedName);
     // Dispatch action to load scorecards
     this.store.dispatch(ScorecardActions.loadScorecards());
-    
+
     // Load scorecard data and store in component property
     this.scorecards$.pipe(takeUntil(this.unsubscribe$)).subscribe({
       next: (scorecards) => {
         this.scorecards = scorecards || [];
       },
-      error: (error) => console.error('Error loading scorecards:', error)
+      error: (error) => console.error('Error loading scorecards:', error),
     });
 
     // Fallback: Load scorecards directly from service if store is empty
     setTimeout(() => {
       if (this.scorecards.length === 0) {
-        this.scorecardService.getAll().pipe(takeUntil(this.unsubscribe$)).subscribe({
-          next: (response) => {
-            const scorecards = response?.scorecards || response || [];
-            this.scorecards = scorecards;
-          },
-          error: (error) => console.error('Error loading scorecards directly:', error)
-        });
+        this.scorecardService
+          .getAll()
+          .pipe(takeUntil(this.unsubscribe$))
+          .subscribe({
+            next: (response) => {
+              const scorecards = response?.scorecards || response || [];
+              this.scorecards = scorecards;
+            },
+            error: (error) => console.error('Error loading scorecards directly:', error),
+          });
       }
     }, 2000);
   }
@@ -153,11 +174,6 @@ export class MatchFormComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
-  }
-
-  private getCurrentUserEmail(): string {
-    const user = this.authService.user;
-    return user?.email || user?.username || 'unknown';
   }
 
   trackByScorecard(index: number, scorecard: Scorecard): string {
@@ -177,12 +193,13 @@ export class MatchFormComponent implements OnInit, OnDestroy {
 
   onScorecardChange(scorecardId: string) {
     // Use the scorecard selector to find the specific scorecard
-    this.store.select(ScorecardSelectors.selectScorecardById(scorecardId))
+    this.store
+      .select(ScorecardSelectors.selectScorecardById(scorecardId))
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(selectedScorecard => {
+      .subscribe((selectedScorecard) => {
         if (selectedScorecard) {
           this.matchForm.patchValue({
-            scGroupName: selectedScorecard.groupName || selectedScorecard.name || ''
+            scGroupName: selectedScorecard.groupName || selectedScorecard.name || '',
           });
         }
       });
@@ -208,7 +225,7 @@ export class MatchFormComponent implements OnInit, OnDestroy {
   }
 
   getMemberById(memberId: string, members: Member[] | null): Member | undefined {
-    return members?.find(m => m._id === memberId);
+    return members?.find((m) => m._id === memberId);
   }
 
   getMemberDisplayName(member: Member): string {
@@ -231,7 +248,7 @@ export class MatchFormComponent implements OnInit, OnDestroy {
 
   submit() {
     if (this.matchForm.invalid) return;
-    
+
     const formValue = { ...this.matchForm.value };
     // Convert date to ISO string if it's a Date object
     if (formValue.datePlayed instanceof Date) {
@@ -240,29 +257,29 @@ export class MatchFormComponent implements OnInit, OnDestroy {
 
     // Dispatch NgRx action to create match
     this.store.dispatch(MatchActions.createMatch({ match: formValue }));
-    
+
     // Reset form after dispatching (effects will handle navigation and notifications)
     this.resetForm();
   }
 
   openMemberSelectionDialog() {
-    this.members$.pipe(takeUntil(this.unsubscribe$)).subscribe(members => {
+    this.members$.pipe(takeUntil(this.unsubscribe$)).subscribe((members) => {
       const dialogRef = this.dialog.open(MemberSelectionDialogComponent, {
         width: '600px',
         maxHeight: '80vh',
         data: {
           members: members,
-          currentLineup: this.lineUpsArray.value
-        }
+          currentLineup: this.lineUpsArray.value,
+        },
       });
 
-      dialogRef.afterClosed().subscribe(selectedMemberIds => {
+      dialogRef.afterClosed().subscribe((selectedMemberIds) => {
         console.log('Dialog closed with result:', selectedMemberIds);
         if (selectedMemberIds) {
           console.log('Updating lineup with', selectedMemberIds.length, 'members');
           // Clear current lineup
           this.lineUpsArray.clear();
-          
+
           // Add selected members
           selectedMemberIds.forEach((memberId: string) => {
             this.lineUpsArray.push(this.fb.control(memberId));
@@ -280,7 +297,7 @@ export class MatchFormComponent implements OnInit, OnDestroy {
     // Reset simple control values
     this.matchForm.patchValue({
       status: 'open',
-      datePlayed: new Date()
+      datePlayed: new Date(),
     });
 
     // Ensure the FormArray is cleared (patching with a non-array causes forEach errors)

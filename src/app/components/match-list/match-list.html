@@ -3,7 +3,7 @@
   
   <!-- Action buttons -->
   <div class="action-bar">
-    <button *ngIf="isAdmin" mat-raised-button color="primary" (click)="addMatch()">Add Match</button>
+    <button *ngIf="isAuthorized" mat-raised-button color="primary" (click)="addMatch()">Add Match</button>
     <button mat-button (click)="refreshMatches()">Refresh</button>
     <button mat-button (click)="loadAllMatches()">All</button>
     <button mat-button (click)="loadMatchesByStatus('open')">Open</button>
@@ -56,14 +56,14 @@
           <mat-icon>print</mat-icon>
           Print Scorecard
         </button>
-        <button *ngIf="isAdmin && match.scorecardId" mat-button color="primary" (click)="enterScores((match._id) || '')">
+        <button *ngIf="isAuthorized && match.scorecardId" mat-button color="primary" (click)="enterScores((match._id) || '')">
           <mat-icon>scorecard</mat-icon>
           Enter Scores
         </button>
-        <button *ngIf="isAdmin" mat-button color="accent" (click)="editMatch(( match._id) || '')">Edit</button>
+        <button *ngIf="isAuthorized" mat-button color="accent" (click)="editMatch(( match._id) || '')">Edit</button>
         <button mat-button color="primary" (click)="updateStatus((match._id) || '', 'completed')" 
-          *ngIf="isAdmin && match.status !== 'completed'">Complete</button>
-        <button *ngIf="isAdmin" mat-button color="warn" (click)="deleteMatch((match._id) || '')">Delete</button>
+          *ngIf="isAuthorized && match.status !== 'completed'">Complete</button>
+        <button *ngIf="isAuthorized" mat-button color="warn" (click)="deleteMatch((match._id) || '')">Delete</button>
       </div>
     </mat-list-item>
   </mat-list>

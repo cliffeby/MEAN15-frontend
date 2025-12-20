@@ -42,6 +42,11 @@ describe('MatchEditComponent', () => {
     dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
     memberServiceSpy = jasmine.createSpyObj('MemberService', ['getAll']);
     authServiceSpy = jasmine.createSpyObj('AuthService', [], { author: { id: 'u1', email: 'test@example.com', name: 'Test User' } });
+    authServiceSpy.getAuthorObject = jasmine.createSpy('getAuthorObject').and.returnValue({
+      id: 'u1',
+      email: 'test@example.com',
+      name: 'Test User'
+    });
     scorecardServiceSpy = jasmine.createSpyObj('ScorecardService', ['getAll']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
     activatedRouteStub = { snapshot: { paramMap: { get: (k: string) => k === 'id' ? '1' : null } } };

@@ -23,11 +23,12 @@ import { AuthService } from '../../services/authService';
 import { ScorecardService } from '../../services/scorecardService';
 import { MemberSelectionDialogComponent } from '../member-selection-dialog/member-selection-dialog';
 import { MatchLineupComponent } from '../match-lineup/match-lineup';
-import { ViewChild } from '@angular/core';
+// import { ViewChild } from '@angular/core';
 import * as MatchActions from '../../store/actions/match.actions';
 import * as MatchSelectors from '../../store/selectors/match.selectors';
 import * as ScorecardActions from '../../store/actions/scorecard.actions';
 import * as ScorecardSelectors from '../../store/selectors/scorecard.selectors';
+import { MATCH_STATUS_OPTIONS } from '../../models/match-status-options';
 
 @Component({
   selector: 'app-match-edit',
@@ -71,12 +72,7 @@ export class MatchEditComponent implements OnInit, OnDestroy {
   scorecards: Scorecard[] = [];
   private destroy$ = new Subject<void>();
 
-  statusOptions = [
-    { value: 'open', label: 'Open' },
-    { value: 'closed', label: 'Closed' },
-    { value: 'completed', label: 'Completed' },
-    { value: 'cancelled', label: 'Cancelled' }
-  ];
+  statusOptions = MATCH_STATUS_OPTIONS;
 
   constructor(
     private fb: FormBuilder,
@@ -98,7 +94,7 @@ export class MatchEditComponent implements OnInit, OnDestroy {
       foursomeIdsTEMP: this.fb.array([]),
       partnerIdsTEMP: this.fb.array([]),
       datePlayed: [new Date(), Validators.required],
-      // author: [this.getCurrentUserEmail(), Validators.required]
+      author: [this.authService.getAuthorObject(), Validators.required],
     });
 
     this.loading$ = this.store.select(MatchSelectors.selectMatchesLoading);
