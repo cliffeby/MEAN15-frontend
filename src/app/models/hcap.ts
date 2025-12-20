@@ -14,7 +14,7 @@ export interface HCap {
   scorecardId: string;
   matchId: string;
   memberId: string;
-  userId: string;
+  // userId: string;
   author?: {
     id: string;
     email: string;

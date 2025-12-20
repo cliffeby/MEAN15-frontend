@@ -6,7 +6,7 @@ export const MEMBER_B_DUMMY: Member = {
   firstName: 'B.Dummy',
   lastName: '',
   usgaIndex: 0, // Will be set dynamically
-  user: 'system',
+  author: { id: 'system', email: 'bdummy@example.com', name: 'System' },
   Email: '',
   fullName: 'B.Dummy',
   fullNameR: 'B.Dummy',

@@ -7,7 +7,7 @@ export interface Member {
   GHIN?: string;
   lastDatePlayed?: string;
   scorecardsId?: string[];
-  user: string;
+  // user?: string;
   author?: {
     id: string;
     email: string;

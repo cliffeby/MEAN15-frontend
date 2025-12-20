@@ -6,8 +6,8 @@ import { AuthService } from '../services/authService';
 import { environment } from '../../environments/environment';
 
 const mockMatches: Match[] = [
-  { _id: 'm1', name: 'Sunday Scramble', status: 'scheduled', user: 'u1' },
-  { _id: 'm2', name: 'Wednesday League', status: 'completed', user: 'u2' },
+  { _id: 'm1', name: 'Sunday Scramble', status: 'scheduled', author: { id: 'u1', email: 'user1@example.com', name: 'User One' }  },
+  { _id: 'm2', name: 'Wednesday League', status: 'completed', author: { id: 'u2', email: 'user2@example.com', name: 'User Two' } },
 ];
 
 const mockToken = 'mock-jwt-token';
@@ -93,7 +93,7 @@ describe('MatchService', () => {
   describe('create', () => {
     it('creates a new match and clears cache', () => {
       authService.token.and.returnValue(mockToken);
-      const newMatch: Match = { _id: 'm3', name: 'Friday Night', status: 'scheduled', user: 'u3' };
+      const newMatch: Match = { _id: 'm3', name: 'Friday Night', status: 'scheduled', author: { id: 'u1', email: 'user1@example.com', name: 'User One' }  };
 
       // populate cache
       service.getAll().subscribe();
@@ -115,7 +115,7 @@ describe('MatchService', () => {
 
     it('handles 409 conflict on create', () => {
       authService.token.and.returnValue(mockToken);
-      const duplicate: Match = { _id: 'm1', name: 'Sunday Scramble', status: 'scheduled', user: 'u1' };
+      const duplicate: Match = { _id: 'm1', name: 'Sunday Scramble', status: 'scheduled', author: { id: 'u1', email: 'user1@example.com', name: 'User One' } };
 
       service.create(duplicate).subscribe({
         next: () => fail('should have failed with 409'),

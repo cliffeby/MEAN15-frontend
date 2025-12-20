@@ -12,20 +12,46 @@ describe('HcapListComponent', () => {
   let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
 
   const mockHcaps: HCap[] = [
-    { name: 'Alice', postedScore: 80, currentHCap: 12, newHCap: 11.5, 
-        datePlayed: new Date(), usgaIndexForTodaysScore: { type: 1, 
-            min: [-10, "USGA Index for today cannot be less than -10.0"], 
-            max: [54,"USGA Index for today cannot be greater than 54.0" ]}, 
-            handicap: 12, scoreId: 's1', scorecardId: 'sc1', matchId: 'm1', 
-            memberId: 'mem1', userId: 'u1', createdAt: new Date(), 
-            updatedAt: new Date() },
-    { name: 'Bob', postedScore: 90, currentHCap: 22, newHCap: 21.5, 
-        datePlayed: new Date(), usgaIndexForTodaysScore: { type: 1, 
-            min: [-10, "USGA Index for today cannot be less than -10.0"],
-            max: [54, "USGA Index for today cannot be greater than 54.0"]},
-            handicap: 22, scoreId: 's2', scorecardId: 'sc2', matchId: 'm2', 
-            memberId: 'mem2', userId: 'u2', createdAt: new Date(), 
-            updatedAt: new Date() }
+    {
+      name: 'Alice',
+      postedScore: 80,
+      currentHCap: 12,
+      newHCap: 11.5,
+      datePlayed: new Date(),
+      usgaIndexForTodaysScore: {
+        type: 1,
+        min: [-10, 'USGA Index for today cannot be less than -10.0'],
+        max: [54, 'USGA Index for today cannot be greater than 54.0'],
+      },
+      handicap: 12,
+      scoreId: 's1',
+      scorecardId: 'sc1',
+      matchId: 'm1',
+      memberId: 'mem1',
+      author: { id: 'u1', email: 'test@example.com', name: 'Test User' },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      name: 'Bob',
+      postedScore: 90,
+      currentHCap: 22,
+      newHCap: 21.5,
+      datePlayed: new Date(),
+      usgaIndexForTodaysScore: {
+        type: 1,
+        min: [-10, 'USGA Index for today cannot be less than -10.0'],
+        max: [54, 'USGA Index for today cannot be greater than 54.0'],
+      },
+      handicap: 22,
+      scoreId: 's2',
+      scorecardId: 'sc2',
+      matchId: 'm2',
+      memberId: 'mem2',
+      author: { id: 'u1', email: 'test@example.com', name: 'Test User' },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
   ];
 
   beforeEach(async () => {
@@ -36,16 +62,12 @@ describe('HcapListComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [HcapListComponent],
-      providers: [
-        { provide: HCapService, useValue: hcapServiceSpy },
-      ]
+      providers: [{ provide: HCapService, useValue: hcapServiceSpy }],
     })
       .overrideComponent(HcapListComponent, {
         set: {
-          providers: [
-            { provide: MatSnackBar, useValue: snackBarSpy }
-          ]
-        }
+          providers: [{ provide: MatSnackBar, useValue: snackBarSpy }],
+        },
       })
       .compileComponents();
 
@@ -93,7 +115,12 @@ describe('HcapListComponent', () => {
 
   it('should respond to onPage and update pagination', () => {
     // attach a simple paginator-like object
-    (component as any).paginator = { pageIndex: 0, pageSize: 1, firstPage: () => {}, page: of() } as any;
+    (component as any).paginator = {
+      pageIndex: 0,
+      pageSize: 1,
+      firstPage: () => {},
+      page: of(),
+    } as any;
     component.filtered = [...mockHcaps];
     component.onPage({ pageIndex: 1, pageSize: 1 } as any);
     expect(component.pageIndex).toBe(1);
@@ -105,7 +132,9 @@ describe('HcapListComponent', () => {
     snackBarSpy.open.calls.reset();
     component.loadHcaps();
     tick();
-    expect(snackBarSpy.open).toHaveBeenCalledWith('Error loading HCap data', 'Close', { duration: 3000 });
+    expect(snackBarSpy.open).toHaveBeenCalledWith('Error loading HCap data', 'Close', {
+      duration: 3000,
+    });
     expect(component.loading).toBeFalse();
   }));
 });

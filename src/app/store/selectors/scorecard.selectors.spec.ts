@@ -3,9 +3,9 @@ import { ScorecardState } from '../reducers/scorecard.reducer';
 import { Scorecard } from '../../models/scorecard.interface';
 
 const mockScorecards: Scorecard[] = [
-  { _id: '1', name: 'Card 1', groupName: 'A', rating: 72, slope: 120, par: 72, user: 'user1', courseTeeName: 'Blue' },
-  { _id: '2', name: 'Card 2', groupName: 'B', rating: 70, slope: 118, par: 70, user: 'user2', courseTeeName: 'White' },
-  { _id: '3', name: 'Card 3', groupName: 'A', user: 'user1', courseTeeName: 'Red' },
+  { _id: '1', name: 'Card 1', groupName: 'A', rating: 72, slope: 120, par: 72, author: { id: 'user1', email: 'user1@example.com', name: 'User One' }, courseTeeName: 'Blue' },
+  { _id: '2', name: 'Card 2', groupName: 'B', rating: 70, slope: 118, par: 70, author: { id: 'user2', email: 'user2@example.com', name: 'User Two' }, courseTeeName: 'White' },
+  { _id: '3', name: 'Card 3', groupName: 'A', author: { id: 'user1', email: 'user1@example.com', name: 'User One' }, courseTeeName: 'Red' },
 ];
 
 const getState = (extra: Partial<ScorecardState> = {}): ScorecardState => ({
@@ -53,13 +53,6 @@ describe('scorecard selectors', () => {
   it('should select scorecards with slope', () => {
     const allScorecards = fromSelectors.selectAllScorecards.projector(getState());
     const result = fromSelectors.selectScorecardsWithSlope.projector(allScorecards);
-    expect(result.length).toBe(2);
-  });
-
-  it('should select scorecards by user', () => {
-    const selector = fromSelectors.selectScorecardsByUser('user1');
-    const allScorecards = fromSelectors.selectAllScorecards.projector(getState());
-    const result = selector.projector(allScorecards);
     expect(result.length).toBe(2);
   });
 

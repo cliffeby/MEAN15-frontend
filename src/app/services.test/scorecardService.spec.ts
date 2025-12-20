@@ -6,8 +6,8 @@ import { AuthService } from '../services/authService';
 import { environment } from '../../environments/environment';
 
 const mockScorecards: Scorecard[] = [
-  { _id: 'sc1', name: 'Front Nine', par: 36, user: 'u1' },
-  { _id: 'sc2', name: 'Back Nine', par: 36, user: 'u2' },
+  { _id: 'sc1', name: 'Front Nine', par: 36, author: { id: 'u1', email: 'u1@example.com', name: 'User One' } },
+  { _id: 'sc2', name: 'Back Nine', par: 36, author: { id: 'u2', email: 'u2@example.com', name: 'User Two' }  },
 ];
 
 const mockToken = 'mock-jwt-token';
@@ -81,7 +81,7 @@ describe('ScorecardService', () => {
   describe('create', () => {
     it('should create a scorecard with auth header', () => {
       authService.token.and.returnValue(mockToken);
-      const newScorecard: Scorecard = { name: 'Full Course', par: 72, user: 'u1' };
+      const newScorecard: Scorecard = { name: 'Full Course', par: 72, author: { id: 'u3', email: 'u3@example.com', name: 'User Three' } };
 
       service.create(newScorecard).subscribe((res) => {
         expect(res.scorecard).toEqual({ ...newScorecard, _id: 'sc3' });
@@ -96,7 +96,7 @@ describe('ScorecardService', () => {
 
     it('should handle 409 conflict on create', () => {
       authService.token.and.returnValue(mockToken);
-      const dup: Scorecard = { name: 'Front Nine', user: 'u1' };
+      const dup: Scorecard = { name: 'Front Nine', author: { id: 'u1', email: 'u1@example.com', name: 'User One' } };
 
       service.create(dup).subscribe({
         next: () => fail('should have failed with 409'),

@@ -8,7 +8,7 @@ const mockMatch: Match = {
   name: 'Test Match',
   datePlayed: '2025-12-17',
   status: 'active', // Add a valid status value according to your Match model
-  user: 'user1'
+  author: { id: 'u1', email: 'user1@example.com', name: 'User One' },
 };
 
 describe('matchReducer', () => {
@@ -51,7 +51,10 @@ describe('matchReducer', () => {
   });
 
   it('should update a match on updateMatchSuccess', () => {
-    const withMatch = matchReducer(initialState, MatchActions.createMatchSuccess({ match: mockMatch }));
+    const withMatch = matchReducer(
+      initialState,
+      MatchActions.createMatchSuccess({ match: mockMatch })
+    );
     const updated = { ...mockMatch, name: 'Updated' };
     const state = matchReducer(withMatch, MatchActions.updateMatchSuccess({ match: updated }));
     expect(state.entities['1']).toEqual(updated);
@@ -59,7 +62,10 @@ describe('matchReducer', () => {
   });
 
   it('should remove a match on deleteMatchSuccess', () => {
-    const withMatch = matchReducer(initialState, MatchActions.createMatchSuccess({ match: mockMatch }));
+    const withMatch = matchReducer(
+      initialState,
+      MatchActions.createMatchSuccess({ match: mockMatch })
+    );
     const state = matchReducer(withMatch, MatchActions.deleteMatchSuccess({ id: '1' }));
     expect(state.entities['1']).toBeUndefined();
   });
@@ -71,7 +77,10 @@ describe('matchReducer', () => {
   });
 
   it('should set filterByStatus on loadMatchesByStatus', () => {
-    const state = matchReducer(initialState, MatchActions.loadMatchesByStatus({ status: 'active' }));
+    const state = matchReducer(
+      initialState,
+      MatchActions.loadMatchesByStatus({ status: 'active' })
+    );
     expect(state.filterByStatus).toBe('active');
     expect(state.filterByUser).toBeNull();
   });

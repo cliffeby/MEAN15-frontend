@@ -29,10 +29,6 @@ export const selectCurrentMatch = createSelector(
   (state) => state.currentMatch
 );
 
-export const selectFilterByUser = createSelector(
-  selectMatchState,
-  (state) => state.filterByUser
-);
 
 export const selectFilterByStatus = createSelector(
   selectMatchState,
@@ -56,11 +52,6 @@ export const selectMatchesByStatus = (status: string) => createSelector(
   (matches) => matches.filter((match: Match) => match.status === status)
 );
 
-// Filter matches by user
-export const selectMatchesByUser = (userId: string) => createSelector(
-  selectAllMatches,
-  (matches) => matches.filter((match: Match) => match.user === userId)
-);
 
 // Get open matches
 export const selectOpenMatches = createSelector(
@@ -143,18 +134,11 @@ export const selectMatchesByName = (searchTerm: string) => createSelector(
 export const selectFilteredMatches = createSelector(
   selectAllMatches,
   selectFilterByStatus,
-  selectFilterByUser,
-  (matches, statusFilter, userFilter) => {
+  (matches, statusFilter) => {
     let filtered = matches;
-    
     if (statusFilter) {
       filtered = filtered.filter(match => match.status === statusFilter);
     }
-    
-    if (userFilter) {
-      filtered = filtered.filter(match => match.user === userFilter);
-    }
-    
     return filtered;
   }
 );

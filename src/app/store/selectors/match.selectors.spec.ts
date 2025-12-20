@@ -3,10 +3,10 @@ import { MatchState } from '../reducers/match.reducer';
 import { Match } from '../../models/match';
 
 const mockMatches: Match[] = [
-  { _id: '1', name: 'Match 1', status: 'open', user: 'user1', datePlayed: '2025-12-17', scorecardId: 'sc1' },
-  { _id: '2', name: 'Match 2', status: 'completed', user: 'user2', datePlayed: '2025-12-01' },
-  { _id: '3', name: 'Match 3', status: 'open', user: 'user1', datePlayed: '2025-12-18' },
-  { _id: '4', name: 'Match 4', status: 'cancelled', user: 'user3', datePlayed: '2025-11-20', scorecardId: 'sc2' },
+  { _id: '1', name: 'Match 1', status: 'open', author: { id: 'user1', email: 'user1@example.com', name: 'User One' }, datePlayed: '2025-12-17', scorecardId: 'sc1' },
+  { _id: '2', name: 'Match 2', status: 'completed', author: { id: 'user2', email: 'user2@example.com', name: 'User Two' }, datePlayed: '2025-12-01' },
+  { _id: '3', name: 'Match 3', status: 'open', author: { id: 'user1', email: 'user1@example.com', name: 'User One' }, datePlayed: '2025-12-18' },
+  { _id: '4', name: 'Match 4', status: 'cancelled', author: { id: 'user3', email: 'user3@example.com', name: 'User Three' }, datePlayed: '2025-11-20', scorecardId: 'sc2' },
 ];
 
 const getState = (extra: Partial<MatchState> = {}): MatchState => ({
@@ -40,14 +40,6 @@ describe('match selectors', () => {
     const result = selector.projector(allMatches);
     expect(result.length).toBe(2);
     expect(result[0].status).toBe('open');
-  });
-
-  it('should select matches by user', () => {
-    const selector = fromSelectors.selectMatchesByUser('user1');
-    const allMatches = fromSelectors.selectAllMatches.projector(getState());
-    const result = selector.projector(allMatches);
-    expect(result.length).toBe(2);
-    expect(result[0].user).toBe('user1');
   });
 
   it('should select open matches', () => {
@@ -94,16 +86,5 @@ describe('match selectors', () => {
     const result = selector.projector(allMatches);
     expect(result.length).toBe(1);
     expect(result[0].name).toBe('Match 1');
-  });
-
-  it('should select filtered matches (status and user)', () => {
-    const allMatches = fromSelectors.selectAllMatches.projector(getState());
-    const filtered = fromSelectors.selectFilteredMatches.projector(
-      allMatches,
-      'open',
-      'user1'
-    );
-    expect(filtered.length).toBe(2);
-    expect(filtered.every(m => m.status === 'open' && m.user === 'user1')).toBeTrue();
   });
 });

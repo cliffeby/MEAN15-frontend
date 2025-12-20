@@ -98,7 +98,7 @@ export class MatchEditComponent implements OnInit, OnDestroy {
       foursomeIdsTEMP: this.fb.array([]),
       partnerIdsTEMP: this.fb.array([]),
       datePlayed: [new Date(), Validators.required],
-      user: [this.getCurrentUserEmail(), Validators.required]
+      // author: [this.getCurrentUserEmail(), Validators.required]
     });
 
     this.loading$ = this.store.select(MatchSelectors.selectMatchesLoading);
@@ -161,10 +161,10 @@ export class MatchEditComponent implements OnInit, OnDestroy {
     }
   }
 
-  private getCurrentUserEmail(): string {
-    const user = this.authService.user;
-    return user?.email || user?.username || 'unknown';
-  }
+  // private getCurrentUserEmail(): string {
+  //   const user = this.authService.user;
+  //   return user?.email || user?.username || 'unknown';
+  // }
 
   private loadScorecardsDirectly(): void {
     console.log('Loading scorecards directly from service...');
@@ -196,7 +196,7 @@ export class MatchEditComponent implements OnInit, OnDestroy {
       scGroupName: match.scGroupName,
       status: match.status,
       datePlayed: match.datePlayed ? new Date(match.datePlayed) : new Date(),
-      user: match.user
+      author: { id: 'u1', email: 'test@example.com', name: 'Test User' },
     });
     // Fix scorecardId if it's an object instead of a string
     this.fixScorecardIdValue();

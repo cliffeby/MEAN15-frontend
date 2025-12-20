@@ -13,7 +13,7 @@ export interface Scorecard {
   yards?: number[];
   scorecardsId?: string[];
   scorecardId?: string;
-  user?: string;
+  // user?: string;
   author?: {
     id: string;
     email: string;

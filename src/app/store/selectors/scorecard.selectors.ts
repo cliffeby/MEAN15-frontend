@@ -68,12 +68,6 @@ export const selectScorecardsWithSlope = createSelector(
   (scorecards) => scorecards.filter(sc => sc.slope && sc.slope > 0)
 );
 
-export const selectScorecardsByUser = (userId: string) =>
-  createSelector(
-    selectAllScorecards,
-    (scorecards) => scorecards.filter(sc => sc.user === userId)
-  );
-
 export const selectScorecardsSearch = (searchTerm: string) =>
   createSelector(
     selectAllScorecards,
