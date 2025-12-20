@@ -29,13 +29,12 @@ import { Scorecard } from '../../models/scorecard.interface';
 import * as MatchActions from '../../store/actions/match.actions';
 import { parseStringData } from '../../utils/string-utils';
 
-
-import { 
-  selectAllMatches, 
-  selectMatchesLoading, 
+import {
+  selectAllMatches,
+  selectMatchesLoading,
   selectMatchesError,
   selectMatchStats,
-  selectMatchById
+  selectMatchById,
 } from '../../store/selectors/match.selectors';
 
 @Component({
@@ -52,8 +51,8 @@ import {
     MatProgressBarModule,
     MatChipsModule,
     MatIconModule,
-    MatPaginatorModule
-  ]
+    MatPaginatorModule,
+  ],
 })
 export class MatchListComponent implements OnInit, OnDestroy {
   // Removed auto-refresh subscription
@@ -61,7 +60,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
   loading$: Observable<boolean>;
   error$: Observable<any>;
   stats$: Observable<any>;
-  
+
   // Pagination
   paginatedMatches$: Observable<Match[]>;
   totalMatches$: Observable<number>;
@@ -70,7 +69,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
   pageSizeOptions: number[] = [5, 10, 20, 50];
   showFirstLastButtons = true;
   showPageSizeOptions = true;
-  
+
   private unsubscribe$ = new Subject<void>();
   // private currentScorecard: Scorecard | null = null;
 
@@ -94,20 +93,23 @@ export class MatchListComponent implements OnInit, OnDestroy {
     this.loading$ = this.store.select(selectMatchesLoading);
     this.error$ = this.store.select(selectMatchesError);
     this.stats$ = this.store.select(selectMatchStats);
-    
+
     // Setup basic observables
-    this.totalMatches$ = this.matches$.pipe(map(matches => matches.length));
+    this.totalMatches$ = this.matches$.pipe(map((matches) => matches.length));
     this.paginatedMatches$ = this.matches$; // Will be updated in ngOnInit
   }
 
   get isAuthorized(): boolean {
+    return this.authService.hasMinRole('fieldhand');
+  }
+  get isAuthorizedToDelete(): boolean {
     return this.authService.hasMinRole('admin');
   }
 
   ngOnInit() {
     // Dispatch action to load matches
     this.store.dispatch(MatchActions.loadMatches());
-    
+
     // Setup pagination with configuration
     this.setupPagination();
   }
@@ -116,42 +118,43 @@ export class MatchListComponent implements OnInit, OnDestroy {
     // Get page size from configuration
     const displayConfig = this.configService.displayConfig();
     this.pageSize = displayConfig.matchListPageSize;
-    
+
     // Setup paginated matches observable
     this.paginatedMatches$ = this.matches$.pipe(
-      map(matches => {
+      map((matches) => {
         const startIndex = this.pageIndex * this.pageSize;
         return matches.slice(startIndex, startIndex + this.pageSize);
       })
     );
 
     // Subscribe to configuration changes so pageSize and paginator options update dynamically
-    this.configService.config$
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(cfg => {
-        const newSize = cfg?.display?.matchListPageSize;
-        const newPageSizeOptions = cfg?.pagination?.pageSizeOptions;
-        const newShowFirstLast = cfg?.pagination?.showFirstLastButtons;
-        const newShowPageSizeOptions = cfg?.pagination?.showPageSizeOptions;
+    this.configService.config$.pipe(takeUntil(this.unsubscribe$)).subscribe((cfg) => {
+      const newSize = cfg?.display?.matchListPageSize;
+      const newPageSizeOptions = cfg?.pagination?.pageSizeOptions;
+      const newShowFirstLast = cfg?.pagination?.showFirstLastButtons;
+      const newShowPageSizeOptions = cfg?.pagination?.showPageSizeOptions;
 
-        // Update page size options if changed
-        if (Array.isArray(newPageSizeOptions) && JSON.stringify(newPageSizeOptions) !== JSON.stringify(this.pageSizeOptions)) {
-          this.pageSizeOptions = newPageSizeOptions;
-        }
+      // Update page size options if changed
+      if (
+        Array.isArray(newPageSizeOptions) &&
+        JSON.stringify(newPageSizeOptions) !== JSON.stringify(this.pageSizeOptions)
+      ) {
+        this.pageSizeOptions = newPageSizeOptions;
+      }
 
-        if (typeof newShowFirstLast === 'boolean') {
-          this.showFirstLastButtons = newShowFirstLast;
-        }
+      if (typeof newShowFirstLast === 'boolean') {
+        this.showFirstLastButtons = newShowFirstLast;
+      }
 
-        if (typeof newShowPageSizeOptions === 'boolean') {
-          this.showPageSizeOptions = newShowPageSizeOptions;
-        }
+      if (typeof newShowPageSizeOptions === 'boolean') {
+        this.showPageSizeOptions = newShowPageSizeOptions;
+      }
 
-        // Update pageSize and reset to first page when page size changes to avoid empty page
-        if (typeof newSize === 'number' && newSize > 0 && newSize !== this.pageSize) {
-          this.onPageChange({ pageIndex: 0, pageSize: newSize } as PageEvent);
-        }
-      });
+      // Update pageSize and reset to first page when page size changes to avoid empty page
+      if (typeof newSize === 'number' && newSize > 0 && newSize !== this.pageSize) {
+        this.onPageChange({ pageIndex: 0, pageSize: newSize } as PageEvent);
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -173,13 +176,14 @@ export class MatchListComponent implements OnInit, OnDestroy {
       // Could add snackbar notification here if needed
       return;
     }
-    
+
     // Check configuration for score entry mode
     const scoringConfig = this.configService.scoringConfig();
-    const route = scoringConfig.scoreEntryMode === 'simple' 
-      ? ['/matches', id, 'simple-score-entry']
-      : ['/matches', id, 'score-entry'];
-    
+    const route =
+      scoringConfig.scoreEntryMode === 'simple'
+        ? ['/matches', id, 'simple-score-entry']
+        : ['/matches', id, 'score-entry'];
+
     this.router.navigate(route);
   }
 
@@ -205,16 +209,20 @@ export class MatchListComponent implements OnInit, OnDestroy {
         return;
       }
 
-      const finalScorecardId = typeof scorecardId === 'string' ? scorecardId.trim() : scorecardId._id;
+      const finalScorecardId =
+        typeof scorecardId === 'string' ? scorecardId.trim() : scorecardId._id;
 
       // Load scorecard and members in parallel
-      const { scorecard, members } = await lastValueFrom(forkJoin({
-        scorecard: this.scorecardService.getById(finalScorecardId),
-        members: this.memberService.getAll()
-      })) || {};
+      const { scorecard, members } =
+        (await lastValueFrom(
+          forkJoin({
+            scorecard: this.scorecardService.getById(finalScorecardId),
+            members: this.memberService.getAll(),
+          })
+        )) || {};
 
       const finalScorecard = scorecard?.scorecard || scorecard;
-      
+
       if (!finalScorecard) {
         this.snackBar.open('Scorecard not found', 'Close', { duration: 3000 });
         return;
@@ -224,16 +232,22 @@ export class MatchListComponent implements OnInit, OnDestroy {
       parseStringData(finalScorecard);
 
       // Create printable players
-      const players: PrintablePlayer[] = match.lineUps?.map((memberId: any) => {
-        const member = members ? members.find((m: any) => m._id === memberId) : null;
-        if (member) {
-          return {
-            member,
-            handicap: this.handicapService.calculateCourseHandicap(member.usgaIndex || 0, finalScorecard?.slope)
-          };
-        }
-        return null;
-      }).filter(Boolean) || [];
+      const players: PrintablePlayer[] =
+        match.lineUps
+          ?.map((memberId: any) => {
+            const member = members ? members.find((m: any) => m._id === memberId) : null;
+            if (member) {
+              return {
+                member,
+                handicap: this.handicapService.calculateCourseHandicap(
+                  member.usgaIndex || 0,
+                  finalScorecard?.slope
+                ),
+              };
+            }
+            return null;
+          })
+          .filter(Boolean) || [];
 
       if (players.length === 0) {
         this.snackBar.open('No players assigned to this match', 'Close', { duration: 3000 });
@@ -246,7 +260,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
         description: match.name || 'Golf Match',
         course: { name: finalScorecard.name || 'Golf Course' },
         teeTime: match.datePlayed || new Date().toISOString(),
-        members: players.map(p => p.member._id!)
+        members: players.map((p) => p.member._id!),
       };
 
       const scorecardData: ScorecardData = {
@@ -255,8 +269,8 @@ export class MatchListComponent implements OnInit, OnDestroy {
         courseName: finalScorecard.name || 'Golf Course',
         tees: finalScorecard.courseTeeName || 'Regular',
         pars: finalScorecard.pars || Array(18).fill(4),
-        hCaps: finalScorecard.hCaps || Array.from({length: 18}, (_, i) => i + 1),
-        distances: finalScorecard.yards || Array(18).fill(0)
+        hCaps: finalScorecard.hCaps || Array.from({ length: 18 }, (_, i) => i + 1),
+        distances: finalScorecard.yards || Array(18).fill(0),
       };
 
       // Generate PDF using the service
@@ -266,15 +280,15 @@ export class MatchListComponent implements OnInit, OnDestroy {
         groups.push(players.slice(i, i + 4));
       }
 
-      await this.pdfService.generateScorecardPDF(
-        matchData, 
-        scorecardData, 
-        groups,
-        { openInNewWindow: true }
+      await this.pdfService.generateScorecardPDF(matchData, scorecardData, groups, {
+        openInNewWindow: true,
+      });
+
+      this.snackBar.open(
+        'Scorecard ready - choose Download, Email, or Print from the preview window!',
+        'Close',
+        { duration: 5000 }
       );
-
-      this.snackBar.open('Scorecard ready - choose Download, Email, or Print from the preview window!', 'Close', { duration: 5000 });
-
     } catch (error) {
       console.error('Error generating scorecard:', error);
       this.snackBar.open('Error generating scorecard', 'Close', { duration: 3000 });
@@ -291,19 +305,20 @@ export class MatchListComponent implements OnInit, OnDestroy {
 
   deleteMatch(id: string) {
     if (!id) return;
-    if (!this.isAuthorized) {
+    if (!this.isAuthorizedToDelete) {
       // The effects will handle the error snackbar display
       return;
     }
 
     // Get the match details for the confirmation dialog
-    this.store.select(selectMatchById(id))
+    this.store
+      .select(selectMatchById(id))
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(match => {
+      .subscribe((match) => {
         if (match) {
           const matchName = match.name || `Match ${id}`;
-          
-          this.confirmDialog.confirmDelete(matchName, 'match').subscribe(confirmed => {
+
+          this.confirmDialog.confirmDelete(matchName, 'match').subscribe((confirmed) => {
             if (confirmed) {
               this.store.dispatch(MatchActions.deleteMatch({ id }));
             }
@@ -314,7 +329,8 @@ export class MatchListComponent implements OnInit, OnDestroy {
 
   updateStatus(id: string, status: string) {
     // Warn user and create HCap records when completing a match
-    const completing = (status || '').toLowerCase() === 'completed' || (status || '').toLowerCase() === 'complete';
+    const completing =
+      (status || '').toLowerCase() === 'completed' || (status || '').toLowerCase() === 'complete';
     if (completing) {
       this.confirmDialog
         .confirmAction(
@@ -328,10 +344,16 @@ export class MatchListComponent implements OnInit, OnDestroy {
           try {
             await this.createHcapRecordsForMatch(id);
             this.store.dispatch(MatchActions.updateMatchStatus({ id, status }));
-            this.snackBar.open('Match completed — handicaps updated (where applicable).', 'Close', { duration: 4000 });
+            this.snackBar.open('Match completed — handicaps updated (where applicable).', 'Close', {
+              duration: 4000,
+            });
           } catch (err) {
             console.error('Error creating HCap records:', err);
-            this.snackBar.open('Error creating handicap records. Match status not changed.', 'Close', { duration: 6000 });
+            this.snackBar.open(
+              'Error creating handicap records. Match status not changed.',
+              'Close',
+              { duration: 6000 }
+            );
           }
         });
       return;
@@ -340,7 +362,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
     this.store.dispatch(MatchActions.updateMatchStatus({ id, status }));
   }
 
-    private getCurrentUserEmail(): string {
+  private getCurrentUserEmail(): string {
     const user = this.authService.user;
     return user?.email || user?.name || 'unknown';
   }
@@ -363,7 +385,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
     // prefer the one with higher postedScore or more recent datePlayed.
     const uniqueMap = new Map<string, any>();
     for (const s of eligible) {
-      const key = typeof s.memberId === 'string' ? s.memberId : (s.memberId?._id || s._id);
+      const key = typeof s.memberId === 'string' ? s.memberId : s.memberId?._id || s._id;
       if (!key) {
         // fallback to score id when memberId missing
         const scoreKey = s._id || JSON.stringify(s);
@@ -399,14 +421,15 @@ export class MatchListComponent implements OnInit, OnDestroy {
 
     const existingMap = new Map<string, any>();
     for (const h of existingHcaps) {
-      const mId = typeof h.memberId === 'string' ? h.memberId : (h.memberId?._id || null);
-      const maId = typeof h.matchId === 'string' ? h.matchId : (h.matchId?._id || null);
+      const mId = typeof h.memberId === 'string' ? h.memberId : h.memberId?._id || null;
+      const maId = typeof h.matchId === 'string' ? h.matchId : h.matchId?._id || null;
       if (mId && maId) existingMap.set(`${mId}:${maId}`, h);
     }
 
     const createPromises = uniqueEligible.map(async (score: any) => {
       try {
-        const memberId = typeof score.memberId === 'string' ? score.memberId : (score.memberId?._id || null);
+        const memberId =
+          typeof score.memberId === 'string' ? score.memberId : score.memberId?._id || null;
         let member: any = null;
         if (memberId) {
           try {
@@ -425,12 +448,20 @@ export class MatchListComponent implements OnInit, OnDestroy {
           usgaIndexForTodaysScore: score.usgaIndexForTodaysScore ?? score.usgaIndex ?? null,
           handicap: member?.handicap ?? null,
           scoreId: score._id || null,
-          scorecardId: (score.scorecardId && (typeof score.scorecardId === 'string' ? score.scorecardId : score.scorecardId._id)) || null,
-          matchId: (score.matchId && (typeof score.matchId === 'string' ? score.matchId : score.matchId._id)) || matchId,
+          scorecardId:
+            (score.scorecardId &&
+              (typeof score.scorecardId === 'string'
+                ? score.scorecardId
+                : score.scorecardId._id)) ||
+            null,
+          matchId:
+            (score.matchId &&
+              (typeof score.matchId === 'string' ? score.matchId : score.matchId._id)) ||
+            matchId,
           memberId: memberId,
           user: currentUser,
         };
-console.log('Preparing to create/update HCap record:', hcapRecord);
+        console.log('Preparing to create/update HCap record:', hcapRecord);
         // If existing HCap exists for the same member+match, update it instead of creating
         const key = memberId && matchId ? `${memberId}:${matchId}` : null;
         if (key && existingMap.has(key)) {
@@ -473,11 +504,16 @@ console.log('Preparing to create/update HCap record:', hcapRecord);
 
   getStatusColor(status: string): string {
     switch (status?.toLowerCase()) {
-      case 'open': return 'primary';
-      case 'closed': return 'accent';
-      case 'completed': return 'warn';
-      case 'needs_review': return 'warn';
-      default: return '';
+      case 'open':
+        return 'primary';
+      case 'closed':
+        return 'accent';
+      case 'completed':
+        return 'warn';
+      case 'needs_review':
+        return 'warn';
+      default:
+        return '';
     }
   }
 
@@ -496,16 +532,16 @@ console.log('Preparing to create/update HCap record:', hcapRecord);
   // private getPageGroups(players: PrintablePlayer[]): PrintablePlayer[][] {
   //   const pageGroups: PrintablePlayer[][] = [];
   //   const playersPerPage = 4;
-    
+
   //   for (let i = 0; i < players.length; i += playersPerPage) {
   //     const group = players.slice(i, i + playersPerPage);
   //     pageGroups.push(group);
   //   }
-    
+
   //   if (pageGroups.length === 0) {
   //     pageGroups.push([]);
   //   }
-    
+
   //   return pageGroups;
   // }
 
@@ -560,16 +596,24 @@ console.log('Preparing to create/update HCap record:', hcapRecord);
   //   }, 1000);
   // }
 
-  private emailScorecard(pdfBlob: Blob, filename: string, match: Match, scorecard: Scorecard, players: PrintablePlayer[]): void {
+  private emailScorecard(
+    pdfBlob: Blob,
+    filename: string,
+    match: Match,
+    scorecard: Scorecard,
+    players: PrintablePlayer[]
+  ): void {
     const courseName = scorecard?.name || 'Golf Course';
     const matchName = match?.name || 'Match';
-    const matchDate = match?.datePlayed ? 
-      new Date(match.datePlayed).toLocaleDateString() : 
-      new Date().toLocaleDateString();
-    
+    const matchDate = match?.datePlayed
+      ? new Date(match.datePlayed).toLocaleDateString()
+      : new Date().toLocaleDateString();
+
     const subject = `Golf Scorecard - ${courseName} - ${matchDate}`;
-    const body = `Please find attached the scorecard for ${matchName} at ${courseName} on ${matchDate}.\n\nPlayers:\n${players.map(p => `• ${p.member.firstName} ${p.member.lastName} (${p.handicap})`).join('\n')}\n\nGenerated on ${new Date().toLocaleDateString()}`;
-    
+    const body = `Please find attached the scorecard for ${matchName} at ${courseName} on ${matchDate}.\n\nPlayers:\n${players
+      .map((p) => `• ${p.member.firstName} ${p.member.lastName} (${p.handicap})`)
+      .join('\n')}\n\nGenerated on ${new Date().toLocaleDateString()}`;
+
     // Download the PDF first
     const url = URL.createObjectURL(pdfBlob);
     const a = document.createElement('a');
@@ -581,23 +625,28 @@ console.log('Preparing to create/update HCap record:', hcapRecord);
     URL.revokeObjectURL(url);
 
     // Open default email client
-    const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body + '\n\n[Please attach the downloaded PDF file: ' + filename + ']')}`;
+    const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
+      body + '\n\n[Please attach the downloaded PDF file: ' + filename + ']'
+    )}`;
     window.open(mailtoLink);
 
-    this.snackBar.open(`PDF downloaded as: ${filename}. Check your Downloads folder to attach to email.`, 'Close', { duration: 10000 });
+    this.snackBar.open(
+      `PDF downloaded as: ${filename}. Check your Downloads folder to attach to email.`,
+      'Close',
+      { duration: 10000 }
+    );
   }
 
   onPageChange(event: PageEvent): void {
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
-    
+
     // Update paginated matches
     this.paginatedMatches$ = this.matches$.pipe(
-      map(matches => {
+      map((matches) => {
         const startIndex = this.pageIndex * this.pageSize;
         return matches.slice(startIndex, startIndex + this.pageSize);
       })
     );
   }
-
 }

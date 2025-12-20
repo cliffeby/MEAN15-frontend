@@ -9,7 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MemberService } from '../../services/memberService';
 import { AuthService } from '../../services/authService';
-import { Member } from '../../models/member';
+// import { Member } from '../../models/member';
 import { MatCheckbox } from '@angular/material/checkbox';
 
 @Component({
