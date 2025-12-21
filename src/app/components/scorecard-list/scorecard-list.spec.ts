@@ -71,12 +71,12 @@ describe('ScorecardListComponent', () => {
 
   it('should show add button for admin', () => {
     authServiceSpy.hasMinRole.and.returnValue(true);
-    expect(component.isAdmin).toBeTrue();
+    expect(component.isAuthorized).toBeTrue();
   });
 
   it('should not show add button for non-admin', () => {
     authServiceSpy.hasMinRole.and.returnValue(false);
-    expect(component.isAdmin).toBeFalse();
+    expect(component.isAuthorized).toBeFalse();
   });
 
   it('should dispatch loadScorecards on init', () => {

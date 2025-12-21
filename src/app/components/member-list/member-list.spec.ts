@@ -141,9 +141,10 @@ describe('MemberListComponent', () => {
     component.editMember('1');
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/members/edit', '1']);
   });
-
+// TODO test all authorization paths
   it('should show snackbar if non-admin tries to edit member', () => {
-    Object.defineProperty(authServiceSpy, 'role', { get: () => 'user' });
+    authServiceSpy.hasMinRole.and.returnValue(false);
+    snackBarSpy.open.calls.reset();
     component.editMember('1');
     expect(snackBarSpy.open).toHaveBeenCalledWith(
       'You are not authorized to edit members.',
