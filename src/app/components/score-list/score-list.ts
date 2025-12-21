@@ -86,9 +86,13 @@ export class ScoreListComponent implements OnInit {
     private confirmDialog: ConfirmDialogService
   ) {}
 
-  get isAdmin(): boolean {
+ get isAuthorized(): boolean {
+    return this.authService.hasMinRole('fieldhand');
+  }
+  get isAuthorizedToDelete(): boolean {
     return this.authService.hasMinRole('admin');
   }
+
 
   ngOnInit() {
     this.loadMembers();
@@ -206,7 +210,7 @@ export class ScoreListComponent implements OnInit {
 
   deleteScore(id: string) {
     if (!id) return;
-    if (!this.isAdmin) {
+    if (!this.isAuthorizedToDelete) {
       this.snackBar.open('You are not authorized to delete scores.', 'Close', { duration: 2500 });
       return;
     }

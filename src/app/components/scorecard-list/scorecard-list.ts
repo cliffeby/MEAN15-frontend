@@ -38,7 +38,7 @@ export class ScorecardListComponent implements OnInit {
 
   constructor(
     private store: Store,
-    private auth: AuthService,
+    private authService: AuthService,
     private router: Router,
     private snackBar: MatSnackBar,
     private confirmDialog: ConfirmDialogService
@@ -53,12 +53,17 @@ export class ScorecardListComponent implements OnInit {
     this.store.dispatch(ScorecardActions.loadScorecards());
   }
 
-  get isAdmin(): boolean {
-    return this.auth.hasMinRole('admin');
+ get isAuthorized(): boolean {
+    return this.authService.hasMinRole('fieldhand');
+  }
+  get isAuthorizedToDelete(): boolean {
+    return this.authService.hasMinRole('admin');
   }
 
+  
+
   addScorecard(): void {
-    if (!this.isAdmin) {
+    if (!this.isAuthorized) {
       this.snackBar.open('You are not authorized to add scorecards.', 'Close', { duration: 3000 });
       return;
     }
@@ -66,7 +71,7 @@ export class ScorecardListComponent implements OnInit {
   }
 
   editScorecard(id: string): void {
-    if (!this.isAdmin) {
+    if (!this.isAuthorized) {
       this.snackBar.open('You are not authorized to edit scorecards.', 'Close', { duration: 3000 });
       return;
     }
@@ -74,7 +79,7 @@ export class ScorecardListComponent implements OnInit {
   }
 
   deleteScorecard(id: string): void {
-    if (!this.isAdmin) {
+    if (!this.isAuthorizedToDelete) {
       this.snackBar.open('You are not authorized to delete scorecards.', 'Close', { duration: 3000 });
       return;
     }

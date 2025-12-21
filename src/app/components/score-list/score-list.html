@@ -88,7 +88,7 @@
                   <mat-icon>view</mat-icon>
                   View
                 </button>
-                <button *ngIf="isAdmin" mat-button color="warn" (click)="deleteScore((score.id ?? score._id) || '')">
+                <button *ngIf="isAuthorizedToDelete" mat-button color="warn" (click)="deleteScore((score.id ?? score._id) || '')">
                   <mat-icon>delete</mat-icon>
                   Delete
                 </button>
@@ -199,7 +199,7 @@
                         <mat-icon>view</mat-icon>
                         View
                       </button>
-                      <button *ngIf="isAdmin" mat-button color="warn" (click)="deleteScore((score.id ?? score._id) || '')">
+                      <button *ngIf="isAuthorizedToDelete" mat-button color="warn" (click)="deleteScore((score.id ?? score._id) || '')">
                         <mat-icon>delete</mat-icon>
                         Delete
                       </button>

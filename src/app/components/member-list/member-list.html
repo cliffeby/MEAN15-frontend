@@ -2,11 +2,11 @@
   <div class="header">
     <h2>Members</h2>
     <div class="header-buttons">
-      <button *ngIf="isAllowed(['admin', 'developer', 'fieldhand'])" mat-raised-button color="primary" (click)="addMember()">
+      <button *ngIf="isAuthorized" mat-raised-button color="primary" (click)="addMember()">
         <mat-icon>add</mat-icon>
         Add Member
       </button>
-      <button *ngIf="isAdmin" mat-raised-button color="warn" (click)="removeDuplicateEmails()" matTooltip="Remove members with duplicate email addresses, keeping the oldest">
+      <button *ngIf="isAuthorizedToDelete" mat-raised-button color="warn" (click)="removeDuplicateEmails()" matTooltip="Remove members with duplicate email addresses, keeping the oldest">
         <mat-icon>content_copy</mat-icon>
         Remove Duplicates
       </button>
@@ -126,10 +126,10 @@
         <th mat-header-cell *matHeaderCellDef>Actions</th>
         <td mat-cell *matCellDef="let member" class="actions-cell">
           <div class="action-buttons">
-            <button *ngIf="isAllowed(['admin', 'developer'])" mat-icon-button color="accent" (click)="editMember((member.id ?? member._id) || '')" matTooltip="Edit Member">
+            <button *ngIf="isAuthorized" mat-icon-button color="accent" (click)="editMember((member.id ?? member._id) || '')" matTooltip="Edit Member">
               <mat-icon>edit</mat-icon>
             </button>
-            <button *ngIf="isAllowed(['admin'])" mat-icon-button color="warn" (click)="deleteMember((member.id ?? member._id) || '')" matTooltip="Delete Member">
+            <button *ngIf="isAuthorized" mat-icon-button color="warn" (click)="deleteMember((member.id ?? member._id) || '')" matTooltip="Delete Member">
               <mat-icon>delete</mat-icon>
             </button>
           </div>

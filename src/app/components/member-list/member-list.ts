@@ -93,13 +93,13 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
     private preferencesService: UserPreferencesService,
     private configService: ConfigurationService
   ) {}
-  get isAdmin(): boolean {
-    return this.authService.hasMinRole('admin');
-  }
 
-  isAllowed(roles: string[]): boolean {
-    const currentRole = this.authService.role;
-    return currentRole ? roles.includes(currentRole) : false;
+
+  get isAuthorized(): boolean {
+    return this.authService.hasMinRole('fieldhand');
+  }
+  get isAuthorizedToDelete(): boolean {
+    return this.authService.hasMinRole('admin');
   }
 
   ngOnInit() {
@@ -338,7 +338,7 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   editMember(id: string) {
-    if (!this.isAllowed(['admin', 'developer', 'fieldhand'])) {
+    if (!this.isAuthorized) {
       this.snackBar.open('You are not authorized to edit members.', 'Close', { duration: 2500 });
       return;
     }
@@ -346,7 +346,7 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   addMember() {
-    if (!this.isAllowed(['admin', 'developer', 'fieldhand'])) {
+    if (!this.isAuthorized) {
       this.snackBar.open('You are not authorized to add members.', 'Close', { duration: 2500 });
       return;
     }
@@ -355,7 +355,7 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   deleteMember(id: string) {
     if (!id) return;
-    if (!this.isAllowed(['admin'])) {
+    if (!this.isAuthorizedToDelete) {
       this.snackBar.open('You are not authorized to delete members.', 'Close', { duration: 2500 });
       return;
     }
@@ -374,6 +374,11 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
           error: (err) => {
             if (err.status === 403 || err.status === 401) {
               this.snackBar.open('You are not authorized to delete members.', 'Close', {
+                duration: 2500,
+              });
+            } else if (err.status === 409) {
+              console.log('Error details:', err.error.options);
+              this.snackBar.open('This member has score records and cannot be deleted.', 'Close', {
                 duration: 2500,
               });
             } else {
@@ -484,7 +489,7 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   removeDuplicateEmails() {
-    if (!this.isAllowed(['admin'])) {
+    if (!this.isAuthorizedToDelete) {
       this.snackBar.open('You are not authorized to remove duplicates.', 'Close', {
         duration: 2500,
       });
