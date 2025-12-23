@@ -157,11 +157,6 @@ export class MatchEditComponent implements OnInit, OnDestroy {
     }
   }
 
-  // private getCurrentUserEmail(): string {
-  //   const user = this.authService.user;
-  //   return user?.email || user?.username || 'unknown';
-  // }
-
   private loadScorecardsDirectly(): void {
     console.log('Loading scorecards directly from service...');
     this.scorecardService.getAll().pipe(takeUntil(this.destroy$)).subscribe({

@@ -10,4 +10,5 @@ export const MEMBER_B_DUMMY: Member = {
   Email: '',
   fullName: 'B.Dummy',
   fullNameR: 'B.Dummy',
+  name: 'Dummy,B'
 };

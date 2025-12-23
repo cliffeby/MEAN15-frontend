@@ -17,4 +17,5 @@ export interface Member {
   hidden?: boolean;
   fullName?: string;
   fullNameR?: string;
+  name?: string;
 }
