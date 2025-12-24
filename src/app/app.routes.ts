@@ -26,6 +26,7 @@ import { PrintableScorecardComponent } from './components/printable-scorecard/pr
 import { AdminConfigurationComponent } from './components/admin-configuration/admin-configuration.component';
 import { OrphanManagementComponent } from './components/orphan-management/orphan-management';
 import { HcapListComponent } from './components/hcap-list/hcap-list';
+import { AuditReportComponent } from './components/audit-report/audit-report.component';
 
 export const routes: Routes = [
   // Public
@@ -137,6 +138,12 @@ export const routes: Routes = [
       {
         path: 'admin/orphans',
         component: OrphanManagementComponent,
+        canActivate: [roleGuard],
+        data: { role: 'admin' },
+      },
+      {
+        path: 'admin/audit-report',
+        component: AuditReportComponent,
         canActivate: [roleGuard],
         data: { role: 'admin' },
       },

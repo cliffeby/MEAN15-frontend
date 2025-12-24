@@ -25,6 +25,11 @@
       <mat-icon>upload</mat-icon>
       Import
     </button>
+
+    <button mat-button color="accent" [routerLink]="['/admin/audit-report']" matTooltip="View audit log report">
+      <mat-icon>list_alt</mat-icon>
+      Audit Report
+    </button>
   </div>
 
   <mat-tab-group class="config-tabs" [selectedIndex]="selectedTab" (selectedTabChange)="onTabChange($event)">

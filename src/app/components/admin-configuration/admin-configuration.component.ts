@@ -13,6 +13,7 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { RouterModule } from '@angular/router';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 
 import { ConfigurationService } from '../../services/configuration.service';
@@ -38,7 +39,8 @@ import { User } from '../../models/users';
     MatSnackBarModule,
     MatDividerModule,
     MatTooltipModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    RouterModule
   ],
   templateUrl: './admin-configuration.component.html',
   styleUrls: ['./admin-configuration.component.scss']
