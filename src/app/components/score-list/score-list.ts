@@ -350,7 +350,7 @@ export class ScoreListComponent implements OnInit {
     // Convert to array and sort by round count
     const allGrouped = Array.from(memberRounds.entries()).map(([memberId, data]) => ({
       memberId,
-      memberName: data.member?.fullName || data.member?.firstName || this.extractMemberName(data.scores[0]) || 'Unknown Player',
+       memberName: data.scores[0]?.name || 'Unknown Player', // Updated to use score.name directly
       scores: data.scores.sort((a, b) => new Date(b.datePlayed || '').getTime() - new Date(a.datePlayed || '').getTime()),
       roundCount: data.count,
       expanded: false
@@ -388,10 +388,5 @@ export class ScoreListComponent implements OnInit {
     return score.memberId || null;
   }
 
-  private extractMemberName(score: Score): string {
-    if (typeof score.memberId === 'object' && score.memberId) {
-      return (score.memberId as any).name || score.name || '';
-    }
-    return score.name || '';
-  }
+  // extractMemberName removed: not needed, use score.name directly
 }
