@@ -9,7 +9,7 @@ export interface HCap {
     min: [-10, 'USGA Index for today cannot be less than -10.0'];
     max: [54, 'USGA Index for today cannot be greater than 54.0'];
   };
-  handicap: number;
+  handicapDifferential: number;
   scoreId: string;
   scorecardId: string;
   matchId: string;

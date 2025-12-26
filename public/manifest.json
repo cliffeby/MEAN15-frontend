@@ -25,52 +25,12 @@
       "sizes": "128x128",
       "type": "image/png",
       "purpose": "maskable any"
-    },
-    {
-      "src": "/assets/icons/icon-144x144.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/assets/icons/icon-152x152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/assets/icons/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/assets/icons/icon-384x384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "/assets/icons/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable any"
     }
+
   ],
   "categories": ["sports", "productivity", "utilities"],
   "screenshots": [
-    {
-      "src": "/assets/screenshots/desktop-screenshot.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide"
-    },
-    {
-      "src": "/assets/screenshots/mobile-screenshot.png",
-      "sizes": "750x1334",
-      "type": "image/png",
-      "form_factor": "narrow"
-    }
+
   ],
   "shortcuts": [
     {
@@ -80,7 +40,7 @@
       "url": "/matches",
       "icons": [
         {
-          "src": "/assets/icons/match-icon-96x96.png",
+          "src": "/assets/icons/icon-96x96.png",
           "sizes": "96x96"
         }
       ]
@@ -92,7 +52,7 @@
       "url": "/members",
       "icons": [
         {
-          "src": "/assets/icons/member-icon-96x96.png",
+          "src": "/assets/icons/icon-96x96.png",
           "sizes": "96x96"
         }
       ]
@@ -104,7 +64,7 @@
       "url": "/scorecards",
       "icons": [
         {
-          "src": "/assets/icons/scorecard-icon-96x96.png",
+          "src": "/assets/icons/icon-96x96.png",
           "sizes": "96x96"
         }
       ]

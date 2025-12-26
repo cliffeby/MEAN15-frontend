@@ -6,12 +6,15 @@ import { of, throwError } from 'rxjs';
 import { HCap } from '../../models/hcap';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MsalService } from '@azure/msal-angular';
+import { ScoreService } from '../../services/scoreService';
+import { Score } from '../../models/score';
 
 describe('HcapListComponent', () => {
   let component: HcapListComponent;
   let fixture: ComponentFixture<HcapListComponent>;
   let hcapServiceSpy: jasmine.SpyObj<HCapService>;
   let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
+  let scoreServiceSpy: jasmine.SpyObj<ScoreService>;
 
   const mockHcaps: HCap[] = [
     {
@@ -25,7 +28,7 @@ describe('HcapListComponent', () => {
         min: [-10, 'USGA Index for today cannot be less than -10.0'],
         max: [54, 'USGA Index for today cannot be greater than 54.0'],
       },
-      handicap: 12,
+      handicapDifferential: 12,
       scoreId: 's1',
       scorecardId: 'sc1',
       matchId: 'm1',
@@ -45,7 +48,7 @@ describe('HcapListComponent', () => {
         min: [-10, 'USGA Index for today cannot be less than -10.0'],
         max: [54, 'USGA Index for today cannot be greater than 54.0'],
       },
-      handicap: 22,
+      handicapDifferential: 22,
       scoreId: 's2',
       scorecardId: 'sc2',
       matchId: 'm2',
@@ -56,17 +59,55 @@ describe('HcapListComponent', () => {
     },
   ];
 
+  const mockScores: Score[] = [
+    {
+      _id: 's1',
+      name: 'Score 1',
+      score: 80,
+      postedScore: 80,
+      scores: [],
+      scoresToPost: [],
+      scoringMethod: 'total',
+      scoreRecordType: 'total',
+      handicap: 12,
+      scorecardId: 'sc1',
+      memberId: 'mem1',
+      scSlope: 113,
+      scRating: 72,
+      datePlayed: new Date().toISOString(),
+    },
+    {
+      _id: 's2',
+      name: 'Score 2',
+      score: 90,
+      postedScore: 90,
+      scores: [],
+      scoresToPost: [],
+      scoringMethod: 'total',
+      scoreRecordType: 'total',
+      handicap: 22,
+      scorecardId: 'sc2',
+      memberId: 'mem2',
+      scSlope: 113,
+      scRating: 72,
+      datePlayed: new Date().toISOString(),
+    },
+  ];
+
   beforeEach(async () => {
     hcapServiceSpy = jasmine.createSpyObj('HCapService', ['getAll']);
+    scoreServiceSpy = jasmine.createSpyObj('ScoreService', ['getAll']);
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
     const msalServiceStub = {};
 
     hcapServiceSpy.getAll.and.returnValue(of(mockHcaps));
+    scoreServiceSpy.getAll.and.returnValue(of({ scores: mockScores }));
 
     await TestBed.configureTestingModule({
       imports: [HcapListComponent, HttpClientTestingModule],
       providers: [
         { provide: HCapService, useValue: hcapServiceSpy },
+        { provide: ScoreService, useValue: scoreServiceSpy },
         { provide: MsalService, useValue: msalServiceStub },
       ],
     })

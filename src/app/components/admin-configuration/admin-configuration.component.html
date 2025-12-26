@@ -71,7 +71,8 @@
                              [attr.min]="field.validation?.min || null"
                              [attr.max]="field.validation?.max || null"
                              [attr.aria-label]="field.label"
-                             [attr.title]="field.label">
+                             title="{{ field.label }}"
+                             placeholder="{{ field.label }}">
                       <mat-error *ngIf="getFieldControl(section.key, field.key)?.hasError('required')">
                         This field is required
                       </mat-error>
@@ -120,7 +121,7 @@
                         <mat-icon>save</mat-icon>
                       </button>
                       <button mat-icon-button 
-
+                              type="button"
                               color="warn" 
                               (click)="resetField(section.key, field.key, field.defaultValue)"
                               matTooltip="Reset to default">
@@ -188,10 +189,13 @@
 </div>
 
 <!-- Hidden file input for import -->
-<input #fileInput 
+<label for="fileInput" class="visually-hidden">Import configuration file</label>
+<input id="fileInput"
+       #fileInput 
        type="file" 
        accept=".json" 
        (change)="onFileSelected($event)" 
        class="hidden-file-input"
        aria-label="Import configuration file"
-       title="Select configuration file to import">
+       title="Import configuration file"
+       placeholder="Import configuration file">
