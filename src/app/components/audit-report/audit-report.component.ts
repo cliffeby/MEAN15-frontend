@@ -80,11 +80,15 @@ export class AuditReportComponent implements OnInit {
               ? 'Scorecard'
               : log.route.includes('score')
               ? 'Score'
-              : log.route,
+              : log.route.includes('hcaps')
+                ? 'Handicap/Score'
+                : log.route
+
+
         }));
         this.loading = false;
       },
-      error: (err) => {
+      error: (_err) => {
         this.error = 'Failed to load audit logs.';
         this.loading = false;
       },

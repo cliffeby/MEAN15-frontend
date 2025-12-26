@@ -2,7 +2,7 @@ export interface HCap {
   name: string;
   postedScore: number;
   currentHCap: number;
-  newHCap: number;
+  newHCap: string;
   datePlayed: Date;
   usgaIndexForTodaysScore: {
     type: number;

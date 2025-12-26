@@ -388,5 +388,4 @@ export class ScoreListComponent implements OnInit {
     return score.memberId || null;
   }
 
-  // extractMemberName removed: not needed, use score.name directly
 }

@@ -4,6 +4,8 @@ import { HCapService } from '../../services/hcapService';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { of, throwError } from 'rxjs';
 import { HCap } from '../../models/hcap';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { MsalService } from '@azure/msal-angular';
 
 describe('HcapListComponent', () => {
   let component: HcapListComponent;
@@ -16,7 +18,7 @@ describe('HcapListComponent', () => {
       name: 'Alice',
       postedScore: 80,
       currentHCap: 12,
-      newHCap: 11.5,
+      newHCap: '11.5',
       datePlayed: new Date(),
       usgaIndexForTodaysScore: {
         type: 1,
@@ -36,7 +38,7 @@ describe('HcapListComponent', () => {
       name: 'Bob',
       postedScore: 90,
       currentHCap: 22,
-      newHCap: 21.5,
+      newHCap: '21.5',
       datePlayed: new Date(),
       usgaIndexForTodaysScore: {
         type: 1,
@@ -57,12 +59,16 @@ describe('HcapListComponent', () => {
   beforeEach(async () => {
     hcapServiceSpy = jasmine.createSpyObj('HCapService', ['getAll']);
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
+    const msalServiceStub = {};
 
     hcapServiceSpy.getAll.and.returnValue(of(mockHcaps));
 
     await TestBed.configureTestingModule({
-      imports: [HcapListComponent],
-      providers: [{ provide: HCapService, useValue: hcapServiceSpy }],
+      imports: [HcapListComponent, HttpClientTestingModule],
+      providers: [
+        { provide: HCapService, useValue: hcapServiceSpy },
+        { provide: MsalService, useValue: msalServiceStub },
+      ],
     })
       .overrideComponent(HcapListComponent, {
         set: {
