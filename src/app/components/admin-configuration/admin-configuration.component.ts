@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormBuilder, Validators, FormsModule } from '@angular/forms';
@@ -46,6 +47,9 @@ import { User } from '../../models/users';
   styleUrls: ['./admin-configuration.component.scss']
 })
 export class AdminConfigurationComponent implements OnInit, OnDestroy {
+  // Server and DB info for display
+  apiUrl = environment.apiUrl;
+  dbLabel = 'Azure Cosmos DB (MongoDB API)'; // Static label, update as needed
   defaultName: string = '';
   users: User[] = [];
   selectedUser: User | null = null;

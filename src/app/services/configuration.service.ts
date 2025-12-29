@@ -1,6 +1,7 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { AppConfig, ConfigField, ConfigSection } from '../models/app-config.interface';
+import { S } from '@angular/cdk/scrolling-module.d-3Rw5UxLk';
 
 @Injectable({
   providedIn: 'root'
@@ -313,7 +314,8 @@ export class ConfigurationService {
       section: 'data',
       validation: { min: 0, max: 3600, required: true },
       defaultValue: 300
-    }
+    },
+
   ];
 
   constructor() {

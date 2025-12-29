@@ -10,14 +10,32 @@ import { MsalService } from '@azure/msal-angular';
   providedIn: 'root',
 })
 export class AuthService {
-  token = signal<string | null>(null);
+  private _tokenSignal = signal<string | null>(null);
+
+  /**
+   * Returns the current access token from MSAL if available, otherwise from localStorage.
+   */
+  public token(): string | null {
+    // Try to get access token from MSAL
+    const accounts = this.msalService.instance.getAllAccounts();
+    if (accounts.length > 0) {
+      // Try to get access token silently
+      // NOTE: This is async, but for header use, we need a sync value. So, use idToken as fallback.
+      const idToken = accounts[0].idToken;
+      if (idToken) {
+        return idToken;
+      }
+    }
+    // Fallback to signal/localStorage
+    return this._tokenSignal();
+  }
   private baseUrl = `${environment.apiUrl}/auth`;
   private msalService = inject(MsalService);
 
   constructor(private http: HttpClient) {
     const savedToken = localStorage.getItem('authToken');
     if (savedToken) {
-      this.token.set(savedToken);
+      this._tokenSignal.set(savedToken);
     }
   }
   // Role hierarchy: admin > editor > user
@@ -68,7 +86,7 @@ export class AuthService {
     return this.http.post<{ token: string }>(`${this.baseUrl}/register`, userData).pipe(
       tap((res) => {
         if (res && res.token) {
-          this.token.set(res.token);
+          this._tokenSignal.set(res.token);
         }
       }),
       catchError((error) => {
@@ -92,8 +110,7 @@ export class AuthService {
   }
 
   logout() {
-    this.token.set(null);
-    this.token.set('');
+    this._tokenSignal.set(null);
     localStorage.removeItem('authToken');
   }
 

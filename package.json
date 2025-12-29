@@ -7,10 +7,12 @@
     "dev": "ng serve --configuration development --live-reload --host localhost --port 4200",
     "dev-ws": "ng serve --configuration development --live-reload --host localhost --port 4200 --verbose",
     "build": "ng build",
+    "build:prod": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix"
+    "lint:fix": "eslint . --ext .ts --fix",
+    "serve:prod": "serve -s dist/rochester-golf"
   },
   "prettier": {
     "printWidth": 100,

@@ -24,6 +24,7 @@ export class MemberService {
 
   private getHeaders() {
     const token = this.auth.token();
+    // console.log('DEBUG MemberService token:', token);
     return token
       ? { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
       : {};

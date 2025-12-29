@@ -84,6 +84,7 @@ export class HcapListComponent implements OnInit {
                 const score = r.postedScore;
                 const rating = scoreObj?.scRating;
                 const slope = scoreObj?.scSlope;
+                let handicapDifferential: number | undefined = r.handicapDifferential;
                 let scoreDifferential: number | undefined = undefined;
                 if (
                   typeof score === 'number' &&
@@ -92,7 +93,9 @@ export class HcapListComponent implements OnInit {
                   slope > 0
                 ) {
                   scoreDifferential = ((score - rating) * 113) / slope;
+                  handicapDifferential = parseFloat(scoreDifferential.toFixed(1));
                 }
+                console.log('Calculating for memberId', memberId, rating, 'slope', slope, 'handicapDifferential', handicapDifferential, 'scoreDifferential', scoreDifferential);
                 return { ...r, scoreDifferential };
               });
               const newHCap = this.handicapService.computeHandicap(recordsForCalc as any);
