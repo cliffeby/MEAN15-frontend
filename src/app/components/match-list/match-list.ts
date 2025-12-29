@@ -11,7 +11,7 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable, Subject, forkJoin, lastValueFrom } from 'rxjs';
-import { takeUntil, map } from 'rxjs/operators';
+import { takeUntil, map, take } from 'rxjs/operators';
 import { ScoreService } from '../../services/scoreService';
 import { HCapService } from '../../services/hcapService';
 import { Match } from '../../models/match';
@@ -328,38 +328,49 @@ export class MatchListComponent implements OnInit, OnDestroy {
   }
 
   updateStatus(id: string, status: string) {
-    // Warn user and create HCap records when completing a match
-    const completing =
-      (status || '').toLowerCase() === 'completed' || (status || '').toLowerCase() === 'complete';
-    if (completing) {
-      this.confirmDialog
-        .confirmAction(
-          'Complete Match',
-          'Completing this match will create/update handicap records for players with posted score > 50. Do you want to continue?',
-          'Complete',
-          'Cancel'
-        )
-        .subscribe(async (confirmed) => {
-          if (!confirmed) return;
-          try {
-            await this.createHcapRecordsForMatch(id);
-            this.store.dispatch(MatchActions.updateMatchStatus({ id, status }));
-            this.snackBar.open('Match completed — handicaps updated (where applicable).', 'Close', {
-              duration: 4000,
+    // Get match details for audit logging
+    this.store
+      .select(selectMatchById(id))
+      .pipe(take(1))
+      .subscribe((match) => {
+        if (!match) return;
+        
+        const name = match.name;
+        const author = match.author;
+        
+        // Warn user and create HCap records when completing a match
+        const completing =
+          (status || '').toLowerCase() === 'completed' || (status || '').toLowerCase() === 'complete';
+        if (completing) {
+          this.confirmDialog
+            .confirmAction(
+              'Complete Match',
+              'Completing this match will create/update handicap records for players with posted score > 50. Do you want to continue?',
+              'Complete',
+              'Cancel'
+            )
+            .subscribe(async (confirmed) => {
+              if (!confirmed) return;
+              try {
+                await this.createHcapRecordsForMatch(id);
+                this.store.dispatch(MatchActions.updateMatchStatus({ id, status, name, author }));
+                this.snackBar.open('Match completed — handicaps updated (where applicable).', 'Close', {
+                  duration: 4000,
+                });
+              } catch (err) {
+                console.error('Error creating HCap records:', err);
+                this.snackBar.open(
+                  'Error creating handicap records. Match status not changed.',
+                  'Close',
+                  { duration: 6000 }
+                );
+              }
             });
-          } catch (err) {
-            console.error('Error creating HCap records:', err);
-            this.snackBar.open(
-              'Error creating handicap records. Match status not changed.',
-              'Close',
-              { duration: 6000 }
-            );
-          }
-        });
-      return;
-    }
+          return;
+        }
 
-    this.store.dispatch(MatchActions.updateMatchStatus({ id, status }));
+        this.store.dispatch(MatchActions.updateMatchStatus({ id, status, name, author }));
+      });
   }
 
   private getCurrentUserEmail(): string {
@@ -372,9 +383,9 @@ export class MatchListComponent implements OnInit, OnDestroy {
     const resp: any = await lastValueFrom(this.scoreService.getScoresByMatch(matchId));
     const scores = resp?.scores || resp || [];
     const currentUserEmail = await this.getCurrentUserEmail();
-    const currentUser = this.authService.user;
-    const currentUserId = currentUser?._id || currentUser?.id || currentUser?.userId || null;
-
+    const currentUser = this.authService.getAuthorObject();
+    const currentUserId = currentUser?.name || currentUser?.id || currentUser?.email || null;
+console.log('Current user for HCap creation:', currentUserId, currentUserEmail);
     // Filter players with postedScore > 50 (or score if postedScore missing)
     const eligible = scores.filter((s: any) => {
       const posted = s.postedScore ?? s.score ?? 0;
@@ -459,7 +470,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
               (typeof score.matchId === 'string' ? score.matchId : score.matchId._id)) ||
             matchId,
           memberId: memberId,
-          user: currentUser,
+          author: currentUser,
         };
         console.log('Preparing to create/update HCap record:', hcapRecord);
         // If existing HCap exists for the same member+match, update it instead of creating

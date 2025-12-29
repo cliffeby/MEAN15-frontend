@@ -27,7 +27,7 @@ export const updateMatchFailure = createAction('[Match] Update Match Failure', p
 // Update status
 export const updateMatchStatus = createAction(
   '[Match] Update Match Status',
-  props<{ id: string; status: string }>()
+  props<{ id: string; status: string; name?: string; author?: any }>()
 );
 export const updateMatchStatusSuccess = createAction('[Match] Update Match Status Success', props<{ match: Match }>());
 export const updateMatchStatusFailure = createAction('[Match] Update Match Status Failure', props<{ error: any }>());

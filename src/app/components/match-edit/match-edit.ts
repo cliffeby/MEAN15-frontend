@@ -187,7 +187,8 @@ export class MatchEditComponent implements OnInit, OnDestroy {
       scGroupName: match.scGroupName,
       status: match.status,
       datePlayed: match.datePlayed ? new Date(match.datePlayed) : new Date(),
-      author: { id: 'u1', email: 'test@example.com', name: 'Test User' },
+      // author: { id: 'u1', email: 'test@example.com', name: 'Test User' },
+      author: match.author || this.authService.getAuthorObject(),
     });
     // Fix scorecardId if it's an object instead of a string
     this.fixScorecardIdValue();

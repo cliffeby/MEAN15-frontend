@@ -147,9 +147,12 @@ export class MatchService {
         .pipe(catchError(this.handleError));
     }
   
-    updateMatchStatus(id: string, status: string): Observable<any> {
+    updateMatchStatus(id: string, status: string, name?: string, author?: any): Observable<any> {
       this.clearCache(); // Clear cache so match list reloads with updated status
-      return this.http.patch(`${this.baseUrl}/${id}/status`, { status }, this.getHeaders())
+      const body: any = { status };
+      if (name) body.name = name;
+      if (author) body.author = author;
+      return this.http.patch(`${this.baseUrl}/${id}/status`, body, this.getHeaders())
         .pipe(catchError(this.handleError));
     }
 }

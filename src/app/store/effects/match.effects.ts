@@ -89,7 +89,7 @@ export class MatchEffects {
     this.actions$.pipe(
       ofType(MatchActions.updateMatchStatus),
       mergeMap((action) =>
-        this.matchService.updateMatchStatus(action.id, action.status).pipe(
+        this.matchService.updateMatchStatus(action.id, action.status, action.name, action.author).pipe(
           map((response) => {
             const match = response.match || response;
             return MatchActions.updateMatchStatusSuccess({ match });
