@@ -54,6 +54,14 @@
               "extractLicenses": false,
               "sourceMap": true
             }
+              ,"azure": {
+                "fileReplacements": [
+                  {
+                    "replace": "src/environments/environment.ts",
+                    "with": "src/environments/environmentAzure.ts"
+                  }
+                ]
+              }
           },
           "defaultConfiguration": "production"
         },
@@ -73,6 +81,11 @@
               "buildTarget": "rochester-golf:build:development",
               "liveReload": true
             }
+              ,"azure": {
+                "buildTarget": "rochester-golf:build:azure",
+                "host": "localhost",
+                "port": 4201
+              }
           },
           "defaultConfiguration": "development"
         },

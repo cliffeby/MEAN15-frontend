@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve --proxy-config proxy.conf.json",
     "dev": "ng serve --configuration development --live-reload --host localhost --port 4200",
+    "devA": "ng serve --configuration development --live-reload --host localhost --port 4200",
     "dev-ws": "ng serve --configuration development --live-reload --host localhost --port 4200 --verbose",
     "build": "ng build",
     "build:prod": "ng build --configuration production",
@@ -12,7 +13,8 @@
     "test": "ng test",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
-    "serve:prod": "serve -s dist/rochester-golf"
+    "serve:prod": "serve -s dist/rochester-golf",
+    "serveAzure": "ng serve --configuration=azure"
   },
   "prettier": {
     "printWidth": 100,
