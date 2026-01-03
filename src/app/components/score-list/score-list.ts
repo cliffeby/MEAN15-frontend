@@ -218,10 +218,11 @@ export class ScoreListComponent implements OnInit {
     // Find the score to get its name for the confirmation dialog
     const score = this.scores.find(s => s._id === id);
     const scoreName = score?.name || `Score ${id}`;
-    
+    const authorName = this.authService.getAuthorName() || '';
+
     this.confirmDialog.confirmDelete(scoreName, 'score').subscribe(confirmed => {
       if (confirmed) {
-        this.scoreService.delete(id).subscribe({
+        this.scoreService.delete({ id, name: scoreName, authorName }).subscribe({
           next: () => {
             this.snackBar.open('Score deleted', 'Close', { duration: 2000 });
             this.loadScores();

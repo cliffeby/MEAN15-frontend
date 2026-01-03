@@ -13,8 +13,7 @@
     "test": "ng test",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
-    "serve:prod": "serve -s dist/rochester-golf",
-    "serveAzure": "ng serve --configuration=azure"
+    "serve:prod": "serve -s dist/rochester-golf"
   },
   "prettier": {
     "printWidth": 100,

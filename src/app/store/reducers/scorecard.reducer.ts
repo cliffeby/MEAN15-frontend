@@ -130,7 +130,7 @@ export const scorecardReducer = createReducer(
     error: null
   })),
 
-  on(ScorecardActions.deleteScorecardSuccess, (state, { id }) =>
+  on(ScorecardActions.deleteScorecardSuccess, (state, { id, name, authorName }) =>
     adapter.removeOne(id, {
       ...state,
       loading: false,

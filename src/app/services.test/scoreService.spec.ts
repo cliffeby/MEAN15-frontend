@@ -7,10 +7,35 @@ import { environment } from '../../environments/environment';
 
 const baseUrl = `${environment.apiUrl}/scores`;
 const mockToken = 'mock-jwt-token';
+const authSpy = jasmine.createSpyObj('AuthService', ['token', 'getAuthorName']);
 
 const mockScores: Score[] = [
-  { _id: 's1', name: 'Score 1', score: 72, scoreRecordType: 'byHole', scoresToPost: [], postedScore: 70, scores: [], handicap: 10, usgaIndex: 12.5, scoringMethod: 'byHole', author: { id: 'u1', email: 'u1@email.com', name: 'u1' } },
-  { _id: 's2', name: 'Score 2', score: 66, scoreRecordType: 'byHole', scoresToPost: [], postedScore: 70, scores: [], handicap: 10, usgaIndex: 12.5, scoringMethod: 'byHole', author: { id: 'u1', email: 'u1@email.com', name: 'u1' } },
+  {
+    _id: 's1',
+    name: 'Score 1',
+    score: 72,
+    scoreRecordType: 'byHole',
+    scoresToPost: [],
+    postedScore: 70,
+    scores: [],
+    handicap: 10,
+    usgaIndex: 12.5,
+    scoringMethod: 'byHole',
+    author: { id: 'u1', email: 'u1@email.com', name: 'u1' },
+  },
+  {
+    _id: 's2',
+    name: 'Score 2',
+    score: 66,
+    scoreRecordType: 'byHole',
+    scoresToPost: [],
+    postedScore: 70,
+    scores: [],
+    handicap: 10,
+    usgaIndex: 12.5,
+    scoringMethod: 'byHole',
+    author: { id: 'u1', email: 'u1@email.com', name: 'u1' },
+  },
 ];
 
 describe('ScoreService', () => {
@@ -19,8 +44,7 @@ describe('ScoreService', () => {
   let authService: jasmine.SpyObj<AuthService>;
 
   beforeEach(() => {
-    const authSpy = jasmine.createSpyObj('AuthService', ['token']);
-
+    const authSpy = jasmine.createSpyObj('AuthService', ['token', 'getAuthorName']);
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [ScoreService, { provide: AuthService, useValue: authSpy }],
@@ -69,7 +93,10 @@ describe('ScoreService', () => {
   describe('create', () => {
     it('creates a score and clears cache', () => {
       authService.token.and.returnValue(mockToken);
-      const newScore: Partial<Score> = { author: { id: 'u3', email: 'u3@email.com', name: 'u3' }, score: 70 };
+      const newScore: Partial<Score> = {
+        author: { id: 'u3', email: 'u3@email.com', name: 'u3' },
+        score: 70,
+      };
 
       // populate cache
       service.getAll().subscribe();
@@ -88,12 +115,19 @@ describe('ScoreService', () => {
       // cache cleared, next getAll should make a request
       service.getAll().subscribe();
       const req3 = httpMock.expectOne(baseUrl);
-      req3.flush({ success: true, count: 3, scores: [...mockScores, { _id: 's3', author: { name: 'u3' }, total: 70 }] });
+      req3.flush({
+        success: true,
+        count: 3,
+        scores: [...mockScores, { _id: 's3', author: { name: 'u3' }, total: 70 }],
+      });
     });
 
     it('retries on failure and surfaces 409 conflict', () => {
       authService.token.and.returnValue(mockToken);
-      const dup: Partial<Score> = { author: { id: 'u1', email: 'u1@email.com', name: 'u1' }, score: 72 };
+      const dup: Partial<Score> = {
+        author: { id: 'u1', email: 'u1@email.com', name: 'u1' },
+        score: 72,
+      };
 
       service.create(dup as Score).subscribe({
         next: () => fail('should have failed with 409'),
@@ -174,17 +208,17 @@ describe('ScoreService', () => {
   describe('delete', () => {
     it('deletes a score and clears cache', () => {
       authService.token.and.returnValue(mockToken);
-
+      authService.getAuthorName.and.returnValue('Test User');
       // populate cache
       service.getAll().subscribe();
       const req1 = httpMock.expectOne(baseUrl);
       req1.flush({ success: true, count: 2, scores: mockScores });
 
-      service.delete('s1').subscribe((res) => {
+      service.delete('s1', 'a1').subscribe((res) => {
         expect(res.success).toBeTruthy();
       });
 
-      const req2 = httpMock.expectOne(`${baseUrl}/s1`);
+      const req2 = httpMock.expectOne(`${baseUrl}/s1?name=a1&authorName=Test%20User`);
       expect(req2.request.method).toBe('DELETE');
       req2.flush({ success: true });
 
@@ -197,12 +231,12 @@ describe('ScoreService', () => {
     it('handles error on delete', () => {
       authService.token.and.returnValue(mockToken);
 
-      service.delete('s1').subscribe({
+      service.delete('s1', 'a1').subscribe({
         next: () => fail('should have failed with 500'),
         error: (err) => expect(err.message).toContain('Server error'),
       });
 
-      const req = httpMock.expectOne(`${baseUrl}/s1`);
+      const req = httpMock.expectOne(`${baseUrl}/s1?name=a1`);
       req.flush('Server error', { status: 500, statusText: 'Internal Server Error' });
     });
   });
@@ -235,7 +269,9 @@ describe('ScoreService', () => {
     it('fetches scores by scorecard', () => {
       authService.token.and.returnValue(mockToken);
 
-      service.getScoresByScorecard('sc1').subscribe((res) => expect(res.scores).toEqual(mockScores));
+      service
+        .getScoresByScorecard('sc1')
+        .subscribe((res) => expect(res.scores).toEqual(mockScores));
 
       const req = httpMock.expectOne(`${baseUrl}/scorecard/sc1`);
       expect(req.request.method).toBe('GET');
@@ -246,7 +282,10 @@ describe('ScoreService', () => {
   describe('savePlayerScore', () => {
     it('creates a new score when existingScoreId is not provided', async () => {
       authService.token.and.returnValue(mockToken);
-      const newScore: Partial<Score> = { author: { id: 'u3', email: 'u3@email.com', name: 'u3' }, score: 71 };
+      const newScore: Partial<Score> = {
+        author: { id: 'u3', email: 'u3@email.com', name: 'u3' },
+        score: 71,
+      };
 
       const promise = service.savePlayerScore(newScore);
 

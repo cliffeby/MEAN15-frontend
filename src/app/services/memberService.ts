@@ -11,7 +11,7 @@ export class MemberService {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
   private baseUrl = `${environment.apiUrl}/members`;
-  
+
   // Cache for members data
   private membersCache$: Observable<Member[]> | null = null;
   private cacheTimestamp = 0;
@@ -25,9 +25,7 @@ export class MemberService {
   private getHeaders() {
     const token = this.auth.token();
     // console.log('DEBUG MemberService token:', token);
-    return token
-      ? { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
-      : {};
+    return token ? { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) } : {};
   }
 
   private handleError(error: HttpErrorResponse) {
@@ -36,7 +34,7 @@ export class MemberService {
     if (error.status === 409) {
       return throwError(() => error);
     }
-    
+
     let errorMsg = 'An unexpected error occurred. Please try again later.';
     if (error.error instanceof ErrorEvent) {
       errorMsg = `Client error: ${error.error.message}`;
@@ -47,9 +45,16 @@ export class MemberService {
   }
 
   create(member: Member): Observable<Member> {
-    return this.http.post<{success: boolean, member: Member}>(this.baseUrl, member, this.getHeaders())
+    const author = this.auth.getAuthorObject();
+    const memberWithAuthor = { ...member, author };
+    return this.http
+      .post<{ success: boolean; memberWithAuthor: Member }>(
+        this.baseUrl,
+        memberWithAuthor,
+        this.getHeaders()
+      )
       .pipe(
-        map(response => response.member), // Extract the member from the response
+        map((response) => response.memberWithAuthor), // Extract the member from the response
         tap(() => this.clearCache()), // Clear cache after creating
         catchError(this.handleError)
       );
@@ -57,64 +62,79 @@ export class MemberService {
 
   getAll(): Observable<Member[]> {
     const now = Date.now();
-    
+
     // Return cached data if it's still valid
-    if (this.membersCache$ && (now - this.cacheTimestamp) < this.CACHE_DURATION) {
+    if (this.membersCache$ && now - this.cacheTimestamp < this.CACHE_DURATION) {
       return this.membersCache$;
     }
-    
+
     // Make fresh request and cache it
-    this.membersCache$ = this.http.get<{success: boolean, count: number, members: Member[]}>(this.baseUrl, this.getHeaders())
+    this.membersCache$ = this.http
+      .get<{ success: boolean; count: number; members: Member[] }>(this.baseUrl, this.getHeaders())
       .pipe(
-        map(response => response.members),
-        tap(() => this.cacheTimestamp = now), // Update cache timestamp
+        map((response) => response.members),
+        tap(() => (this.cacheTimestamp = now)), // Update cache timestamp
         shareReplay(1), // Share the result with multiple subscribers
         catchError(this.handleError)
       );
-    
+
     return this.membersCache$;
   }
 
   getById(id: string): Observable<Member> {
-    return this.http.get<{success: boolean, member: Member}>(`${this.baseUrl}/${id}`, this.getHeaders())
+    return this.http
+      .get<{ success: boolean; member: Member }>(`${this.baseUrl}/${id}`, this.getHeaders())
       .pipe(
-        map(response => response.member), // Extract the member from the response
+        map((response) => response.member), // Extract the member from the response
         catchError(this.handleError)
       );
   }
 
   update(id: string, member: Member): Observable<Member> {
-    return this.http.put<{success: boolean, member: Member}>(`${this.baseUrl}/${id}`, member, this.getHeaders())
+    const author = this.auth.getAuthorObject();
+    const memberWithAuthor = { ...member, author };
+    return this.http
+      .put<{ success: boolean; memberWithAuthor: Member }>(`${this.baseUrl}/${id}`, memberWithAuthor, this.getHeaders())
       .pipe(
-        map(response => response.member), // Extract the member from the response
+        map((response) => response.memberWithAuthor), // Extract the member from the response
         tap(() => this.clearCache()), // Clear cache after updating
         catchError(this.handleError)
       );
   }
 
-  delete(id: string): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/${id}`, this.getHeaders())
+  delete(params: { id: string; name?: string; authorName?: string }): Observable<any> {
+    if (!params.id) {
+      throw new Error('Must provide id');
+    }
+    let url = `${this.baseUrl}/${params.id}`;
+    const query: string[] = [];
+    if (params.name) query.push(`name=${encodeURIComponent(params.name)}`);
+    if (params.authorName) query.push(`author=${encodeURIComponent(params.authorName)}`);
+    if (query.length) {
+      url += `?${query.join('&')}`;
+    }
+    return this.http.delete(url, this.getHeaders()).pipe(
+      tap(() => this.clearCache()), // Clear cache after deleting
+      catchError(this.handleError)
+    );
+  }
+
+  deleteWithAction(id: string, action: 'nullify' | 'delete'): Observable<any> {
+    return this.http
+      .delete(`${this.baseUrl}/${id}`, {
+        ...this.getHeaders(),
+        body: { force: true, action },
+      })
       .pipe(
         tap(() => this.clearCache()), // Clear cache after deleting
         catchError(this.handleError)
       );
   }
 
-  deleteWithAction(id: string, action: 'nullify' | 'delete'): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/${id}`, {
-      ...this.getHeaders(),
-      body: { force: true, action }
-    }).pipe(
-      tap(() => this.clearCache()), // Clear cache after deleting
+  removeDuplicateEmails(): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/duplicates/remove`, this.getHeaders()).pipe(
+      tap(() => this.clearCache()), // Clear cache after removing duplicates
       catchError(this.handleError)
     );
-  }
-
-  removeDuplicateEmails(): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/duplicates/remove`, this.getHeaders())
-      .pipe(
-        tap(() => this.clearCache()), // Clear cache after removing duplicates
-        catchError(this.handleError)
-      );
   }
 }

@@ -29,8 +29,8 @@ export class UserPreferencesService {
    * Get the storage key for the current user
    */
   private getUserStorageKey(): string {
-    const user = this.authService.user;
-    const userId = user?._id || user?.userId || user?.email || 'anonymous';
+    const user1 = this.authService.getAuthorObject();
+    const userId = user1?.id || user1?.name || user1?.email || 'anonymous';
     return `${this.STORAGE_KEY_PREFIX}${userId}`;
   }
 

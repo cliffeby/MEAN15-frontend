@@ -63,14 +63,15 @@ export const updateScorecardFailure = createAction(
 );
 
 // Delete scorecard
+
 export const deleteScorecard = createAction(
   '[Scorecard] Delete Scorecard',
-  props<{ id: string }>()
+  props<{ id: string; name: string; authorName: string }>()
 );
 
 export const deleteScorecardSuccess = createAction(
   '[Scorecard] Delete Scorecard Success',
-  props<{ id: string }>()
+  props<{ id: string; name: string; authorName: string }>()
 );
 
 export const deleteScorecardFailure = createAction(

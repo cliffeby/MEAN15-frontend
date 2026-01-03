@@ -31,7 +31,10 @@ export class ScorecardService {
   }
 
   create(scorecard: Scorecard): Observable<any> {
-    return this.http.post(this.baseUrl, scorecard, this.getHeaders())
+    // Ensure author is populated
+    const author = this.auth.getAuthorObject();
+    const scorecardWithAuthor = { ...scorecard, author };
+    return this.http.post(this.baseUrl, scorecardWithAuthor, this.getHeaders())
       .pipe(catchError(this.handleError));
   }
 
@@ -46,12 +49,30 @@ export class ScorecardService {
   }
 
   update(id: string, scorecard: Scorecard): Observable<any> {
-    return this.http.put(`${this.baseUrl}/${id}`, scorecard, this.getHeaders())
+    // Ensure author is populated
+    const author = this.auth.getAuthorObject();
+    const scorecardWithAuthor = { ...scorecard, author };
+    return this.http.put(`${this.baseUrl}/${id}`, scorecardWithAuthor, this.getHeaders())
       .pipe(catchError(this.handleError));
   }
 
-  delete(id: string): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/${id}`, this.getHeaders())
+  /**
+   * Deletes a scorecard by id, passing name and authorName as query params if provided.
+   * Usage:
+   *   delete({ id: '123', name: 'foo', authorName: 'bar' })
+   */
+  delete(params: { id: string; name?: string; authorName?: string }): Observable<any> {
+    if (!params.id) {
+      throw new Error('Must provide id');
+    }
+    let url = `${this.baseUrl}/${params.id}`;
+    const query: string[] = [];
+    if (params.name) query.push(`name=${encodeURIComponent(params.name)}`);
+    if (params.authorName) query.push(`author=${encodeURIComponent(params.authorName)}`);
+    if (query.length) {
+      url += `?${query.join('&')}`;
+    }
+    return this.http.delete(url, this.getHeaders())
       .pipe(catchError(this.handleError));
   }
 }

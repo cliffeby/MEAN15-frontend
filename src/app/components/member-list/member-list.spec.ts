@@ -45,14 +45,14 @@ describe('MemberListComponent', () => {
       'delete',
       'removeDuplicateEmails',
     ]);
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['hasRole', 'hasMinRole', 'getRoles', 'getUserName', 'getUserEmail'], { 
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['hasRole', 'hasMinRole', 'getRoles', 'getAuthorName', 'getAuthorEmail'], { 
       role: 'admin'
     });
     authServiceSpy.hasRole.and.returnValue(true);
     authServiceSpy.hasMinRole.and.returnValue(true);
     authServiceSpy.getRoles.and.returnValue(['admin']);
-    authServiceSpy.getUserName.and.returnValue('Test User');
-    authServiceSpy.getUserEmail.and.returnValue('test@example.com');
+    authServiceSpy.getAuthorName.and.returnValue('Test User');
+    authServiceSpy.getAuthorEmail.and.returnValue('test@example.com');
     confirmDialogSpy = jasmine.createSpyObj('ConfirmDialogService', [
       'confirmDelete',
       'confirmAction',
@@ -160,7 +160,7 @@ describe('MemberListComponent', () => {
     tick();
     fixture.detectChanges();
     expect(confirmDialogSpy.confirmDelete).toHaveBeenCalled();
-    expect(memberServiceSpy.delete).toHaveBeenCalledWith('1');
+    expect(memberServiceSpy.delete).toHaveBeenCalledWith({ id: '1', name: 'Alice Smith', authorName: 'Test User' });
     expect(snackBarSpy.open).toHaveBeenCalledWith('Member deleted', 'Close', { duration: 2000 });
   }));
 

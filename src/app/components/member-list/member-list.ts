@@ -101,6 +101,9 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
   get isAuthorizedToDelete(): boolean {
     return this.authService.hasMinRole('admin');
   }
+    get author(): any | null {
+    return this.authService.getAuthorObject();
+  }
 
   ngOnInit() {
     // Load pagination config from configuration
@@ -366,7 +369,7 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.confirmDialog.confirmDelete(memberName, 'member').subscribe((confirmed) => {
       if (confirmed) {
-        this.memberService.delete(id).subscribe({
+        this.memberService.delete({ id, name: memberName, authorName: this.author?.name }).subscribe({
           next: () => {
             this.snackBar.open('Member deleted', 'Close', { duration: 2000 });
             this.loadMembers();

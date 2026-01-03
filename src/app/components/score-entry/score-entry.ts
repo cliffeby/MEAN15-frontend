@@ -219,7 +219,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       )
     ).subscribe({
       next: (response: any) => {
-        console.log('Raw match service response:', response);
+        // console.log('Raw match service response:', response);
         
         // Handle different response formats
         const match = response?.match || response;

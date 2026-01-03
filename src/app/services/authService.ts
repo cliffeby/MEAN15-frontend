@@ -128,15 +128,15 @@ export class AuthService {
     }
   }
 
-  get user(): any {
-    const payload = this.payload();
-    if (!payload) return null;
-    // If defaultLeague is present in JWT, expose it
-    return {
-      ...payload,
-      defaultLeague: payload.defaultLeague || undefined,
-    };
-  }
+  // get user(): any {
+  //   const payload = this.payload();
+  //   if (!payload) return null;
+  //   // If defaultLeague is present in JWT, expose it
+  //   return {
+  //     ...payload,
+  //     defaultLeague: payload.defaultLeague || undefined,
+  //   };
+  // }
 
   get role(): string | null {
     const accounts = this.msalService.instance.getAllAccounts();
@@ -174,7 +174,7 @@ export class AuthService {
   /**
    * Returns the authenticated user's email address from the Entra/MSAL token.
    */
-  getUserEmail(): string | null {
+  getAuthorEmail(): string | null {
     const accounts = this.msalService.instance.getAllAccounts();
     if (accounts.length === 0) return null;
     const idTokenClaims = accounts[0].idTokenClaims as any;
@@ -184,11 +184,12 @@ export class AuthService {
   /**
    * Returns the authenticated user's display name from the Entra/MSAL token.
    */
-  getUserName(): string | null {
+  getAuthorName(): string | null {
     const accounts = this.msalService.instance.getAllAccounts();
     if (accounts.length === 0) return null;
     const idTokenClaims = accounts[0].idTokenClaims as any;
-    return idTokenClaims?.name || null;
+    // Prefer display name, fallback to preferred_username, then email
+    return idTokenClaims?.name || idTokenClaims?.preferred_username || idTokenClaims?.email || null;
   }
 
   /**
@@ -196,9 +197,9 @@ export class AuthService {
    * This should be used when creating or updating records that require author information.
    */
   getAuthorObject(): { id: string; email: string; name: string } {
-    const email = this.getUserEmail() || '';
-    const name = this.getUserName() || '';
-    const id = this.user?.id || this.user?._id || email; // Fallback to email if no explicit id
+    const email = this.getAuthorEmail() || '';
+    const name = this.getAuthorName() || '';
+    const id = this.getHighestRole() || email; // Fallback to email if no explicit id
 
     return {
       id,

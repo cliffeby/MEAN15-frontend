@@ -19,8 +19,8 @@ describe('MainLayout', () => {
       hasRole: jasmine.createSpy('hasRole').and.returnValue(true),
       hasMinRole: jasmine.createSpy('hasMinRole').and.returnValue(true),
       getRoles: jasmine.createSpy('getRoles').and.returnValue(['admin']),
-      getUserName: jasmine.createSpy('getUserName').and.returnValue('Test User'),
-      getUserEmail: jasmine.createSpy('getUserEmail').and.returnValue('test@example.com')
+      getAuthorName: jasmine.createSpy('getAuthorName').and.returnValue('Test User'),
+      getAuthorEmail: jasmine.createSpy('getAuthorEmail').and.returnValue('test@example.com')
     } as Partial<AuthService> as AuthService;
     const robustActivatedRoute = {
       params: of({}),

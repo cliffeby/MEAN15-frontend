@@ -41,7 +41,9 @@ export class ScoreService {
   }
 
   create(score: Score): Observable<any> {
-    return this.http.post(this.baseUrl, score, this.getHeaders())
+    const author = this.auth.getAuthorObject();
+    const scoreWithAuthor = { ...score, author };
+    return this.http.post(this.baseUrl, scoreWithAuthor, this.getHeaders())
       .pipe(
         retryWhen(errors => 
           errors.pipe(
@@ -79,7 +81,9 @@ export class ScoreService {
   }
 
   update(id: string, score: Score): Observable<any> {
-    return this.http.put(`${this.baseUrl}/${id}`, score, this.getHeaders())
+    const author = this.auth.getAuthorObject();
+    const scoreWithAuthor = { ...score, author };
+    return this.http.put(`${this.baseUrl}/${id}`, scoreWithAuthor, this.getHeaders())
       .pipe(
         retryWhen(errors => 
           errors.pipe(
@@ -92,8 +96,19 @@ export class ScoreService {
       );
   }
 
-  delete(id: string): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/${id}`, this.getHeaders())
+  delete(params: { id: string; name?: string; authorName?: string }): Observable<any> {
+    if (!params.id) {
+      throw new Error('Must provide id');
+    }
+    // const authorName = this.auth.getAuthorName();
+    let url = `${this.baseUrl}/${params.id}`;
+    const query: string[] = [];
+    if (params.name) query.push(`name=${encodeURIComponent(params.name)}`);
+    if (params.authorName) query.push(`author=${encodeURIComponent(params.authorName)}`);
+    if (query.length) {
+      url += `?${query.join('&')}`;
+    }
+    return this.http.delete(url, this.getHeaders())
       .pipe(
         tap(() => this.clearCache()), // Clear cache after deleting
         catchError(this.handleError)

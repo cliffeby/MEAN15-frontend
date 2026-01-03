@@ -14,8 +14,8 @@
           <mat-card-title>Profile</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <div><b>Name:</b> {{ auth.getUserName() || 'Unknown' }}</div>
-          <div><b>Email:</b> {{ auth.getUserEmail() || 'Unknown' }}</div>
+          <div><b>Name:</b> {{ auth.getAuthorName() || 'Unknown' }}</div>
+          <div><b>Email:</b> {{ auth.getAuthorEmail() || 'Unknown' }}</div>
           <div *ngIf="auth.getRoles().length > 0">
             <b>Authorized Role:</b> <span>{{ auth.getRoles().join(', ') }}</span>
           </div>

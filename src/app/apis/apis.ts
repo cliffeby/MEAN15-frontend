@@ -231,20 +231,20 @@ export class API {
     },
 
     // User Management Endpoints
-    {
-      endpoint: '/api/users',
-      method: 'GET',
-      description: 'Get all users (admin only)',
-      request: 'Headers: { "Authorization": "Bearer <token>" }',
-      response: '{ "success": true, "count": number, "users": [...] }'
-    },
-    {
-      endpoint: '/api/users/:id',
-      method: 'DELETE',
-      description: 'Delete user by ID (admin only)',
-      request: 'Headers: { "Authorization": "Bearer <token>" }',
-      response: '{ "success": true, "message": "User deleted" }'
-    },
+    // {
+    //   endpoint: '/api/users',
+    //   method: 'GET',
+    //   description: 'Get all users (admin only)',
+    //   request: 'Headers: { "Authorization": "Bearer <token>" }',
+    //   response: '{ "success": true, "count": number, "users": [...] }'
+    // },
+    // {
+    //   endpoint: '/api/users/:id',
+    //   method: 'DELETE',
+    //   description: 'Delete user by ID (admin only)',
+    //   request: 'Headers: { "Authorization": "Bearer <token>" }',
+    //   response: '{ "success": true, "message": "User deleted" }'
+    // },
 
     // Orphan Management Endpoints
     {

@@ -100,8 +100,8 @@ export class ScorecardEffects {
     this.actions$.pipe(
       ofType(ScorecardActions.deleteScorecard),
       mergeMap((action) =>
-        this.scorecardService.delete(action.id).pipe(
-          map(() => ScorecardActions.deleteScorecardSuccess({ id: action.id })),
+        this.scorecardService.delete({ id: action.id, name: action.name, authorName: action.authorName }).pipe(
+          map(() => ScorecardActions.deleteScorecardSuccess({ id: action.id, name: action.name, authorName: action.authorName })),
           catchError((error) => {
             const errorMsg = error.message || 'Failed to delete scorecard';
             return of(ScorecardActions.deleteScorecardFailure({ error: errorMsg }));

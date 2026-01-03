@@ -59,7 +59,9 @@ export class ScorecardListComponent implements OnInit {
   get isAuthorizedToDelete(): boolean {
     return this.authService.hasMinRole('admin');
   }
-
+  get authorName(): string | null {
+    return this.authService.getAuthorName();
+  }
   
 
   addScorecard(): void {
@@ -91,8 +93,9 @@ export class ScorecardListComponent implements OnInit {
         
         this.confirmDialog.confirmDelete(scorecardName, 'scorecard').subscribe(confirmed => {
           if (confirmed) {
-            // Dispatch delete action - effects will handle the API call and notifications
-            this.store.dispatch(ScorecardActions.deleteScorecard({ id }));
+            // Dispatch delete action with id, scorecardName, and authorName
+            const authorName = this.authorName || '';
+            this.store.dispatch(ScorecardActions.deleteScorecard({ id, name: scorecardName, authorName: authorName }));
           }
         });
       }

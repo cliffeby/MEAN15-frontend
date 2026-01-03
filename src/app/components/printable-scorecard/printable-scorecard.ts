@@ -51,7 +51,7 @@ export class PrintableScorecardComponent implements OnInit {
 
   ngOnInit(): void {
     this.matchId = this.route.snapshot.params['id'];
-    console.log('Printable scorecard initialized for match ID:', this.matchId);
+  
     this.loadMatchData();
   }
 
@@ -60,7 +60,6 @@ export class PrintableScorecardComponent implements OnInit {
     
     this.matchService.getById(this.matchId).subscribe({
       next: (response: any) => {
-        console.log('Raw match service response for printable:', response);
         
         // Handle different response formats
         const match = response?.match || response;
@@ -72,9 +71,7 @@ export class PrintableScorecardComponent implements OnInit {
           return;
         }
         
-        console.log('Match loaded for printable scorecard:', match);
-        console.log('Match scorecardId:', match.scorecardId);
-        console.log('Match scorecardId type:', typeof match.scorecardId);
+
         
         this.match = match;
         
@@ -91,8 +88,6 @@ export class PrintableScorecardComponent implements OnInit {
           finalScorecardId = scorecardId._id;
         }
         
-        console.log('Has scorecard:', hasScorecard);
-        console.log('Final scorecard ID:', finalScorecardId);
         
         if (!hasScorecard) {
           console.error('Match has no scorecardId:', match);
