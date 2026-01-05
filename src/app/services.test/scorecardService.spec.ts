@@ -6,8 +6,8 @@ import { AuthService } from '../services/authService';
 import { environment } from '../../environments/environment';
 
 const mockScorecards: Scorecard[] = [
-  { _id: 'sc1', name: 'Front Nine', par: 36, author: { id: 'u1', email: 'u1@example.com', name: 'User One' } },
-  { _id: 'sc2', name: 'Back Nine', par: 36, author: { id: 'u2', email: 'u2@example.com', name: 'User Two' }  },
+  { _id: 'sc1', name: 'Front Nine', par: 36, author: { id: 'test-id', email: 'test@example.com', name: 'Test User' } },
+  { _id: 'sc2', name: 'Back Nine', par: 36, author: { id: 'test-id', email: 'test@example.com', name: 'Test User' }  },
 ];
 
 const mockToken = 'mock-jwt-token';
@@ -19,7 +19,7 @@ describe('ScorecardService', () => {
   let authService: jasmine.SpyObj<AuthService>;
 
   beforeEach(() => {
-    const authServiceSpy = jasmine.createSpyObj('AuthService', ['token']);
+    const authServiceSpy = jasmine.createSpyObj('AuthService', ['token', 'getAuthorObject']);
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -32,6 +32,7 @@ describe('ScorecardService', () => {
     service = TestBed.inject(ScorecardService);
     httpMock = TestBed.inject(HttpTestingController);
     authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
+    authService.getAuthorObject.and.returnValue({ id: 'test-id', email: 'test@example.com', name: 'Test User' });
   });
 
   afterEach(() => {
@@ -81,7 +82,7 @@ describe('ScorecardService', () => {
   describe('create', () => {
     it('should create a scorecard with auth header', () => {
       authService.token.and.returnValue(mockToken);
-      const newScorecard: Scorecard = { name: 'Full Course', par: 72, author: { id: 'u3', email: 'u3@example.com', name: 'User Three' } };
+      const newScorecard: Scorecard = { name: 'Full Course', par: 72, author: { id: 'test-id', email: 'test@example.com', name: 'Test User' } };
 
       service.create(newScorecard).subscribe((res) => {
         expect(res.scorecard).toEqual({ ...newScorecard, _id: 'sc3' });
@@ -96,7 +97,7 @@ describe('ScorecardService', () => {
 
     it('should handle 409 conflict on create', () => {
       authService.token.and.returnValue(mockToken);
-      const dup: Scorecard = { name: 'Front Nine', author: { id: 'u1', email: 'u1@example.com', name: 'User One' } };
+      const dup: Scorecard = { name: 'Front Nine', author: { id: 'test-id', email: 'test@example.com', name: 'Test User' } };
 
       service.create(dup).subscribe({
         next: () => fail('should have failed with 409'),
@@ -169,11 +170,14 @@ describe('ScorecardService', () => {
     it('should delete scorecard with auth header', () => {
       authService.token.and.returnValue(mockToken);
 
-      service.delete('sc1').subscribe((res) => {
+      service.delete('sc1', 'Test Scorecard', 'Tester').subscribe((res) => {
         expect(res.success).toBeTruthy();
       });
 
-      const req = httpMock.expectOne(`${baseUrl}/sc1`);
+      // The actual request includes query params for name and author
+      const req = httpMock.expectOne(
+        `${baseUrl}/sc1?name=${encodeURIComponent('Test Scorecard')}&author=${encodeURIComponent('Tester')}`
+      );
       expect(req.request.method).toBe('DELETE');
       expect(req.request.headers.get('Authorization')).toBe(`Bearer ${mockToken}`);
       req.flush({ success: true });
@@ -182,12 +186,14 @@ describe('ScorecardService', () => {
     it('should handle server error on delete', () => {
       authService.token.and.returnValue(mockToken);
 
-      service.delete('sc1').subscribe({
+      service.delete('sc1', 'Test Scorecard', 'Tester').subscribe({
         next: () => fail('should have failed with 500'),
         error: (err) => expect(err.message).toContain('Server error')
       });
 
-      const req = httpMock.expectOne(`${baseUrl}/sc1`);
+      const req = httpMock.expectOne(
+        `${baseUrl}/sc1?name=${encodeURIComponent('Test Scorecard')}&author=${encodeURIComponent('Tester')}`
+      );
       req.flush('Server error', { status: 500, statusText: 'Internal Server Error' });
     });
   });

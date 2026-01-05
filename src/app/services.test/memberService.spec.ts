@@ -35,7 +35,7 @@ describe('MemberService', () => {
   let authService: jasmine.SpyObj<AuthService>;
 
   beforeEach(() => {
-    const authServiceSpy = jasmine.createSpyObj('AuthService', ['token']);
+    const authServiceSpy = jasmine.createSpyObj('AuthService', ['token', 'getAuthorObject']);
 
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
@@ -44,6 +44,7 @@ describe('MemberService', () => {
     service = TestBed.inject(MemberService);
     httpMock = TestBed.inject(HttpTestingController);
     authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
+    authService.getAuthorObject.and.returnValue({ id: 'test-id', email: 'test@example.com', name: 'Test User' });
   });
 
   afterEach(() => {
@@ -121,7 +122,7 @@ describe('MemberService', () => {
         firstName: 'Alice',
         lastName: 'Brown',
         Email: 'alice@example.com',
-        author: { id: 'cce', email: 'cce@example.com', name: 'CCE' },
+        author: { id: 'test-id', email: 'test@example.com', name: 'Test User' },
         usgaIndex: 15,
         hidden: false,
       };
@@ -134,7 +135,8 @@ describe('MemberService', () => {
       expect(req.request.method).toBe('POST');
       expect(req.request.headers.get('Authorization')).toBe(`Bearer ${mockToken}`);
       expect(req.request.body).toEqual(newMember);
-      req.flush({ success: true, member: newMember });
+      // Match the service's expected response shape
+      req.flush({ success: true, memberWithAuthor: newMember });
     });
 
     it('should handle 409 conflict error when creating duplicate member', () => {

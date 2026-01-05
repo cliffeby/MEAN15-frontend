@@ -59,16 +59,16 @@ export class ScorecardService {
   /**
    * Deletes a scorecard by id, passing name and authorName as query params if provided.
    * Usage:
-   *   delete({ id: '123', name: 'foo', authorName: 'bar' })
+   *   delete('123', 'foo', 'bar')
    */
-  delete(params: { id: string; name?: string; authorName?: string }): Observable<any> {
-    if (!params.id) {
+  delete(id: string, name?: string, authorName?: string): Observable<any> {
+    if (!id) {
       throw new Error('Must provide id');
     }
-    let url = `${this.baseUrl}/${params.id}`;
+    let url = `${this.baseUrl}/${id}`;
     const query: string[] = [];
-    if (params.name) query.push(`name=${encodeURIComponent(params.name)}`);
-    if (params.authorName) query.push(`author=${encodeURIComponent(params.authorName)}`);
+    if (name) query.push(`name=${encodeURIComponent(name)}`);
+    if (authorName) query.push(`author=${encodeURIComponent(authorName)}`);
     if (query.length) {
       url += `?${query.join('&')}`;
     }

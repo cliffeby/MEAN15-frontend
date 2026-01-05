@@ -74,11 +74,11 @@ describe('ScorecardEffects', () => {
     scorecardService.delete.and.returnValue(of({ success: true }));
 
     effects.deleteScorecard$.subscribe(action => {
-      expect(action).toEqual(ScorecardActions.deleteScorecardSuccess({ id: 's1' }));
+      expect(action).toEqual(ScorecardActions.deleteScorecardSuccess({ id: 's1', name: 'Round 1', authorName: 'Tester' }));
       done();
     });
 
-    actions$.next(ScorecardActions.deleteScorecard({ id: 's1' }));
+    actions$.next(ScorecardActions.deleteScorecard({ id: 's1', name: 'Round 1', authorName: 'Tester'  }));
   });
 
   it('createScorecardSuccess$ shows snackbar and navigates', (done) => {

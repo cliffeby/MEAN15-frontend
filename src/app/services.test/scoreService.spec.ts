@@ -21,7 +21,7 @@ const mockScores: Score[] = [
     handicap: 10,
     usgaIndex: 12.5,
     scoringMethod: 'byHole',
-    author: { id: 'u1', email: 'u1@email.com', name: 'u1' },
+    author: { id: 'test-id', email: 'test@example.com', name: 'Test User' },
   },
   {
     _id: 's2',
@@ -34,7 +34,7 @@ const mockScores: Score[] = [
     handicap: 10,
     usgaIndex: 12.5,
     scoringMethod: 'byHole',
-    author: { id: 'u1', email: 'u1@email.com', name: 'u1' },
+    author: { id: 'test-id', email: 'test@example.com', name: 'Test User' },
   },
 ];
 
@@ -44,7 +44,7 @@ describe('ScoreService', () => {
   let authService: jasmine.SpyObj<AuthService>;
 
   beforeEach(() => {
-    const authSpy = jasmine.createSpyObj('AuthService', ['token', 'getAuthorName']);
+    const authSpy = jasmine.createSpyObj('AuthService', ['token', 'getAuthorName', 'getAuthorObject']);
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [ScoreService, { provide: AuthService, useValue: authSpy }],
@@ -53,6 +53,7 @@ describe('ScoreService', () => {
     service = TestBed.inject(ScoreService);
     httpMock = TestBed.inject(HttpTestingController);
     authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
+    authService.getAuthorObject.and.returnValue({ id: 'test-id', email: 'test@example.com', name: 'Test User' });
   });
 
   afterEach(() => httpMock.verify());
@@ -214,11 +215,12 @@ describe('ScoreService', () => {
       const req1 = httpMock.expectOne(baseUrl);
       req1.flush({ success: true, count: 2, scores: mockScores });
 
-      service.delete('s1', 'a1').subscribe((res) => {
+      // Only name param is sent in this test, so expect only name in query
+      service.delete({ id: 's1', name: 'a1' }).subscribe((res) => {
         expect(res.success).toBeTruthy();
       });
 
-      const req2 = httpMock.expectOne(`${baseUrl}/s1?name=a1&authorName=Test%20User`);
+      const req2 = httpMock.expectOne(`${baseUrl}/s1?name=a1`);
       expect(req2.request.method).toBe('DELETE');
       req2.flush({ success: true });
 
@@ -231,7 +233,7 @@ describe('ScoreService', () => {
     it('handles error on delete', () => {
       authService.token.and.returnValue(mockToken);
 
-      service.delete('s1', 'a1').subscribe({
+      service.delete({ id: 's1', name: 'a1' }).subscribe({
         next: () => fail('should have failed with 500'),
         error: (err) => expect(err.message).toContain('Server error'),
       });

@@ -45,7 +45,7 @@ describe('MemberListComponent', () => {
       'delete',
       'removeDuplicateEmails',
     ]);
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['hasRole', 'hasMinRole', 'getRoles', 'getAuthorName', 'getAuthorEmail'], { 
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['hasRole', 'hasMinRole', 'getRoles', 'getAuthorName', 'getAuthorEmail', 'getAuthorObject'], { 
       role: 'admin'
     });
     authServiceSpy.hasRole.and.returnValue(true);
@@ -53,6 +53,7 @@ describe('MemberListComponent', () => {
     authServiceSpy.getRoles.and.returnValue(['admin']);
     authServiceSpy.getAuthorName.and.returnValue('Test User');
     authServiceSpy.getAuthorEmail.and.returnValue('test@example.com');
+    authServiceSpy.getAuthorObject.and.returnValue({ id: '123', email: 'test@example.com', name: 'Test User' });
     confirmDialogSpy = jasmine.createSpyObj('ConfirmDialogService', [
       'confirmDelete',
       'confirmAction',

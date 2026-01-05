@@ -56,7 +56,7 @@ describe('scorecardReducer', () => {
 
   it('should remove a scorecard on deleteScorecardSuccess', () => {
     const withScorecard = scorecardReducer(initialState, ScorecardActions.createScorecardSuccess({ scorecard: mockScorecard }));
-    const state = scorecardReducer(withScorecard, ScorecardActions.deleteScorecardSuccess({ id: '1' }));
+    const state = scorecardReducer(withScorecard, ScorecardActions.deleteScorecardSuccess({ id: '1', name: 'Test Scorecard', authorName: 'Tester' }));
     expect(state.entities['1']).toBeUndefined();
   });
 
