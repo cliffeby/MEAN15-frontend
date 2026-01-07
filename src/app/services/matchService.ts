@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, shareReplay, tap, retryWhen, delay, take } from 'rxjs/operators';
+import { HttpParams } from '@angular/common/http';
 import { AuthService } from './authService';
 import { ApiService } from './apiService';
 import { Match } from '../models/match';
@@ -124,7 +125,8 @@ export class MatchService {
   delete(params: { id: string; name?: string; authorName?: string }): Observable<any> {
     if (!params?.id) throw new Error('Must provide id');
     const url = `${this.baseUrl}/${params.id}`;
-    return this.api.deleteResource(url, { name: params.name, authorName: params.authorName }).pipe(
+    const options: any = this.getHeaders();
+    return this.http.delete(url, options).pipe(
       tap(() => this.clearCache()), // Clear cache when deleting
       catchError(this.handleError)
     );
@@ -136,7 +138,9 @@ export class MatchService {
   ): Observable<any> {
     if (!params?.id) throw new Error('Must provide id');
     const url = `${this.baseUrl}/${params.id}`;
-    return this.api.deleteResourceWithAction(url, action, { name: params.name, authorName: params.authorName }).pipe(
+    const paramsObj = new HttpParams().set('force', 'true').set('action', action);
+    const options: any = { ...this.getHeaders(), params: paramsObj };
+    return this.http.delete(url, options).pipe(
       tap(() => this.clearCache()),
       catchError(this.handleError)
     );

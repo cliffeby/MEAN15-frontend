@@ -195,7 +195,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
     try {
       // Load match data
       const matchResponse = await lastValueFrom(this.matchService.getById(id));
-      const match = matchResponse?.match || matchResponse;
+       const match = matchResponse?.match || matchResponse;
 
       if (!match) {
         this.snackBar.open('Match not found', 'Close', { duration: 3000 });
@@ -256,8 +256,8 @@ export class MatchListComponent implements OnInit, OnDestroy {
 
       // Convert to interface types expected by the service
       const matchData: MatchData = {
-        _id: match._id!,
-        description: match.name || 'Golf Match',
+         _id: match._id!,
+         description: match.name || 'Golf Match',
         course: { name: finalScorecard.name || 'Golf Course' },
         teeTime: match.datePlayed || new Date().toISOString(),
         members: players.map((p) => p.member._id!),

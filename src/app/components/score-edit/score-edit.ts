@@ -79,7 +79,7 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private scoreService: ScoreService,
-    private userService: UserService,
+    // private userService: UserService,
     private matchService: MatchService,
     private snackBar: MatSnackBar,
     private store: Store
@@ -158,14 +158,23 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
       if (matchId) {
         this.matchService.getById(matchId).subscribe({
           next: (match) => {
-            this.matchStatus = match.status;
-            this.matchName = match.name || 'Unknown Match';
-            this.isMatchCompleted = match.status === 'completed';
-            // Disable form if match is completed
-            if (this.isMatchCompleted) {
-              this.scoreForm.disable();
-            }
-          },
+                this.matchStatus = match?.status;
+                const resolvedName = match?.name || match?.match?.name || match?.data?.name || match?.data?.match?.name;
+                this.matchName = resolvedName || 'Unknown Match';
+              this.isMatchCompleted = match?.status === 'completed';
+              // Disable form if match is completed
+              // console.log('Match:', match);
+              // Ensure the form display field is updated once the match loads
+              try {
+                this.scoreForm.patchValue({ matchName: this.matchName });
+              } catch (e) {
+                // patchValue can throw if form has been destroyed or invalid; guard and continue
+                console.warn('Unable to patch matchName on form:', e);
+              }
+              if (this.isMatchCompleted) {
+                this.scoreForm.disable();
+              }
+            },
           error: (err) => {
             console.error('Error loading match:', err);
             this.matchStatus = 'unknown';
