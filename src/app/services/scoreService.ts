@@ -150,4 +150,19 @@ export class ScoreService {
       );
     }
   }
+  /**
+   * Delete all scores for a given match
+   * @param matchId The match ID
+   */
+  deleteScoresByMatch(matchId: string): Observable<any> {
+    if (!matchId) {
+      throw new Error('Must provide matchId');
+    }
+    const url = `${this.baseUrl}/match/${matchId}`;
+    return this.http.delete(url, this.getHeaders())
+      .pipe(
+        tap(() => this.clearCache()),
+        catchError(this.handleError)
+      );
+  }
 }

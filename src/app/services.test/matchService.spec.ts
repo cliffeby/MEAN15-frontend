@@ -265,7 +265,7 @@ describe('MatchService', () => {
       const req1 = httpMock.expectOne(baseUrl);
       req1.flush({ success: true, count: 2, matches: mockMatches });
 
-      service.delete('m1').subscribe((res) => expect(res.success).toBeTruthy());
+      service.delete({ id: 'm1' }).subscribe((res) => expect(res.success).toBeTruthy());
       const req2 = httpMock.expectOne(`${baseUrl}/m1`);
       expect(req2.request.method).toBe('DELETE');
       expect(req2.request.headers.get('Authorization')).toBe(`Bearer ${mockToken}`);
@@ -280,7 +280,7 @@ describe('MatchService', () => {
     it('handles 403 when deleting', () => {
       authService.token.and.returnValue(mockToken);
 
-      service.delete('m1').subscribe({
+      service.delete({ id: 'm1' }).subscribe({
         next: () => fail('should have failed'),
         error: (err) => expect(err.message).toContain('Server error')
       });
@@ -291,15 +291,16 @@ describe('MatchService', () => {
   });
 
   describe('deleteWithAction', () => {
-    it('sends action in body and respects auth header', () => {
+    it('sends action as query param and respects auth header', () => {
       authService.token.and.returnValue(mockToken);
 
-      service.deleteWithAction('m1', 'nullify').subscribe((res) => expect(res.success).toBeTruthy());
+      service.deleteWithAction({ id: 'm1' }, 'nullify').subscribe((res) => expect(res.success).toBeTruthy());
 
-      const req = httpMock.expectOne(`${baseUrl}/m1`);
+      const req = httpMock.expectOne(`${baseUrl}/m1?force=true&action=nullify`);
       expect(req.request.method).toBe('DELETE');
       expect(req.request.headers.get('Authorization')).toBe(`Bearer ${mockToken}`);
-      expect(req.request.body).toEqual({ action: 'nullify' });
+      // body should be empty since action is sent as query param
+      expect(req.request.body).toBeNull();
       req.flush({ success: true });
     });
   });

@@ -1,0 +1,64 @@
+<div class="conflict-dialog">
+  <h2 mat-dialog-title class="dialog-title">
+    <mat-icon class="warning-icon">warning</mat-icon>
+    {{ data.title }}
+  </h2>
+  
+  <mat-dialog-content class="dialog-content">
+    <p class="conflict-message">{{ data.message }}</p>
+    
+    <div class="conflict-details">
+      <h3>Conflict Details</h3>
+      <p>
+        <strong>Type:</strong> {{ data.conflictDetails.conflictType | titlecase }}
+        <br>
+        <strong>Count:</strong> {{ data.conflictDetails.conflictCount }} 
+        {{ data.conflictDetails.conflictType }} would be affected
+      </p>
+      
+      <div *ngIf="data.conflictDetails.scores?.length" class="affected-items">
+        <h4>Affected Scores:</h4>
+        <ul class="score-list">
+          <li *ngFor="let score of data.conflictDetails.scores" class="score-item">
+            <strong>{{ score.name }}</strong>
+            <span class="score-details">
+              ({{ score.datePlayed | date:'shortDate' }}, Score: {{ score.score }})
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="options-section">
+      <h3>How would you like to proceed?</h3>
+      <div class="options">
+        <mat-card class="option-card nullify-option" (click)="selectAction('nullify')">
+          <mat-card-header>
+            <mat-icon mat-card-avatar>link_off</mat-icon>
+            <mat-card-title>Remove References</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            {{ data.conflictDetails.options.nullify }}
+          </mat-card-content>
+        </mat-card>
+        
+        <mat-card class="option-card delete-option" (click)="selectAction('delete')">
+          <mat-card-header>
+            <mat-icon mat-card-avatar>delete_forever</mat-icon>
+            <mat-card-title>Delete All</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            {{ data.conflictDetails.options.delete }}
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </mat-dialog-content>
+  
+  <mat-dialog-actions align="end" class="dialog-actions">
+    <button mat-button (click)="selectAction('cancel')">
+      <mat-icon>cancel</mat-icon>
+      Cancel
+    </button>
+  </mat-dialog-actions>
+</div>

@@ -7,6 +7,7 @@ import { MatchService } from '../../services/matchService';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { ScoreService } from '../../services/scoreService';
 import * as MatchActions from '../actions/match.actions';
 
 describe('MatchEffects', () => {
@@ -16,6 +17,7 @@ describe('MatchEffects', () => {
   let snackBar: jasmine.SpyObj<MatSnackBar>;
   let router: jasmine.SpyObj<Router>;
   let confirmDialog: jasmine.SpyObj<ConfirmDialogService>;
+  let scoreService: jasmine.SpyObj<ScoreService>;
 
   const mockMatches = [{ _id: 'm1', name: 'A', user: 'u1', status: 'active' }, 
     { _id: 'm2', name: 'B', user: 'u2', status: 'inactive' }];
@@ -30,6 +32,7 @@ describe('MatchEffects', () => {
     snackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
     router = jasmine.createSpyObj('Router', ['navigate']);
     confirmDialog = jasmine.createSpyObj('ConfirmDialogService', ['resolveConflict']);
+    scoreService = jasmine.createSpyObj('ScoreService', ['deleteScoresByMatch']);
 
     TestBed.configureTestingModule({
       providers: [
@@ -39,12 +42,31 @@ describe('MatchEffects', () => {
         { provide: MatSnackBar, useValue: snackBar },
         { provide: Router, useValue: router },
         { provide: ConfirmDialogService, useValue: confirmDialog },
-        { provide: AuthService, useValue: auth }
+        { provide: AuthService, useValue: auth },
+        { provide: ScoreService, useValue: scoreService }
       ]
     });
 
     effects = TestBed.inject(MatchEffects);
     matchService = TestBed.inject(MatchService) as jasmine.SpyObj<MatchService>;
+    scoreService = TestBed.inject(ScoreService) as jasmine.SpyObj<ScoreService>;
+  });
+
+  it('deleteMatchWithAction$ with action=delete first deletes scores then match', (done) => {
+    // Arrange: mock scoreService and matchService
+    scoreService.deleteScoresByMatch.and.returnValue(of({ success: true }));
+    matchService.deleteWithAction.and.returnValue(of({ success: true }));
+    // mock fetching match details so effect can include name and authorName
+    matchService.getById.and.returnValue(of({ match: { name: 'A', author: { name: 'Tester' } } }));
+
+    effects.deleteMatchWithAction$.subscribe(action => {
+      expect(scoreService.deleteScoresByMatch).toHaveBeenCalledWith('m1');
+      expect(matchService.deleteWithAction).toHaveBeenCalledWith({ id: 'm1', name: 'A', authorName: 'Tester' }, 'delete');
+      expect(action).toEqual(MatchActions.deleteMatchSuccess({ id: 'm1' }));
+      done();
+    });
+
+    actions$.next(MatchActions.deleteMatchWithAction({ id: 'm1', action: 'delete' }));
   });
 
   afterEach(() => {

@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import { Observable, throwError, BehaviorSubject } from 'rxjs';
 import { catchError, map, shareReplay, tap } from 'rxjs/operators';
 import { AuthService } from './authService';
+import { ApiService } from './apiService';
 import { Member } from '../models/member';
 import { environment } from '../../environments/environment';
 
@@ -10,6 +11,7 @@ import { environment } from '../../environments/environment';
 export class MemberService {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
+  private api = inject(ApiService);
   private baseUrl = `${environment.apiUrl}/members`;
 
   // Cache for members data
@@ -106,29 +108,19 @@ export class MemberService {
     if (!params.id) {
       throw new Error('Must provide id');
     }
-    let url = `${this.baseUrl}/${params.id}`;
-    const query: string[] = [];
-    if (params.name) query.push(`name=${encodeURIComponent(params.name)}`);
-    if (params.authorName) query.push(`author=${encodeURIComponent(params.authorName)}`);
-    if (query.length) {
-      url += `?${query.join('&')}`;
-    }
-    return this.http.delete(url, this.getHeaders()).pipe(
+    const url = `${this.baseUrl}/${params.id}`;
+    return this.api.deleteResource(url, { name: params.name, authorName: params.authorName }).pipe(
       tap(() => this.clearCache()), // Clear cache after deleting
       catchError(this.handleError)
     );
   }
 
   deleteWithAction(id: string, action: 'nullify' | 'delete'): Observable<any> {
-    return this.http
-      .delete(`${this.baseUrl}/${id}`, {
-        ...this.getHeaders(),
-        body: { force: true, action },
-      })
-      .pipe(
-        tap(() => this.clearCache()), // Clear cache after deleting
-        catchError(this.handleError)
-      );
+    const url = `${this.baseUrl}/${id}`;
+    return this.api.deleteResourceWithAction(url, action).pipe(
+      tap(() => this.clearCache()), // Clear cache after deleting
+      catchError(this.handleError)
+    );
   }
 
   removeDuplicateEmails(): Observable<any> {
