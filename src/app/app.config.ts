@@ -6,6 +6,7 @@ import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthExpiryInterceptor } from './interceptors/auth-expiry.interceptor';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDialogModule } from '@angular/material/dialog';
 import { matchReducer } from './store/reducers/match.reducer';
@@ -85,6 +86,12 @@ export const appConfig: ApplicationConfig = {
     {
       provide: HTTP_INTERCEPTORS,
       useClass: MsalInterceptor,
+      multi: true
+    }
+    ,
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthExpiryInterceptor,
       multi: true
     }
 ]
