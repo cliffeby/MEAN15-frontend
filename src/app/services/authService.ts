@@ -112,6 +112,15 @@ export class AuthService {
   logout() {
     this._tokenSignal.set(null);
     localStorage.removeItem('authToken');
+    try {
+      // Ensure MSAL session is cleared as well
+      if (this.msalService && this.msalService.instance.getAllAccounts().length > 0) {
+        // Use logoutRedirect to clear session and return to app's root
+        this.msalService.logoutRedirect();
+      }
+    } catch (e) {
+      console.warn('MSAL logout failed (ignored):', e);
+    }
   }
 
   isLoggedIn() {
