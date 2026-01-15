@@ -148,6 +148,33 @@
               </td>
             </ng-container>
 
+             <!-- New Column -->
+            <ng-container matColumnDef="winnerStatus">
+              <th mat-header-cell *matHeaderCellDef>Won</th>
+              <td mat-cell *matCellDef="let player; let i = index">
+                <div class="won-checkboxes tight-checkboxes">
+                  <mat-checkbox
+                    [checked]="player.wonIndo"
+                    [disabled]="isMatchCompleted"
+                    (change)="playerScores[i].wonIndo = $event.checked"
+                    class="tight-checkbox"
+                  >Indo</mat-checkbox>
+                  <mat-checkbox
+                    [checked]="player.wonTwoBall"
+                    [disabled]="isMatchCompleted"
+                    (change)="playerScores[i].wonTwoBall = $event.checked"
+                    class="tight-checkbox"
+                  >2Ball</mat-checkbox>
+                  <mat-checkbox
+                    [checked]="player.wonOneBall"
+                    [disabled]="isMatchCompleted"
+                    (change)="playerScores[i].wonOneBall = $event.checked"
+                    class="tight-checkbox"
+                  >1Ball</mat-checkbox>
+                </div>
+              </td>
+            </ng-container>
+
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
           </table>

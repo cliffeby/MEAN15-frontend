@@ -1,3 +1,19 @@
+// Tighter spacing and smaller font for stacked checkboxes in the 'Won' column
+.tight-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  padding: 0;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.tight-checkbox {
+  font-size: 12px !important;
+  height: 22px !important;
+  margin: 0 !important;
+  padding: 0 0 0 2px !important;
+}
 .simple-score-entry-container {
   padding: 15px;
   max-width: 100%;

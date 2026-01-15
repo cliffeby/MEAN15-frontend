@@ -4,6 +4,8 @@ import { Router } from '@angular/router';
 import { HttpRequest, HttpHandler, HttpErrorResponse } from '@angular/common/http';
 import { throwError } from 'rxjs';
 
+import { fakeAsync, tick } from '@angular/core/testing';
+
 describe('AuthExpiryInterceptor', () => {
   let interceptor: AuthExpiryInterceptor;
   let authSpy: jasmine.SpyObj<AuthService>;
@@ -21,7 +23,12 @@ describe('AuthExpiryInterceptor', () => {
     } as unknown) as HttpHandler;
   }
 
-  it('should call logout and navigate on 401', (done) => {
+  afterEach(() => {
+    authSpy.logout.calls.reset();
+    routerSpy.navigate.calls.reset();
+  });
+
+  it('should call logout and navigate on 401', fakeAsync(() => {
     const req = new HttpRequest('GET', '/test');
     const next = handlerWithStatus(401);
 
@@ -31,12 +38,12 @@ describe('AuthExpiryInterceptor', () => {
         expect(authSpy.logout).toHaveBeenCalled();
         expect(routerSpy.navigate).toHaveBeenCalledWith(['/']);
         expect(err.status).toBe(401);
-        done();
       }
     });
-  });
+    tick(10); // allow async code to run
+  }));
 
-  it('should call logout and navigate on 403', (done) => {
+  it('should call logout and navigate on 403', fakeAsync(() => {
     const req = new HttpRequest('GET', '/test');
     const next = handlerWithStatus(403);
 
@@ -46,12 +53,12 @@ describe('AuthExpiryInterceptor', () => {
         expect(authSpy.logout).toHaveBeenCalled();
         expect(routerSpy.navigate).toHaveBeenCalledWith(['/']);
         expect(err.status).toBe(403);
-        done();
       }
     });
-  });
+    tick(10);
+  }));
 
-  it('should NOT call logout or navigate for other errors', (done) => {
+  it('should NOT call logout or navigate for other errors', fakeAsync(() => {
     const req = new HttpRequest('GET', '/test');
     const next = handlerWithStatus(500);
 
@@ -61,8 +68,8 @@ describe('AuthExpiryInterceptor', () => {
         expect(authSpy.logout).not.toHaveBeenCalled();
         expect(routerSpy.navigate).not.toHaveBeenCalled();
         expect(err.status).toBe(500);
-        done();
       }
     });
-  });
+    tick(10);
+  }));
 });

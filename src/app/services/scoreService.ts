@@ -58,20 +58,20 @@ export class ScoreService {
 
   getAll(): Observable<any> {
     const now = Date.now();
-    
     // Return cached data if it's still valid
     if (this.scoresCache$ && (now - this.cacheTimestamp) < this.CACHE_DURATION) {
       return this.scoresCache$;
     }
-    
     // Make fresh request and cache it
     this.scoresCache$ = this.http.get(this.baseUrl, this.getHeaders())
       .pipe(
-        tap(() => this.cacheTimestamp = now), // Update cache timestamp
+        tap((resp) => {
+          this.cacheTimestamp = now;
+          console.log('ScoreService.getAll() raw response:', resp);
+        }),
         shareReplay(1), // Share the result with multiple subscribers
         catchError(this.handleError)
       );
-    
     return this.scoresCache$;
   }
 

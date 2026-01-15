@@ -12,6 +12,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTableModule } from '@angular/material/table';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { forkJoin, of } from 'rxjs';
 
 import { MatchService } from '../../services/matchService';
@@ -30,6 +31,9 @@ interface SimplePlayerScore {
   differential: number | null;
   handicap: number;
   netScore: number;
+  wonIndo: boolean;
+  wonOneBall: boolean;
+  wonTwoBall: boolean;
   existingScoreId?: string;
 }
 
@@ -48,7 +52,8 @@ interface SimplePlayerScore {
     MatProgressSpinnerModule,
     MatDividerModule,
     MatChipsModule,
-    MatTableModule
+    MatTableModule,
+    MatCheckboxModule
   ],
   templateUrl: './simple-score-entry.html',
   styleUrls: ['./simple-score-entry.scss']
@@ -76,7 +81,7 @@ export class SimpleScoreEntryComponent implements OnInit {
   entryMode: 'totalScore' | 'differential' = 'totalScore';
   hasScoresRecordedByHole = false;
 
-  displayedColumns: string[] = ['player', 'handicap', 'totalScore', 'netScore'];
+  displayedColumns: string[] = ['player', 'handicap', 'totalScore', 'netScore','winnerStatus'];
 
   ngOnInit(): void {
     this.matchId = this.route.snapshot.params['id'];
@@ -196,7 +201,10 @@ export class SimpleScoreEntryComponent implements OnInit {
       totalScore: null,
       differential: null,
       handicap: member.usgaIndex || 0,
-      netScore: 0
+      netScore: 0,
+      wonIndo: false,
+      wonOneBall: false,
+      wonTwoBall: false
     }));
 
     const playersFormArray = this.fb.array(
@@ -248,16 +256,21 @@ export class SimpleScoreEntryComponent implements OnInit {
             const totalScore = score.score || score.postedScore;
             this.playerScores[playerIndex].totalScore = totalScore;
             this.playerScores[playerIndex].existingScoreId = score._id;
-            
+
+            // Set win booleans from backend data if present
+            this.playerScores[playerIndex].wonIndo = typeof score.wonIndo === 'boolean' ? score.wonIndo : false;
+            this.playerScores[playerIndex].wonOneBall = typeof score.wonOneBall === 'boolean' ? score.wonOneBall : false;
+            this.playerScores[playerIndex].wonTwoBall = typeof score.wonTwoBall === 'boolean' ? score.wonTwoBall : false;
+
             // Calculate differential from total score (reverse calculation)
             const coursePar = this.getCoursePar();
             const courseRating = this.scorecard?.rating || coursePar;
             this.playerScores[playerIndex].differential = totalScore - courseRating;
-            
+
             const playerFormGroup = this.getPlayerFormGroup(playerIndex);
             playerFormGroup.get('totalScore')?.setValue(totalScore);
             playerFormGroup.get('differential')?.setValue(this.playerScores[playerIndex].differential);
-            
+
             this.calculateNetScore(playerIndex);
           }
         });
@@ -396,7 +409,10 @@ export class SimpleScoreEntryComponent implements OnInit {
       scName: this.scorecard?.name,
       datePlayed: this.match?.datePlayed,
       author: this.authService.getAuthorObject(),
-      isScored: true
+      isScored: true,
+      wonIndo: playerScore.wonIndo,
+      wonOneBall: playerScore.wonOneBall,
+      wonTwoBall: playerScore.wonTwoBall  
     };
 
     await this.scoreService.savePlayerScore(scoreData, playerScore.existingScoreId);

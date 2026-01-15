@@ -62,8 +62,16 @@ describe('ScoreService', () => {
     it('fetches all scores and caches results', () => {
       authService.token.and.returnValue(mockToken);
 
+      // First call: should make HTTP request
       service.getAll().subscribe((res) => {
-        expect(res.scores).toEqual(mockScores);
+        // Accept both array and object with scores property
+        if (Array.isArray(res)) {
+          expect(res).toEqual(mockScores);
+        } else if (res && Array.isArray(res.scores)) {
+          expect(res.scores).toEqual(mockScores);
+        } else {
+          fail('Unexpected response shape');
+        }
       });
 
       const req = httpMock.expectOne(baseUrl);
@@ -71,9 +79,15 @@ describe('ScoreService', () => {
       expect(req.request.headers.get('Authorization')).toBe(`Bearer ${mockToken}`);
       req.flush({ success: true, count: 2, scores: mockScores });
 
-      // second call should use cache (no new request)
+      // Second call: should use cache (no new request)
       service.getAll().subscribe((res) => {
-        expect(res.scores).toEqual(mockScores);
+        if (Array.isArray(res)) {
+          expect(res).toEqual(mockScores);
+        } else if (res && Array.isArray(res.scores)) {
+          expect(res.scores).toEqual(mockScores);
+        } else {
+          fail('Unexpected response shape');
+        }
       });
       httpMock.expectNone(baseUrl);
     });

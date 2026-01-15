@@ -1,3 +1,4 @@
+
 import { Component, inject, signal, computed, OnInit, AfterViewInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -34,7 +35,7 @@ import { ScoreWithMember, FrequentPlayer } from './dashboard.types';
 })
 export class Dashboard implements OnInit, AfterViewInit {
   private router = inject(Router);
-  public auth = inject(AuthService);
+  auth = inject(AuthService);
   private snackBar = inject(MatSnackBar);
   private statsService = inject(DashboardStatsService);
   private dataService = inject(DashboardDataService);
@@ -59,6 +60,45 @@ export class Dashboard implements OnInit, AfterViewInit {
   lowestNetScore = this.statsService.calculateLowestNetScore(this.allScores, this.allMembers);
   highestNetScore = this.statsService.calculateHighestNetScore(this.allScores, this.allMembers);
   topFrequentPlayers = this.statsService.calculateTopFrequentPlayers(this.allScores, this.allMembers, this.currentDate);
+
+  // Top 5 winners by sum of indo, 1 ball, and 2 ball wins
+  topWinners = computed(() => {
+    const scoresArray = this.allScores();
+    const membersArray = this.allMembers();
+    // DEBUG: Log all scores and win fields
+    console.log('Dashboard: allScores', scoresArray);
+    if (scoresArray.length > 0) {
+      console.log('Dashboard: first 5 scores win fields:', scoresArray.slice(0, 5).map(s => ({
+        memberId: s.memberId,
+        wonIndo: s.wonIndo,
+        wonOneBall: s.wonOneBall,
+        wonTwoBall: s.wonTwoBall
+      })));
+    }
+    // Aggregate win counts per member
+    const winMap: Record<string, { memberName: string; totalWins: number }> = {};
+    for (const score of scoresArray) {
+      let memberId: string = '';
+      if (typeof score.memberId === 'object' && score.memberId !== null && '_id' in score.memberId) {
+        memberId = String(score.memberId._id);
+      } else {
+        memberId = String(score.memberId);
+      }
+      const member = membersArray.find(m => String(m._id) === memberId);
+      if (!member) continue;
+      const wins = (score.wonIndo ? 1 : 0) + (score.wonOneBall ? 1 : 0) + (score.wonTwoBall ? 1 : 0);
+      if (!winMap[memberId]) {
+        winMap[memberId] = { memberName: `${member.firstName} ${member.lastName}`, totalWins: 0 };
+      }
+      winMap[memberId].totalWins += wins;
+    }
+    const sorted = Object.values(winMap)
+      .sort((a, b) => b.totalWins - a.totalWins)
+      .slice(0, 5);
+    // DEBUG: Log computed winners
+    console.log('Dashboard: topWinners', sorted);
+    return sorted;
+  });
 
   // Update the currentTheme property to use the uiConfig computed property
   currentTheme = this.configService.uiConfig().theme;

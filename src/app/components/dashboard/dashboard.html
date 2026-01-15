@@ -36,6 +36,7 @@
   <!-- Activity Section -->
   <section class="activity-section">
     <h2>Activity Summary</h2>
+    
     <div class="stats-grid">
       <mat-card class="stat-card">
         <mat-card-header>
@@ -96,6 +97,29 @@
           </ng-template>
         </mat-card-content>
       </mat-card>
+      <mat-card class="stat-card">
+      <mat-card-header>
+        <mat-icon class="stat-icon">money</mat-icon>
+        <mat-card-title>Top 5 Winners</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <table class="winner-table" style="width:100%">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Total Wins</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let winner of topWinners()">
+              <td>{{ winner.memberName }}</td>
+              <td>{{ winner.totalWins }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="topWinners().length === 0">No winners found.</div>
+      </mat-card-content>
+    </mat-card>
     </div>
   </section>
 
