@@ -29,7 +29,10 @@
 
     <ng-container matColumnDef="newHCap">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> New HCap </th>
-      <td mat-cell *matCellDef="let row"> {{ row.newHCap ?? '-' }} </td>
+      <td mat-cell *matCellDef="let row">
+        <span *ngIf="row.noScores || !row.newHCap" style="color: red; font-weight: bold;">{{ row.currentHCap ?? '-' }}</span>
+        <span *ngIf="!row.noScores && row.newHCap">{{ row.newHCap }}</span>
+      </td>
     </ng-container>
 
     <ng-container matColumnDef="datePlayed">

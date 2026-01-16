@@ -72,36 +72,82 @@ export class HcapListComponent implements OnInit {
             // Group by memberId
             const grouped: { [memberId: string]: HCap[] } = {};
             this.hcaps.forEach(h => {
-              if (!grouped[h.memberId]) grouped[h.memberId] = [];
-              grouped[h.memberId].push(h);
+              let memberKey: string | undefined;
+              if (typeof h.memberId === 'string') {
+                memberKey = h.memberId;
+              } else if (h.memberId && typeof h.memberId === 'object' && '_id' in h.memberId && typeof (h.memberId as any)._id === 'string') {
+                memberKey = (h.memberId as any)._id;
+              }
+              if (!memberKey) return;
+              if (!grouped[memberKey]) grouped[memberKey] = [];
+              grouped[memberKey].push(h);
             });
             // Compute and assign newHCap for each group
             Object.keys(grouped).forEach(memberId => {
               const records = grouped[memberId];
-              // Compute scoreDifferential using USGA formula for each record
-              const recordsForCalc = records.map(r => {
-                const scoreObj = scores.find(s => s._id === r.scoreId);
-                const score = r.postedScore;
-                const rating = scoreObj?.scRating;
-                const slope = scoreObj?.scSlope;
-                let handicapDifferential: number | undefined = r.handicapDifferential;
-                let scoreDifferential: number | undefined = undefined;
-                if (
-                  typeof score === 'number' &&
-                  typeof rating === 'number' &&
-                  typeof slope === 'number' &&
-                  slope > 0
-                ) {
-                  scoreDifferential = ((score - rating) * 113) / slope;
-                  handicapDifferential = parseFloat(scoreDifferential.toFixed(1));
-                }
-                console.log('Calculating for memberId', memberId, rating, 'slope', slope, 'handicapDifferential', handicapDifferential, 'scoreDifferential', scoreDifferential);
-                return { ...r, scoreDifferential };
+              // Sort records by datePlayed ascending (oldest first)
+              const sortedRecords = [...records].sort((a, b) => {
+                const dA = a.datePlayed ? new Date(a.datePlayed).getTime() : 0;
+                const dB = b.datePlayed ? new Date(b.datePlayed).getTime() : 0;
+                return dA - dB;
               });
-              const newHCap = this.handicapService.computeHandicap(recordsForCalc as any);
-              // Debug: log computed newHCap values
-              console.log('memberId', memberId, 'records', records, 'computed newHCap', newHCap);
-              records.forEach(r => (r.newHCap = newHCap));
+              // For each record, compute rolling handicap as of that date
+              sortedRecords.forEach((r, idx) => {
+                // For each record, build a list of all previous and current records (by date) for the current member
+                const currentDate = r.datePlayed ? new Date(r.datePlayed).getTime() : 0;
+                const recordsUpToNow = sortedRecords
+                  .filter(rec => {
+                    // Normalize memberId for rec
+                    let recMemberId: string | undefined;
+                    if (typeof rec.memberId === 'string') {
+                      recMemberId = rec.memberId;
+                    } else if (rec.memberId && typeof rec.memberId === 'object' && '_id' in rec.memberId && typeof (rec.memberId as any)._id === 'string') {
+                      recMemberId = (rec.memberId as any)._id;
+                    }
+                    // Only include records for this member and up to current date
+                    const recDate = rec.datePlayed ? new Date(rec.datePlayed).getTime() : 0;
+                    return recMemberId === memberId && recDate <= currentDate;
+                  })
+                  .map(rec => {
+                    // Debug: log all relevant values for scoreDifferential calculation
+                    const debugInfo: any = { scoreId: rec.scoreId };
+                    const scoreObj = scores.find(s => s._id === rec.scoreId);
+                    debugInfo.scoreObj = scoreObj;
+                    const score = rec.postedScore;
+                    debugInfo.score = score;
+                    const rating = scoreObj?.scRating;
+                    debugInfo.rating = rating;
+                    const slope = scoreObj?.scSlope;
+                    debugInfo.slope = slope;
+                    let scoreDifferential: number = 0;
+                    if (
+                      typeof score === 'number' &&
+                      typeof rating === 'number' &&
+                      typeof slope === 'number' &&
+                      slope > 0
+                    ) {
+                      scoreDifferential = parseFloat((((score - rating) * 113) / slope).toFixed(1));
+                    }
+                    debugInfo.scoreDifferential = scoreDifferential;
+                    console.log('HCap rolling debug:', debugInfo);
+                    return {
+                      ...rec,
+                      scoreDifferential,
+                      date: rec.datePlayed ? new Date(rec.datePlayed).toISOString() : undefined
+                    };
+                  });
+                // Debug: confirm all recordsUpToNow are for the current member
+                console.log('recordsUpToNow for memberId', memberId, ':', recordsUpToNow.map(r => r.memberId));
+                const hcapAsOfThis = this.handicapService.computeHandicap(recordsUpToNow);
+                // If member has no scores, use currentHCap and mark for red
+                if (recordsUpToNow.length === 1 && !recordsUpToNow[0].scoreId) {
+                  r.newHCap = recordsUpToNow[0].currentHCap?.toString() || '';
+                  r.noScores = true;
+                } else {
+                  r.newHCap = hcapAsOfThis;
+                  r.noScores = false;
+                }
+              });
             });
             this.applyFilter();
             this.loading = false;

@@ -18,7 +18,7 @@ export class HandicapService {
     if (!hcapRecords || hcapRecords.length === 0) return '';
     // Only use most recent 20 scores
     const sorted = [...hcapRecords]
-      .filter((r) => typeof r.scoreDifferential === 'number')
+      .filter((r) => typeof r.scoreDifferential === 'number' && r.scoreDifferential !== 0)
       .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
     const differentials = sorted.slice(0, 20).map((r) => r.scoreDifferential);
     const n = differentials.length;
@@ -40,6 +40,7 @@ export class HandicapService {
    * USGA table: how many differentials to use for n scores
    */
   numDifferentialsToUse(n: number): number {
+    // return n;  //Test line to be removed
     if (n < 3) return 1;
     if (n === 3) return 1;
     if (n === 4) return 1;

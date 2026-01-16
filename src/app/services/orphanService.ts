@@ -84,4 +84,32 @@ export class OrphanService {
       this.getHeaders()
     ).pipe(catchError(this.handleError));
   }
+
+  /**
+   * Finds HCap records that do not have a matching Score or Match record.
+   * @param hcaps Array of HCap records
+   * @param scores Array of Score records
+   * @param matches Array of Match records
+   * @returns Array of orphaned HCap records with reason
+   */
+  findOrphanedHcaps(hcaps: any[], scores: any[], matches: any[]): Array<{ hcap: any; reason: string }> {
+    const scoreIds = new Set(scores.map(s => s._id || s.scoreId));
+    const matchIds = new Set(matches.map(m => m._id));
+
+    return hcaps
+      .map(hcap => {
+        let reason = '';
+        if (hcap.scoreId && !scoreIds.has(hcap.scoreId)) {
+          reason = 'No matching Score record';
+        }
+        if (hcap.matchId && !matchIds.has(hcap.matchId)) {
+          reason = reason ? reason + ' and no matching Match record' : 'No matching Match record';
+        }
+        if (reason) {
+          return { hcap, reason };
+        }
+        return null;
+      })
+      .filter((x): x is { hcap: any; reason: string } => !!x);
+  }
 }

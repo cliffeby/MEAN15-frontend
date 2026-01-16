@@ -22,4 +22,5 @@ export interface HCap {
   };
   createdAt: Date;
   updatedAt: Date;
+  noScores?: boolean;
 }
