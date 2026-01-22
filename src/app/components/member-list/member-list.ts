@@ -380,10 +380,17 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
                 duration: 2500,
               });
             } else if (err.status === 409) {
-              console.log('Error details:', err.error.options);
-              this.snackBar.open('This member has score records and cannot be deleted.', 'Close', {
-                duration: 2500,
-              });
+              // Show details about associated records
+              const details = err.error?.details;
+              let msg = 'This member cannot be deleted due to existing associations.';
+              if (details) {
+                const parts = [];
+                if (details.scores?.length) parts.push(`${details.scores.length} score(s)`);
+                if (details.matches?.length) parts.push(`${details.matches.length} match(es)`);
+                if (details.hcaps?.length) parts.push(`${details.hcaps.length} hcap(s)`);
+                if (parts.length) msg += `\nAssociated: ${parts.join(', ')}`;
+              }
+              this.snackBar.open(msg, 'Close', { duration: 4000 });
             } else {
               this.snackBar.open('Error deleting member', 'Close', { duration: 2000 });
             }

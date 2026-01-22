@@ -1,3 +1,4 @@
+   
 <div class="orphan-management" *ngIf="isAdmin">
   <div class="header">
     <h2>Orphaned Records Management</h2>
@@ -10,6 +11,7 @@
   <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
 
   <div *ngIf="report && !loading" class="report-container">
+        <!-- Removed Flagged Orphaned Score and HCap Records sections -->
     <!-- Summary Cards -->
     <div class="summary-cards">
       <mat-card class="summary-card">
@@ -54,6 +56,16 @@
       </mat-card>
       <mat-card class="summary-card">
         <mat-card-header>
+          <mat-card-title>Intentional Orphans</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="stat-number">{{ report.summary.intentionalOrphans }}</div>
+          <div class="stat-description">Scores intentionally orphaned (removed from match)</div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="summary-card">
+        <mat-card-header>
           <mat-card-title>Other Orphans</mat-card-title>
         </mat-card-header>
         <mat-card-content>
@@ -67,10 +79,6 @@
         <mat-card class="orphans-card" *ngIf="hcapOrphans.length > 0">
           <mat-card-header>
             <mat-card-title>Orphaned HCap Records</mat-card-title>
-            <button mat-stroked-button color="warn" (click)="deleteAllHcapOrphans()" [disabled]="deletingHcapIds.size > 0">
-              <mat-icon>delete_forever</mat-icon>
-              Delete All
-            </button>
           </mat-card-header>
           <mat-card-content>
             <table class="orphans-table">
@@ -119,48 +127,7 @@
       </mat-card-content>
     </mat-card>
 
-    <!-- Cleanup Actions -->
-    <mat-card class="actions-card" *ngIf="report.summary.totalOrphans > 0">
-      <mat-card-header>
-        <mat-card-title>
-          <mat-icon>build</mat-icon>
-          Cleanup Actions
-        </mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <div class="action-description">
-          <p>Choose how to handle the {{ report.summary.totalOrphans }} orphaned records:</p>
-        </div>
-        
-        <div class="action-buttons">
-          <button mat-raised-button color="primary" 
-                  (click)="cleanupOrphans('nullify')" 
-                  [disabled]="cleanupLoading">
-            <mat-icon>link_off</mat-icon>
-            Nullify References
-            <span class="action-help">(Recommended - removes broken links)</span>
-          </button>
-
-          <button mat-stroked-button color="accent" 
-                  (click)="cleanupOrphans('preserve')" 
-                  [disabled]="cleanupLoading">
-            <mat-icon>archive</mat-icon>
-            Preserve for Review
-            <span class="action-help">(Keep for manual investigation)</span>
-          </button>
-
-          <button mat-raised-button color="warn" 
-                  (click)="cleanupOrphans('delete')" 
-                  [disabled]="cleanupLoading">
-            <mat-icon>delete_forever</mat-icon>
-            Delete Orphans
-            <span class="action-help">(Permanent removal - use with caution)</span>
-          </button>
-        </div>
-
-        <mat-progress-bar *ngIf="cleanupLoading" mode="indeterminate" class="cleanup-progress"></mat-progress-bar>
-      </mat-card-content>
-    </mat-card>
+    <!-- Cleanup Actions removed: backend not implemented -->
 
     <!-- No Orphans Message -->
     <mat-card class="no-orphans-card" *ngIf="report.summary.totalOrphans === 0">
@@ -173,6 +140,39 @@
       </mat-card-content>
     </mat-card>
   </div>
+
+   <!-- Intentional Orphans Table -->
+    <mat-card class="orphans-card" *ngIf="intentionalOrphans.length > 0">
+      <mat-card-header>
+        <mat-card-title>Intentional Orphaned Scores</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <table class="orphans-table">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Date Played</th>
+              <th>ScoreId</th>
+              <th>Reason</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let orphan of intentionalOrphans">
+              <td>{{ orphan.playerName || orphan.memberId || orphan.name }}</td>
+              <td>{{ orphan.datePlayed | date:'shortDate' }}</td>
+              <td>{{ orphan._id || orphan.id }}</td>
+              <td>Intentionally orphaned</td>
+              <td>
+                <button mat-icon-button color="warn" (click)="deleteIntentionalOrphan(orphan._id || orphan.id)" [disabled]="deletingIntentionalOrphanIds.has(orphan._id || orphan.id)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </mat-card-content>
+    </mat-card>
 
   <!-- Access Denied -->
   <div *ngIf="!isAdmin" class="access-denied">

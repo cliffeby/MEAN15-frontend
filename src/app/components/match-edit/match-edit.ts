@@ -14,7 +14,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { Store } from '@ngrx/store';
 import { Observable, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, take } from 'rxjs/operators';
 import { Scorecard } from '../../models/scorecard.interface';
 import { Match } from '../../models/match';
 import { Member } from '../../models/member';
@@ -22,6 +22,31 @@ import { MemberService } from '../../services/memberService';
 import { AuthService } from '../../services/authService';
 import { ScorecardService } from '../../services/scorecardService';
 import { MemberSelectionDialogComponent } from '../member-selection-dialog/member-selection-dialog';
+import { Component as NgComponent, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+@NgComponent({
+  selector: 'app-confirm-dialog',
+  standalone: true,
+  imports: [MatDialogModule],
+  template: `
+    <h2 mat-dialog-title>{{ data.title }}</h2>
+    <mat-dialog-content>
+      <p>{{ data.message }}</p>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button (click)="onCancel()">{{ data.cancelText || 'Cancel' }}</button>
+      <button mat-raised-button color="primary" (click)="onConfirm()">{{ data.confirmText || 'OK' }}</button>
+    </mat-dialog-actions>
+  `
+})
+export class ConfirmDialogComponent {
+  constructor(
+    public dialogRef: MatDialogRef<ConfirmDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {}
+  onConfirm(): void { this.dialogRef.close(true); }
+  onCancel(): void { this.dialogRef.close(false); }
+}
 import { MatchLineupComponent } from '../match-lineup/match-lineup';
 // import { ViewChild } from '@angular/core';
 import * as MatchActions from '../../store/actions/match.actions';
@@ -51,6 +76,7 @@ import { MATCH_STATUS_OPTIONS } from '../../models/match-status-options';
   ]
 })
 export class MatchEditComponent implements OnInit, OnDestroy {
+  isDeveloper: boolean = false;
   pairingMode = false;
     onPairingUpdated(event: { foursomeIdsTEMP: string[][], partnerIdsTEMP: string[][] }) {
       const foursomeArray = this.matchForm.get('foursomeIdsTEMP') as FormArray;
@@ -98,6 +124,8 @@ export class MatchEditComponent implements OnInit, OnDestroy {
     });
 
     this.loading$ = this.store.select(MatchSelectors.selectMatchesLoading);
+    // Determine if user is a developer
+    this.isDeveloper = this.authService.hasRole('developer');
     this.currentMatch$ = this.store.select(MatchSelectors.selectCurrentMatch);
     this.scorecards$ = this.store.select(ScorecardSelectors.selectAllScorecards);
     this.scorecardsLoading$ = this.store.select(ScorecardSelectors.selectScorecardsLoading);
@@ -266,20 +294,44 @@ export class MatchEditComponent implements OnInit, OnDestroy {
     if (this.matchForm.invalid || !this.matchId) return;
 
     const formValue = { ...this.matchForm.value };
-    // Convert date to ISO string if it's a Date object
     if (formValue.datePlayed instanceof Date) {
       formValue.datePlayed = formValue.datePlayed.toISOString();
     }
-
-    // Ensure foursomeIdsTEMP and partnerIdsTEMP are arrays of member IDs
     formValue.foursomeIdsTEMP = (this.matchForm.get('foursomeIdsTEMP') as FormArray).value;
     formValue.partnerIdsTEMP = (this.matchForm.get('partnerIdsTEMP') as FormArray).value;
 
-    // Dispatch the update action - effects will handle the API call and navigation
-    this.store.dispatch(MatchActions.updateMatch({
-      id: this.matchId,
-      match: formValue
-    }));
+    // Check for removed players
+    let removedPlayers: string[] = [];
+    if (this.matchId) {
+      this.currentMatch$.pipe(take(1)).subscribe(currentMatch => {
+        if (currentMatch && typeof currentMatch === 'object' && Array.isArray((currentMatch as any).lineUps)) {
+          const newLineUps = formValue.lineUps || [];
+          removedPlayers = (currentMatch as any).lineUps.filter((id: string) => !newLineUps.includes(id));
+        }
+        if (removedPlayers.length > 0) {
+          this.dialog.open(ConfirmDialogComponent, {
+            data: {
+              title: 'Players Removed',
+              message: `You are removing ${removedPlayers.length} player(s) from the match. Any existing Score or HCap records for these players will be flagged as orphaned. Continue?`,
+              confirmText: 'Continue',
+              cancelText: 'Cancel'
+            }
+          }).afterClosed().subscribe(confirmed => {
+            if (confirmed) {
+              this.store.dispatch(MatchActions.updateMatch({
+                id: this.matchId!,
+                match: formValue
+              }));
+            }
+          });
+        } else {
+          this.store.dispatch(MatchActions.updateMatch({
+            id: this.matchId!,
+            match: formValue
+          }));
+        }
+      });
+    }
   }
 
   compareScorecardsById(o1: any, o2: any): boolean {

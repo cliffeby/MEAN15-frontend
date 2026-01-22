@@ -12,18 +12,22 @@ export interface OrphanReport {
     memberOrphans: number;
     scorecardOrphans: number;
     userOrphans: number;
+    intentionalOrphans: number;
   };
   details: {
     matchOrphans: any[];
     memberOrphans: any[];
     scorecardOrphans: any[];
     userOrphans: any[];
+    intentionalOrphans: any[];
   };
   recommendations: Array<{
     type: string;
     message: string;
     severity: 'low' | 'medium' | 'high';
   }>;
+  flaggedOrphanScores?: any[];
+  flaggedOrphanHcaps?: any[];
 }
 
 export interface CleanupResult {
@@ -73,17 +77,7 @@ export class OrphanService {
       .pipe(catchError(this.handleError));
   }
 
-  /**
-   * Clean up orphaned records
-   * @param strategy 'delete' | 'nullify' | 'preserve'
-   */
-  cleanupOrphans(strategy: 'delete' | 'nullify' | 'preserve'): Observable<{ success: boolean; results: CleanupResult }> {
-    return this.http.post<{ success: boolean; results: CleanupResult }>(
-      `${this.baseUrl}/cleanup`, 
-      { strategy }, 
-      this.getHeaders()
-    ).pipe(catchError(this.handleError));
-  }
+  // cleanupOrphans removed: backend not implemented, UI removed
 
   /**
    * Finds HCap records that do not have a matching Score or Match record.
@@ -98,15 +92,10 @@ export class OrphanService {
 
     return hcaps
       .map(hcap => {
-        let reason = '';
-        if (hcap.scoreId && !scoreIds.has(hcap.scoreId)) {
-          reason = 'No matching Score record';
-        }
-        if (hcap.matchId && !matchIds.has(hcap.matchId)) {
-          reason = reason ? reason + ' and no matching Match record' : 'No matching Match record';
-        }
-        if (reason) {
-          return { hcap, reason };
+        const scoreMissing = !hcap.scoreId || !scoreIds.has(hcap.scoreId);
+        const matchMissing = !hcap.matchId || !matchIds.has(hcap.matchId);
+        if (scoreMissing && matchMissing) {
+          return { hcap, reason: 'No matching Score or Match record' };
         }
         return null;
       })

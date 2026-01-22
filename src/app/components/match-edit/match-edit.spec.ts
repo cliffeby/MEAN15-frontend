@@ -41,7 +41,8 @@ describe('MatchEditComponent', () => {
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
     dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
     memberServiceSpy = jasmine.createSpyObj('MemberService', ['getAll']);
-    authServiceSpy = jasmine.createSpyObj('AuthService', [], { author: { id: 'u1', email: 'test@example.com', name: 'Test User' } });
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['hasRole'], { author: { id: 'u1', email: 'test@example.com', name: 'Test User' } });
+    authServiceSpy.hasRole.and.returnValue(false); // Default to false, override in tests if needed
     authServiceSpy.getAuthorObject = jasmine.createSpy('getAuthorObject').and.returnValue({
       id: 'u1',
       email: 'test@example.com',

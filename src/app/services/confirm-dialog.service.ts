@@ -33,9 +33,13 @@ export class ConfirmDialogService {
    * @returns Observable<boolean>
    */
   confirmDelete(itemName: string, itemType: string): Observable<boolean> {
+    let message = `Are you sure you want to delete "${itemName}"? This action cannot be undone.`;
+    if (itemType === 'score') {
+      message += '\n\nWarning: The correct process is to remove the player from the match. Deleting a score directly may orphan related records.';
+    }
     return this.confirm({
       title: `Delete ${itemType}`,
-      message: `Are you sure you want to delete "${itemName}"? This action cannot be undone.`,
+      message,
       confirmText: 'Delete',
       cancelText: 'Cancel',
       icon: 'delete_forever',

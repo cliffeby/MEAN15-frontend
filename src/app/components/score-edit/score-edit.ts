@@ -153,7 +153,9 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
     this.authorName = score.author?.name || 'Unknown Author';
 
     // Check match status to determine if scores are locked
-    if (score.matchId) {
+    if (score.matchId === null || score.matchId === undefined || (typeof score.matchId === 'string' && !score.matchId) || (typeof score.matchId === 'object' && !score.matchId._id)) {
+      this.matchName = 'Orphaned Score';
+    } else {
       const matchId = typeof score.matchId === 'string' ? score.matchId : score.matchId._id;
       if (matchId) {
         this.matchService.getById(matchId).subscribe({
@@ -184,8 +186,6 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
       } else {
         this.matchName = 'Unknown Match';
       }
-    } else {
-      this.matchName = 'Unknown Match';
     }
 
     // Populate form with score data

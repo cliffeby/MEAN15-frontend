@@ -1,14 +1,18 @@
 <form [formGroup]="matchForm" (ngSubmit)="submit()" class="match-edit">
   <h2>Edit Match</h2>
   
-  <!-- Debug info - remove this after fixing -->
-  <div class="debug-info">
-    <strong>Debug Info:</strong><br>
-    Scorecards loaded: {{ scorecards.length }}<br>
-    <span *ngIf="scorecards.length === 0">
-      No scorecards found - check console for loading errors
-    </span>
-  </div>
+
+  <!-- Only developers can view unassigned scores -->
+  <ng-container *ngIf="isDeveloper">
+    <div class="debug-info">
+      <strong>Developer Debug Info:</strong><br>
+      Scorecards loaded: {{ scorecards.length }}<br>
+      <span *ngIf="scorecards.length === 0">
+        No scorecards found - check console for loading errors
+      </span>
+      <!-- Add any unassigned scores display here if needed -->
+    </div>
+  </ng-container>
 
   <mat-form-field appearance="fill">
     <mat-label>Match Name</mat-label>

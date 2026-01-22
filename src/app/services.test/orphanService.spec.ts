@@ -13,13 +13,15 @@ const mockReport: OrphanReport = {
     matchOrphans: 1,
     memberOrphans: 1,
     scorecardOrphans: 0,
-    userOrphans: 1
+    userOrphans: 1,
+    intentionalOrphans: 0
   },
   details: {
     matchOrphans: [{ id: 'm1' }],
     memberOrphans: [{ id: 'u2' }],
     scorecardOrphans: [],
-    userOrphans: [{ id: 'usr1' }]
+    userOrphans: [{ id: 'usr1' }],
+    intentionalOrphans: []
   },
   recommendations: [
     { type: 'delete', message: 'Remove orphaned matches', severity: 'medium' }
@@ -72,7 +74,7 @@ describe('OrphanService', () => {
 
       service.getOrphanReport().subscribe({
         next: () => fail('should have errored'),
-        error: (err) => expect(err.message).toContain('Server error')
+        error: (err: any) => expect(err.message).toContain('Server error')
       });
 
       const req = httpMock.expectOne(`${baseUrl}/report`);
@@ -111,32 +113,5 @@ describe('OrphanService', () => {
     });
   });
 
-  describe('cleanupOrphans', () => {
-    it('posts cleanup strategy and returns results', () => {
-      authService.token.and.returnValue(mockToken);
-
-      service.cleanupOrphans('delete').subscribe((res) => {
-        expect(res.results).toEqual(mockCleanup);
-      });
-
-      const req = httpMock.expectOne(`${baseUrl}/cleanup`);
-      expect(req.request.method).toBe('POST');
-      expect(req.request.headers.get('Authorization')).toBe(`Bearer ${mockToken}`);
-      expect(req.request.body).toEqual({ strategy: 'delete' });
-      req.flush({ success: true, results: mockCleanup });
-    });
-
-    it('handles validation error on cleanup', () => {
-      authService.token.and.returnValue(mockToken);
-
-      service.cleanupOrphans('preserve').subscribe({
-        next: () => fail('should have failed'),
-        error: (err) => expect(err.message).toContain('Server error')
-      });
-
-      const req = httpMock.expectOne(`${baseUrl}/cleanup`);
-      expect(req.request.method).toBe('POST');
-      req.flush('Bad Request', { status: 400, statusText: 'Bad Request' });
-    });
-  });
+  // Removed empty describe('cleanupOrphans') block
 });
