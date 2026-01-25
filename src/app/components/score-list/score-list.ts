@@ -73,8 +73,8 @@ export class ScoreListComponent implements OnInit {
   filteredGroupedByMember: GroupedByMember[] = [];
   memberSearchTerm = '';
   loading = false;
-  displayedColumns: string[] = ['name', 'score', 'postedScore', 'datePlayed', 'course', 'handicap', 'usgaIndex', 'method', 'actions'];
-  memberDisplayedColumns: string[] = ['match', 'score', 'postedScore', 'datePlayed', 'course', 'handicap', 'usgaIndex', 'method', 'actions'];
+  displayedColumns: string[] = ['name', 'score', 'postedScore', 'course', 'usgaIndex','handicap',  'method', 'actions'];
+  memberDisplayedColumns: string[] = ['match', 'score', 'postedScore', 'datePlayed', 'course', 'usgaIndex', 'handicap',  'method', 'actions'];
 
   constructor(
     private scoreService: ScoreService,
@@ -156,7 +156,7 @@ export class ScoreListComponent implements OnInit {
     });
 
     // Convert to GroupedScores array
-    const allGroups = Array.from(grouped.entries()).map(([matchId, scores]) => {
+    let allGroups = Array.from(grouped.entries()).map(([matchId, scores]) => {
       // Get match info from populated object or find in matches array
       const matchInfo = this.extractMatchInfo(scores[0]) || 
         this.matches.find(m => (m._id) === matchId);
@@ -188,6 +188,11 @@ export class ScoreListComponent implements OnInit {
         orphanType: isOrphaned ? 'match' : (hasOrphanedMembers ? 'member' : undefined) as 'match' | 'member' | 'scorecard' | 'user' | undefined
       };
     });
+
+    // Hide 'Unassigned Scores' group from non-developer users
+    if (!this.authService.hasRole('developer')) {
+      allGroups = allGroups.filter(group => group.matchName !== 'Unassigned Scores');
+    }
 
     // Sort groups by date (most recent first), but put orphaned groups at top
     allGroups.sort((a, b) => {

@@ -27,7 +27,7 @@
     <div><strong>USGA Index:</strong> <span>{{ scoreForm.get('usgaIndex')?.value }}</span></div>
     <div><strong>USGA Today:</strong> <span>{{ scoreForm.get('usgaIndexForTodaysScore')?.value }}</span></div>
       <div><strong>Match:</strong> <span>{{ matchName }}</span></div>
-      <div><strong>Match:</strong> <span>{{ scoreForm.get('matchName')?.value }}</span></div>
+      <div><strong>Tees:</strong> <span>{{ scoreForm.get('scName')?.value }}</span></div>
       <div><strong>Date Played:</strong> <span>{{ scoreForm.get('datePlayed')?.value | date:'mediumDate' }}</span></div>
     <div *ngIf="authorName"><strong>Author:</strong> <span>{{ authorName }}</span></div>
   </div>

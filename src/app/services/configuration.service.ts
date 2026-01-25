@@ -57,7 +57,13 @@ export class ConfigurationService {
   public config$ = this.configSubject.asObservable();
   
   // Signals for reactive access
-  private configSignal = signal<AppConfig>(this.configSubject.value);
+  private _configSignal = signal<AppConfig>(this.configSubject.value);
+  /**
+   * Public readonly accessor for configSignal (for use in other services)
+   */
+  public get configSignal() {
+    return this._configSignal;
+  }
   
   // Computed properties for easy access to sections
   public displayConfig = computed(() => this.configSignal().display);
@@ -222,7 +228,7 @@ export class ConfigurationService {
       section: 'scoring',
       options: [
         { value: 'usga', label: 'USGA System' },
-        { value: 'ega', label: 'EGA System' },
+        { value: 'roch', label: 'Roch System' },
         { value: 'custom', label: 'Custom Method' }
       ],
       defaultValue: 'usga'

@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { HCapService } from '../../services/hcapService';
 import { HandicapService } from '../../services/handicapService';
 import { ScoreService } from '../../services/scoreService';
+import { MemberService } from '../../services/memberService';
 import { HCap } from '../../models/hcap';
 import { Score } from '../../models/score';
 
@@ -47,12 +48,13 @@ export class HcapListComponent implements OnInit {
   pageSize = 20;
   pageIndex = 0;
 
-  displayedColumns: string[] = ['name', 'postedScore', 'currentHCap', 'newHCap', 'datePlayed', 'author'];
+  displayedColumns: string[] = ['name', 'postedScore', 'usgaIndex', 'currentHCap', 'newHCap', 'datePlayed', 'author'];
 
   constructor(
     private hcapService: HCapService,
     private handicapService: HandicapService,
     private scoreService: ScoreService,
+    private memberService: MemberService,
     private snackBar: MatSnackBar
   ) {}
 
@@ -146,6 +148,36 @@ export class HcapListComponent implements OnInit {
                 } else {
                   r.newHCap = hcapAsOfThis;
                   r.noScores = false;
+                }
+
+                // If newHCap is different from currentHCap, update member record
+                if (
+                  r.memberId &&
+                  r.newHCap &&
+                  r.currentHCap !== undefined &&
+                  r.newHCap !== '' &&
+                  parseFloat(r.newHCap) !== Number(r.currentHCap)
+                ) {
+                  // Always extract string ID
+                  let memberIdStr: string | undefined = undefined;
+                  if (typeof r.memberId === 'string') {
+                    memberIdStr = r.memberId;
+                  } else if (r.memberId && typeof r.memberId === 'object' && '_id' in r.memberId && typeof (r.memberId as any)._id === 'string') {
+                    memberIdStr = (r.memberId as any)._id;
+                  }
+                  if (memberIdStr) {
+                    this.memberService.update(memberIdStr, { handicap: parseFloat(r.newHCap) } as any).subscribe({
+                      next: () => {
+                        // r.currentHCap = parseFloat(r.newHCap);
+                        console.log(`Updated member ${memberIdStr} currentHCap to ${r.newHCap}`);
+                      },
+                      error: (err) => {
+                        console.error(`Failed to update member ${memberIdStr}:`, err);
+                      }
+                    });
+                  } else {
+                    console.error('Could not extract memberId string for update', r.memberId);
+                  }
                 }
               });
             });

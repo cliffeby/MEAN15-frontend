@@ -373,18 +373,13 @@ export class MatchListComponent implements OnInit, OnDestroy {
       });
   }
 
-  // private getCurrentUserEmail(): string {
-  //   const user = this.authService.user;
-  //   return user?.email || user?.name || 'unknown';
-  // }
-
   private async createHcapRecordsForMatch(matchId: string): Promise<any> {
     // Fetch scores for the match
     const resp: any = await lastValueFrom(this.scoreService.getScoresByMatch(matchId));
     const scores = resp?.scores || resp || [];
     // const currentUserEmail = await this.getCurrentUserEmail();
     const currentUser = this.authService.getAuthorObject();
-    const currentUserId = currentUser?.name || currentUser?.id || currentUser?.email || null;
+    // const currentUserId = currentUser?.name || currentUser?.id || currentUser?.email || null;
 // console.log('Current user for HCap creation:', currentUserId, currentUserEmail);
     // Filter players with postedScore > 50 (or score if postedScore missing)
     const eligible = scores.filter((s: any) => {

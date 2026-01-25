@@ -418,7 +418,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       frontNine: 0,
       backNine: 0,
       total: 0,
-      handicap: member.usgaIndex || 0,
+      handicap: member.usgaIndex || 0,   //TODO:  Calculate course handicap from index and course info
       netScore: 0
     }));
 

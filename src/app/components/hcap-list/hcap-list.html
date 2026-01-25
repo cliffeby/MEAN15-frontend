@@ -17,18 +17,24 @@
       <td mat-cell *matCellDef="let row"> {{ row.name || '-' }} </td>
     </ng-container>
 
+
     <ng-container matColumnDef="postedScore">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Posted </th>
       <td mat-cell *matCellDef="let row"> {{ row.postedScore ?? '-' }} </td>
     </ng-container>
 
+    <ng-container matColumnDef="usgaIndex">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> USGA<br>Index </th>
+      <td mat-cell *matCellDef="let row"> {{ row.usgaIndexForTodaysScore ?? '-' }} </td>
+    </ng-container>
+
     <ng-container matColumnDef="currentHCap">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> Current HCap </th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Current HCap<br>Index</th>
       <td mat-cell *matCellDef="let row"> {{ row.currentHCap ?? '-' }} </td>
     </ng-container>
 
     <ng-container matColumnDef="newHCap">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> New HCap </th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> New HCap<br>Index</th>
       <td mat-cell *matCellDef="let row">
         <span *ngIf="row.noScores || !row.newHCap" style="color: red; font-weight: bold;">{{ row.currentHCap ?? '-' }}</span>
         <span *ngIf="!row.noScores && row.newHCap">{{ row.newHCap }}</span>
