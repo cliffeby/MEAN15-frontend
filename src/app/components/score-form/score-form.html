@@ -47,7 +47,7 @@
       <mat-option value="">None</mat-option>
       @for (scorecard of scorecards$ | async; track scorecard._id) {
         <mat-option [value]="scorecard._id">
-          {{ scorecard.name || scorecard.groupName || 'Unnamed Scorecard' }}
+          {{ scorecard.name || scorecard.course || 'Unnamed Scorecard' }}
           @if (scorecard.rating || scorecard.slope) {
             <span class="scorecard-details">
               @if (scorecard.rating) { <span> - Rating: {{ scorecard.rating }}</span> }

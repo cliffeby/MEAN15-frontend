@@ -49,8 +49,9 @@ export class ScorecardFormComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar
   ) {
     this.scorecardForm = this.fb.group({
-      groupName: ['', [Validators.required, Validators.minLength(2)]],
-      name: ['', [Validators.required, Validators.minLength(2)]],
+      course: ['', [Validators.required, Validators.minLength(2)]],
+      tees: ['', [Validators.required, Validators.minLength(2)]],
+      teeAbreviation: [''],
       rating: [0, [Validators.required, Validators.min(50), Validators.max(85)]],
       slope: [0, [Validators.required, Validators.min(55), Validators.max(155)]],
       par: [0, [Validators.required, Validators.min(60), Validators.max(80)]],
@@ -84,8 +85,9 @@ export class ScorecardFormComponent implements OnInit, OnDestroy {
 
   populateForm(scorecard: Scorecard): void {
     this.scorecardForm.patchValue({
-      groupName: scorecard.groupName,
-      name: scorecard.name,
+      course: scorecard.course,
+      tees: scorecard.tees,
+      teeAbreviation: scorecard.teeAbreviation,
       rating: scorecard.rating,
       slope: scorecard.slope,
       par: scorecard.par,

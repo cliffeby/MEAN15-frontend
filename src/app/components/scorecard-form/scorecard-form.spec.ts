@@ -7,8 +7,8 @@ import { ActivatedRoute } from '@angular/router';
 
 const mockScorecard = {
   _id: '1',
-  groupName: 'Group 1',
-  name: 'Course 1',
+  course: 'Group 1',
+  tees: 'Course 1',
   rating: 72.5,
   slope: 130,
   par: 72,
@@ -57,12 +57,12 @@ describe('ScorecardFormComponent', () => {
     component.populateForm(mockScorecard);
     fixture.detectChanges();
     tick();
-    expect(component.scorecardForm.value.name).toBe('Course 1');
-    expect(component.scorecardForm.value.groupName).toBe('Group 1');
+    expect(component.scorecardForm.value.tees).toBe('Course 1');
+    expect(component.scorecardForm.value.course).toBe('Group 1');
   }));
 
   it('should not submit if form is invalid', () => {
-    component.scorecardForm.patchValue({ name: '', groupName: '' });
+    component.scorecardForm.patchValue({ tees: '', course: '' });
     component.onSubmit();
     expect(storeSpy.dispatch).not.toHaveBeenCalled();
   });
@@ -70,14 +70,14 @@ describe('ScorecardFormComponent', () => {
   it('should dispatch updateScorecard in edit mode', () => {
     component.isEditMode = true;
     component.scorecardId = '1';
-    component.scorecardForm.patchValue({ name: 'Course 1', groupName: 'Group 1', rating: 72.5, slope: 130, par: 72 });
+    component.scorecardForm.patchValue({ tees: 'Course 1', course: 'Group 1', rating: 72.5, slope: 130, par: 72 });
     component.onSubmit();
     expect(storeSpy.dispatch).toHaveBeenCalled();
   });
 
   it('should dispatch createScorecard in add mode', () => {
     component.isEditMode = false;
-    component.scorecardForm.patchValue({ name: 'Course 2', groupName: 'Group 2', rating: 70, slope: 120, par: 70 });
+    component.scorecardForm.patchValue({ tees: 'Course 2', course: 'Group 2', rating: 70, slope: 120, par: 70 });
     component.onSubmit();
     expect(storeSpy.dispatch).toHaveBeenCalled();
   });

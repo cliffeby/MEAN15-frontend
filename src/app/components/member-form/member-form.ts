@@ -1,12 +1,19 @@
-import { Component } from '@angular/core';
+
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormArray, FormControl } from '@angular/forms';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatSelectModule } from '@angular/material/select';
+import { MatListModule } from '@angular/material/list';
 import { MemberService } from '../../services/memberService';
 import { AuthService } from '../../services/authService';
+import { ScorecardService } from '../../services/scorecardService';
+import { Scorecard } from '../../models/scorecard.interface';
+
 
 @Component({
   selector: 'app-member-form',
@@ -19,18 +26,27 @@ import { AuthService } from '../../services/authService';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatSelectModule,
+    MatListModule,
+  
   ]
 })
-export class MemberFormComponent {
+export class MemberFormComponent implements OnInit {
   memberForm: FormGroup;
   loading = false;
+  scorecards: Scorecard[] = [];
+  courseControl = new FormControl<string[]>([]);
+  teeControl = new FormControl('');
+  defaultCourseTees: { scorecardId: string }[] = [];
+  selectedScorecardId: string | null = null;
 
   constructor(
     private fb: FormBuilder,
     private memberService: MemberService,
     private snackBar: MatSnackBar,
-    private authService: AuthService
+    private authService: AuthService,
+    private scorecardService: ScorecardService
   ) {
     this.memberForm = this.fb.group({
       firstName: ['', Validators.required],
@@ -41,6 +57,50 @@ export class MemberFormComponent {
       scorecardsId: [[]],
       hidden: [false]
     });
+  }
+
+  ngOnInit(): void {
+    this.scorecardService.getAll().subscribe((response) => {
+      this.scorecards = Array.isArray(response) ? response : response.scorecards || [];
+    });
+    // Sync courseControl with saved scorecardsId on init
+    const saved = this.memberForm.get('scorecardsId')?.value;
+    if (Array.isArray(saved) && saved.length > 0) {
+      this.courseControl.setValue(saved);
+    }
+    // Keep form and control in sync
+    this.courseControl.valueChanges.subscribe((ids: string[] | null) => {
+      this.memberForm.get('scorecardsId')?.setValue(ids ?? []);
+    });
+  }
+
+  get availableTees(): string[] {
+    const scorecard = this.scorecards.find(sc => sc._id === this.selectedScorecardId);
+    return scorecard && scorecard.tees ? scorecard.tees.split(',').map(t => t.trim()) : [];
+  }
+  get scorecardsId(): FormArray {
+    return this.memberForm.get('scorecardsId') as FormArray;
+  }
+
+    getCourseTeeName(scorecardId: string): string {
+    const sc = this.scorecards.find(s => s._id === scorecardId);
+    return sc?.courseTeeName || 'Course';
+  }
+
+  addCourseTee() {
+    const scorecardIds = this.courseControl.value;
+    if (Array.isArray(scorecardIds)) {
+      scorecardIds.forEach(scorecardId => {
+        if (!this.defaultCourseTees.some(e => e.scorecardId === scorecardId)) {
+          this.defaultCourseTees.push({ scorecardId });
+        }
+      });
+      this.courseControl.setValue([]);
+    }
+  }
+
+  removeCourseTee(index: number) {
+    this.defaultCourseTees.splice(index, 1);
   }
 
   // Getter methods for form validation
@@ -55,7 +115,31 @@ export class MemberFormComponent {
   get isUsgaIndexMaxError(): boolean {
     return !!(this.usgaIndexControl?.hasError('max') && this.usgaIndexControl?.touched);
   }
+  courseHover = false;
 
+  onCourseMouseOver(select: any) {
+    this.courseHover = true;
+    select.open();
+  }
+
+  onCourseMouseLeave(select: any) {
+    this.courseHover = false;
+    setTimeout(() => {
+      if (!this.courseHover) {
+        select.close();
+      }
+    }, 150);
+  }
+  onDropdownOpened(opened: boolean, select: any) {
+    if (opened) {
+      setTimeout(() => {
+        const panel = document.querySelector('.hover-panel');
+        if (panel) {
+          panel.addEventListener('mouseleave', () => select.close(), { once: true });
+        }
+      }, 0);
+    }
+  }
   submit() {
     if (this.memberForm.invalid) return;
     this.loading = true;
@@ -66,6 +150,7 @@ export class MemberFormComponent {
       next: () => {
         this.snackBar.open('Member created!', 'Close', { duration: 2000 });
         this.memberForm.reset();
+        this.defaultCourseTees = [];
         this.loading = false;
       },
       error: () => {

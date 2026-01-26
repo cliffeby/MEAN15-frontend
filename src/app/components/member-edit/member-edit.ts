@@ -1,6 +1,9 @@
+
+
+
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -9,8 +12,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MemberService } from '../../services/memberService';
 import { AuthService } from '../../services/authService';
-// import { Member } from '../../models/member';
+import { ScorecardService } from '../../services/scorecardService';
+import { Scorecard } from '../../models/scorecard.interface';
 import { MatCheckbox } from '@angular/material/checkbox';
+import { MatSelectModule } from '@angular/material/select';
+import { MatListModule } from '@angular/material/list';
 
 @Component({
   selector: 'app-member-edit',
@@ -24,13 +30,17 @@ import { MatCheckbox } from '@angular/material/checkbox';
     MatInputModule,
     MatButtonModule,
     MatSnackBarModule,
-    MatCheckbox
+    MatCheckbox,
+    MatSelectModule,
+    MatListModule
   ],
 })
 export class MemberEditComponent implements OnInit {
   memberForm: FormGroup;
   loading = false;
   memberId: string | null = null;
+  scorecards: Scorecard[] = [];
+  courseControl = new FormControl<string[]>([]);
 
   constructor(
     private fb: FormBuilder,
@@ -38,7 +48,8 @@ export class MemberEditComponent implements OnInit {
     private router: Router,
     private memberService: MemberService,
     private snackBar: MatSnackBar,
-    private authService: AuthService
+    private authService: AuthService,
+    private scorecardService: ScorecardService
   ) {
     this.memberForm = this.fb.group({
       firstName: ['', Validators.required],
@@ -52,12 +63,25 @@ export class MemberEditComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.scorecardService.getAll().subscribe((response) => {
+      this.scorecards = Array.isArray(response) ? response : response.scorecards || [];
+    });
     this.memberId = this.route.snapshot.paramMap.get('id');
     if (this.memberId) {
       this.loading = true;
       this.memberService.getById(this.memberId).subscribe({
         next: (member) => {
           this.memberForm.patchValue(member);
+          // Support both [{scorecardId}] and [string] for scorecardsId
+          let ids: string[] = [];
+          if (Array.isArray(member.scorecardsId) && member.scorecardsId.length > 0) {
+            if (typeof member.scorecardsId[0] === 'object' && member.scorecardsId[0] !== null && 'scorecardId' in member.scorecardsId[0]) {
+              ids = member.scorecardsId.map((obj: any) => obj.scorecardId);
+            } else {
+              ids = member.scorecardsId;
+            }
+          }
+          this.courseControl.setValue(ids);
           this.loading = false;
         },
         error: () => {
@@ -66,6 +90,20 @@ export class MemberEditComponent implements OnInit {
         },
       });
     }
+    // Keep form and control in sync
+    this.courseControl.valueChanges.subscribe((ids: string[] | null) => {
+      this.memberForm.get('scorecardsId')?.setValue(ids ?? []);
+    });
+  }
+  getCourseTeeName(scorecardIdOrObj: string | { scorecardId: string }): string {
+    let id: string | undefined;
+    if (typeof scorecardIdOrObj === 'string') {
+      id = scorecardIdOrObj;
+    } else if (scorecardIdOrObj && typeof scorecardIdOrObj === 'object' && 'scorecardId' in scorecardIdOrObj) {
+      id = scorecardIdOrObj.scorecardId;
+    }
+    const sc = this.scorecards.find(s => s._id === id);
+    return sc?.courseTeeName || 'Course';
   }
 
   // Getter methods for form validation
@@ -80,12 +118,28 @@ export class MemberEditComponent implements OnInit {
   get isUsgaIndexMaxError(): boolean {
     return !!(this.usgaIndexControl?.hasError('max') && this.usgaIndexControl?.touched);
   }
-
+  onDropdownOpened(opened: boolean, select: any) {
+    if (opened) {
+      setTimeout(() => {
+        const panel = document.querySelector('.hover-panel');
+        if (panel) {
+          panel.addEventListener('mouseleave', () => select.close(), { once: true });
+        }
+      }, 0);
+    }
+  }
   submit() {
     if (this.memberForm.invalid || !this.memberId) return;
     this.loading = true;
     const author = this.authService.getAuthorObject();
-    const memberData = { ...this.memberForm.value, author };
+    // Ensure scorecardsId is always an array of objects with scorecardId property
+    let memberData = { ...this.memberForm.value, author };
+    if (memberData.scorecardsId && !Array.isArray(memberData.scorecardsId)) {
+      memberData.scorecardsId = [memberData.scorecardsId];
+    }
+    if (Array.isArray(memberData.scorecardsId)) {
+      memberData.scorecardsId = memberData.scorecardsId.map((id: string) => ({ scorecardId: id }));
+    }
 
     this.memberService.update(this.memberId, memberData).subscribe({
       next: () => {

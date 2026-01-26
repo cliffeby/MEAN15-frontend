@@ -28,13 +28,13 @@ export interface Score {
   };
   scorecardId?: string | {
     _id?: string;
-    name: string;
+    tees: string;
   };
   scSlope?: number;
   scRating?: number;
   scPars?: number[];
   scHCaps?: number[];
-  scName?: string;
+  scTees?: string;
   datePlayed?: string;
   foursomeIds?: string[];
   partnerIds?: string[];

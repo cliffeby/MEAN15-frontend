@@ -3,9 +3,9 @@ import { ScorecardState } from '../reducers/scorecard.reducer';
 import { Scorecard } from '../../models/scorecard.interface';
 
 const mockScorecards: Scorecard[] = [
-  { _id: '1', name: 'Card 1', groupName: 'A', rating: 72, slope: 120, par: 72, author: { id: 'user1', email: 'user1@example.com', name: 'User One' }, courseTeeName: 'Blue' },
-  { _id: '2', name: 'Card 2', groupName: 'B', rating: 70, slope: 118, par: 70, author: { id: 'user2', email: 'user2@example.com', name: 'User Two' }, courseTeeName: 'White' },
-  { _id: '3', name: 'Card 3', groupName: 'A', author: { id: 'user1', email: 'user1@example.com', name: 'User One' }, courseTeeName: 'Red' },
+  { _id: '1', name: 'Card 1', course: 'A', rating: 72, slope: 120, par: 72, author: { id: 'user1', email: 'user1@example.com', name: 'User One' }, courseTeeName: 'Blue' },
+  { _id: '2', name: 'Card 2', course: 'B', rating: 70, slope: 118, par: 70, author: { id: 'user2', email: 'user2@example.com', name: 'User Two' }, courseTeeName: 'White' },
+  { _id: '3', name: 'Card 3', course: 'A', author: { id: 'user1', email: 'user1@example.com', name: 'User One' }, courseTeeName: 'Red' },
 ];
 
 const getState = (extra: Partial<ScorecardState> = {}): ScorecardState => ({

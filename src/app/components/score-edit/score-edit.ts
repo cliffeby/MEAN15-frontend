@@ -207,7 +207,7 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
       scorecardId: score.scorecardId,
       scSlope: score.scSlope,
       scRating: score.scRating,
-      scName: score.scName,
+      scName: score.scTees,
       datePlayed: score.datePlayed ? new Date(score.datePlayed) : new Date()
     });
 
@@ -316,7 +316,7 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
         .subscribe(scorecard => {
           if (scorecard) {
             this.scoreForm.patchValue({
-              scName: scorecard.name || scorecard.groupName || '',
+              scName: scorecard.name || scorecard.course || '',
               scRating: scorecard.rating || null,
               scSlope: scorecard.slope || null
             });

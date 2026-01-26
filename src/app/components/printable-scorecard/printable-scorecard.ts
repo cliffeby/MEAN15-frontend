@@ -229,6 +229,7 @@ export class PrintableScorecardComponent implements OnInit {
         course: this.scorecard._id || '',
         courseName: this.scorecard.name || 'Golf Course',
         tees: this.scorecard.courseTeeName || 'Regular',
+        teeAbreviation: this.scorecard.teeAbreviation || '',
         pars: this.scorecard.pars || Array(18).fill(4),
         hCaps: this.scorecard.hCaps || Array.from({length: 18}, (_, i) => i + 1),
         distances: this.scorecard.yards || Array(18).fill(0)

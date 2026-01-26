@@ -764,7 +764,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       scRating: this.scorecard?.rating,
       scPars: this.scorecard?.pars,
       scHCaps: this.scorecard?.hCaps,
-      scName: this.scorecard?.name,
+      scTees: this.scorecard?.course,
       datePlayed: this.match?.datePlayed,
       author: this.authService.getAuthorObject(),
       isScored: true

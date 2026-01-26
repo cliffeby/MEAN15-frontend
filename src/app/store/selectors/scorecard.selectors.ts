@@ -38,7 +38,7 @@ export const selectScorecardsForDropdown = createSelector(
   (scorecards) =>
     scorecards.map(scorecard => ({
       value: scorecard._id!,
-      label: `${scorecard.name || scorecard.groupName || 'Unnamed Scorecard'}${
+      label: `${scorecard.name || scorecard.course || 'Unnamed Scorecard'}${
         scorecard.rating ? ` - Rating: ${scorecard.rating}` : ''
       }${
         scorecard.slope ? ` - Slope: ${scorecard.slope}` : ''
@@ -52,8 +52,8 @@ export const selectScorecardsWithDetails = createSelector(
   (scorecards) =>
     scorecards.map(scorecard => ({
       ...scorecard,
-      displayName: scorecard.name || scorecard.groupName || 'Unnamed Scorecard',
-      fullDetails: `${scorecard.name || scorecard.groupName || 'Unnamed'} (Par: ${scorecard.par || 'N/A'}, Rating: ${scorecard.rating || 'N/A'}, Slope: ${scorecard.slope || 'N/A'})`
+      displayName: scorecard.name || scorecard.course || 'Unnamed Scorecard',
+      fullDetails: `${scorecard.name || scorecard.course || 'Unnamed'} (Par: ${scorecard.par || 'N/A'}, Rating: ${scorecard.rating || 'N/A'}, Slope: ${scorecard.slope || 'N/A'})`
     }))
 );
 
@@ -77,7 +77,7 @@ export const selectScorecardsSearch = (searchTerm: string) =>
       const term = searchTerm.toLowerCase().trim();
       return scorecards.filter(sc =>
         (sc.name?.toLowerCase().includes(term)) ||
-        (sc.groupName?.toLowerCase().includes(term)) ||
+        (sc.course?.toLowerCase().includes(term)) ||
         (sc.courseTeeName?.toLowerCase().includes(term))
       );
     }

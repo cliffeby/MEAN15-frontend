@@ -12,11 +12,11 @@ export interface ScorecardState extends EntityState<Scorecard> {
 export const adapter: EntityAdapter<Scorecard> = createEntityAdapter<Scorecard>({
   selectId: (scorecard: Scorecard) => scorecard._id!,
   sortComparer: (a: Scorecard, b: Scorecard) => {
-    // Sort by name, then by groupName
+    // Sort by name, then by course
     const nameA = a.name || '';
     const nameB = b.name || '';
-    const groupA = a.groupName || '';
-    const groupB = b.groupName || '';
+    const groupA = a.course || '';
+    const groupB = b.course || '';
     
     if (nameA !== nameB) {
       return nameA.localeCompare(nameB);

@@ -6,7 +6,7 @@ describe('scorecardReducer', () => {
   const mockScorecard: Scorecard = {
     _id: '1',
     name: 'Test Scorecard',
-    groupName: 'A',
+    course: 'A',
   };
 
   it('should return the initial state', () => {

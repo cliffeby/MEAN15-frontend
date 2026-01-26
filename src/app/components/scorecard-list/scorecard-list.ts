@@ -34,7 +34,7 @@ export class ScorecardListComponent implements OnInit {
   scorecards$: Observable<Scorecard[]>;
   loading$: Observable<boolean>;
   error$: Observable<string | null>;
-  displayedColumns: string[] = ['name', 'rating', 'slope', 'par', 'author', 'actions'];
+  displayedColumns: string[] = ['course','tees', 'rating', 'slope', 'par', 'author', 'actions'];
 
   constructor(
     private store: Store,
@@ -89,7 +89,7 @@ export class ScorecardListComponent implements OnInit {
     // Get the scorecard details for the confirmation dialog
     this.store.select(ScorecardSelectors.selectScorecardById(id)).subscribe(scorecard => {
       if (scorecard) {
-        const scorecardName = scorecard.name || scorecard.groupName || 'Unnamed Scorecard';
+        const scorecardName = scorecard.name || scorecard.course || 'Unnamed Scorecard';
         
         this.confirmDialog.confirmDelete(scorecardName, 'scorecard').subscribe(confirmed => {
           if (confirmed) {

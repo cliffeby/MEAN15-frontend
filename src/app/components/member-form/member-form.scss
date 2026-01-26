@@ -9,3 +9,14 @@
 button {
   align-self: flex-end;
 }
+
+.default-course-tee-section {
+  .course-tee-select-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+  .course-tee-select-field {
+    flex: 1;
+  }
+}

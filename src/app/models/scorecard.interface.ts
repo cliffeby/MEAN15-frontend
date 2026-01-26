@@ -1,6 +1,8 @@
 export interface Scorecard {
   _id?: string;
-  groupName?: string;
+  course?: string;
+  tees?: string;
+  teeAbreviation?: string;
   name?: string;
   rating?: number;
   slope?: number;
@@ -29,6 +31,8 @@ export interface MatchData {
   course: {
     name: string;
   };
+  courseTeeName?: string;
+  teeAbreviation?: string;
   teeTime: string;
   members: string[]; // Array of member IDs
 }
@@ -38,6 +42,7 @@ export interface ScorecardData {
   course: string;
   courseName: string;
   tees: string;
+  teeAbreviation: string;
   pars: number[];
   hCaps: number[];
   distances: number[];

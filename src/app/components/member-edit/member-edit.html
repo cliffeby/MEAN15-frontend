@@ -42,10 +42,24 @@
     </mat-error>
   </mat-form-field>
 
-  <!-- <mat-form-field appearance="fill">
-    <mat-label>User</mat-label>
-  <input matInput formControlName="user" placeholder="Enter user" />
-  </mat-form-field> -->
+  <div class="default-course-tee-section">
+    <h3>Default Course/Tee Combinations</h3>
+        <div class="course-tee-select-row">
+      <mat-form-field appearance="fill" class="course-tee-select-field">
+        <mat-label>Courses</mat-label>
+        <mat-select #courseSelect [formControl]="courseControl" multiple panelClass="hover-panel" (openedChange)="onDropdownOpened($event, courseSelect)">
+          <mat-option *ngFor="let sc of scorecards" [value]="sc._id">{{ sc.courseTeeName || 'Unnamed Course' }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div *ngIf="(courseControl.value ?? []).length > 0" class="default-course-tee-list">
+      <mat-list>
+        <mat-list-item *ngFor="let id of (courseControl.value ?? [])">
+          <span>{{ getCourseTeeName(id) }}</span>
+        </mat-list-item>
+      </mat-list>
+    </div>
+  </div>
 
   <mat-checkbox formControlName="hidden" color="primary">
     Hide Member in Lists

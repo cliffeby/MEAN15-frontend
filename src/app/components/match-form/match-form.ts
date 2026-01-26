@@ -199,7 +199,7 @@ export class MatchFormComponent implements OnInit, OnDestroy {
       .subscribe((selectedScorecard) => {
         if (selectedScorecard) {
           this.matchForm.patchValue({
-            scGroupName: selectedScorecard.groupName || selectedScorecard.name || '',
+            scGroupName: selectedScorecard.course || selectedScorecard.teeAbreviation || '',
           });
         }
       });

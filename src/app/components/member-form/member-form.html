@@ -25,10 +25,32 @@
     <input matInput formControlName="lastDatePlayed" type="date" placeholder="Select last date played" title="Last Date Played" />
   </mat-form-field>
 
+
   <mat-form-field appearance="fill">
-  <mat-label>Email</mat-label>
-  <input matInput formControlName="Email" type="email" required placeholder="Enter email" title="Email" />
+    <mat-label>Email</mat-label>
+    <input matInput formControlName="Email" type="email" required placeholder="Enter email" title="Email" />
   </mat-form-field>
+
+  <div class="default-course-tee-section">
+    <h3>Default Course/Tee Combinations</h3>
+    <div class="course-tee-select-row">
+      <mat-form-field appearance="fill" class="course-tee-select-field"
+        (mouseover)="onCourseMouseOver(courseSelect)"
+        (mouseleave)="onCourseMouseLeave(courseSelect)">
+        <mat-label>Courses</mat-label>
+        <mat-select #courseSelect [formControl]="courseControl" multiple panelClass="hover-panel" (openedChange)="onDropdownOpened($event, courseSelect)">
+          <mat-option *ngFor="let sc of scorecards" [value]="sc._id">{{ sc.courseTeeName || 'Unnamed Course' }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div *ngIf="defaultCourseTees.length > 0" class="default-course-tee-list">
+      <mat-list>
+        <mat-list-item *ngFor="let id of courseControl.value">
+          <span>{{ getCourseTeeName(id) }}</span>
+        </mat-list-item>
+      </mat-list>
+    </div>
+  </div>
 
 
   <button mat-raised-button color="primary" type="submit" [disabled]="loading || memberForm.invalid">

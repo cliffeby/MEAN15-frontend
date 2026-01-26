@@ -268,6 +268,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
         course: finalScorecard._id || '',
         courseName: finalScorecard.name || 'Golf Course',
         tees: finalScorecard.courseTeeName || 'Regular',
+        teeAbreviation: finalScorecard.teeAbreviation || '',
         pars: finalScorecard.pars || Array(18).fill(4),
         hCaps: finalScorecard.hCaps || Array.from({ length: 18 }, (_, i) => i + 1),
         distances: finalScorecard.yards || Array(18).fill(0),

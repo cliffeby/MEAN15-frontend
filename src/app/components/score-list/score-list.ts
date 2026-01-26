@@ -169,18 +169,18 @@ export class ScoreListComponent implements OnInit {
         score.memberId && typeof score.memberId === 'string' && !score.name
       );
       
-      let groupName = '';
+      let course = '';
       if (matchId === 'no-match') {
-        groupName = 'Unassigned Scores';
+        course = 'Unassigned Scores';
       } else if (isOrphaned) {
-        groupName = `⚠️ Orphaned Match (${matchId.substring(0, 8)}...)`;
+        course = `⚠️ Orphaned Match (${matchId.substring(0, 8)}...)`;
       } else {
-        groupName = matchInfo ? matchInfo.name : `Match ${matchId}`;
+        course = matchInfo ? matchInfo.name : `Match ${matchId}`;
       }
       
       return {
         matchId: matchId === 'no-match' ? null : matchId,
-        matchName: groupName,
+        matchName: course,
         matchDate: matchInfo ? (matchInfo.datePlayed || null) : null,
         scores: scores.sort((a, b) => new Date(b.datePlayed || '').getTime() - new Date(a.datePlayed || '').getTime()),
         expanded: isOrphaned, // Auto-expand orphaned groups for attention
