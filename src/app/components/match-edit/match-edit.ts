@@ -22,33 +22,8 @@ import { MemberService } from '../../services/memberService';
 import { AuthService } from '../../services/authService';
 import { ScorecardService } from '../../services/scorecardService';
 import { MemberSelectionDialogComponent } from '../member-selection-dialog/member-selection-dialog';
-import { Component as NgComponent, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-@NgComponent({
-  selector: 'app-confirm-dialog',
-  standalone: true,
-  imports: [MatDialogModule],
-  template: `
-    <h2 mat-dialog-title>{{ data.title }}</h2>
-    <mat-dialog-content>
-      <p>{{ data.message }}</p>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button (click)="onCancel()">{{ data.cancelText || 'Cancel' }}</button>
-      <button mat-raised-button color="primary" (click)="onConfirm()">{{ data.confirmText || 'OK' }}</button>
-    </mat-dialog-actions>
-  `
-})
-export class ConfirmDialogComponent {
-  constructor(
-    public dialogRef: MatDialogRef<ConfirmDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
-  ) {}
-  onConfirm(): void { this.dialogRef.close(true); }
-  onCancel(): void { this.dialogRef.close(false); }
-}
+import { ConfirmDialogComponent } from '../../shared/dialogs/confirm-dialog.component';
 import { MatchLineupComponent } from '../match-lineup/match-lineup';
-// import { ViewChild } from '@angular/core';
 import * as MatchActions from '../../store/actions/match.actions';
 import * as MatchSelectors from '../../store/selectors/match.selectors';
 import * as ScorecardActions from '../../store/actions/scorecard.actions';
@@ -114,7 +89,6 @@ export class MatchEditComponent implements OnInit, OnDestroy {
     this.matchForm = this.fb.group({
       name: ['', Validators.required],
       scorecardId: ['', Validators.required],
-      scGroupName: [''],
       status: ['open', Validators.required],
       lineUps: this.fb.array([]),
       foursomeIdsTEMP: this.fb.array([]),
@@ -153,8 +127,16 @@ export class MatchEditComponent implements OnInit, OnDestroy {
       next: (scorecards) => {
         console.log('Scorecards loaded from store:', scorecards);
         if (scorecards && scorecards.length > 0) {
-          this.scorecards = scorecards;
-          console.log('Using store scorecards:', this.scorecards);
+          // Only offer the first scorecard per unique course
+          const seenCourses = new Set<string>();
+          this.scorecards = scorecards.filter(sc => {
+            if (sc.course && !seenCourses.has(sc.course)) {
+              seenCourses.add(sc.course);
+              return true;
+            }
+            return false;
+          });
+          console.log('Filtered unique course scorecards:', this.scorecards);
         }
       },
       error: (error) => console.error('Error loading scorecards from store:', error)
@@ -212,7 +194,7 @@ export class MatchEditComponent implements OnInit, OnDestroy {
     this.matchForm.patchValue({
       name: match.name,
       scorecardId: match.scorecardId,
-      scGroupName: match.scGroupName,
+      // scGroupName: match.scGroupName,
       status: match.status,
       datePlayed: match.datePlayed ? new Date(match.datePlayed) : new Date(),
       // author: { id: 'u1', email: 'test@example.com', name: 'Test User' },
@@ -374,20 +356,30 @@ export class MatchEditComponent implements OnInit, OnDestroy {
       .subscribe(selectedScorecard => {
         if (selectedScorecard) {
           this.matchForm.patchValue({
-            scGroupName: selectedScorecard.course || selectedScorecard.name || ''
+            scGroupName: selectedScorecard.course ||  ''
           });
         }
       });
   }
 
   openMemberSelectionDialog() {
+    // Use the full scorecards list for tee lookup, not just the filtered unique ones
+    const allScorecards: Scorecard[] = [];
+    this.scorecards$.pipe(take(1)).subscribe(scorecards => {
+      if (Array.isArray(scorecards)) {
+        allScorecards.push(...scorecards);
+      }
+    });
+    const currentCourse = this.scorecards.find(sc => sc._id === this.matchForm.get('scorecardId')?.value)?.course;
     this.members$.pipe(takeUntil(this.destroy$)).subscribe(members => {
       const dialogRef = this.dialog.open(MemberSelectionDialogComponent, {
         width: '600px',
         maxHeight: '80vh',
         data: {
           members: members,
-          currentLineup: this.lineUpsArray.value
+          currentLineup: this.lineUpsArray.value,
+          course: currentCourse,
+          scorecards: allScorecards.length > 0 ? allScorecards : this.scorecards
         }
       });
 
@@ -397,7 +389,6 @@ export class MatchEditComponent implements OnInit, OnDestroy {
           console.log('Updating lineup with', selectedMemberIds.length, 'members');
           // Clear current lineup
           this.lineUpsArray.clear();
-          
           // Add selected members
           selectedMemberIds.forEach((memberId: string) => {
             this.lineUpsArray.push(this.fb.control(memberId));

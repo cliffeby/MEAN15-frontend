@@ -82,41 +82,7 @@ export class MatchFormComponent implements OnInit, OnDestroy {
     this.scorecards$ = this.store.select(ScorecardSelectors.selectAllScorecards);
     this.scorecardsLoading$ = this.store.select(ScorecardSelectors.selectScorecardsLoading);
     // Try to load members, with fallback to mock data if service fails
-    this.members$ = this.memberService.getAll().pipe(
-      catchError((error: any) => {
-        console.error('Failed to load members from service, using mock data:', error);
-        // Return mock data for testing
-        return of([
-          {
-            _id: '1',
-            firstName: 'John',
-            lastName: 'Doe',
-            email: 'john@example.com',
-            Email: 'john@example.com',
-            user: 'admin',
-            usgaIndex: 12.5,
-          },
-          {
-            _id: '2',
-            firstName: 'Jane',
-            lastName: 'Smith',
-            email: 'jane@example.com',
-            Email: 'jane@example.com',
-            user: 'admin',
-            usgaIndex: 8.2,
-          },
-          {
-            _id: '3',
-            firstName: 'Bob',
-            lastName: 'Wilson',
-            email: 'bob@example.com',
-            Email: 'bob@example.com',
-            user: 'admin',
-            usgaIndex: 15.7,
-          },
-        ]);
-      })
-    );
+    this.members$ = this.memberService.getAll().pipe();
 
     // Debug: Log member data
     this.members$.subscribe({
@@ -126,7 +92,7 @@ export class MatchFormComponent implements OnInit, OnDestroy {
     this.matchForm = this.fb.group({
       name: ['', Validators.required],
       scorecardId: ['', Validators.required],
-      scGroupName: [''],
+      course: [''],
       status: ['open', Validators.required],
       lineUps: this.fb.array([]),
       datePlayed: [new Date(), Validators.required],
@@ -149,7 +115,19 @@ export class MatchFormComponent implements OnInit, OnDestroy {
     // Load scorecard data and store in component property
     this.scorecards$.pipe(takeUntil(this.unsubscribe$)).subscribe({
       next: (scorecards) => {
-        this.scorecards = scorecards || [];
+        if (Array.isArray(scorecards)) {
+          // Only show one scorecard per course (the first one found)
+          const seenCourses = new Set<string>();
+          this.scorecards = scorecards.filter(sc => {
+            if (sc.course && !seenCourses.has(sc.course)) {
+              seenCourses.add(sc.course);
+              return true;
+            }
+            return false;
+          });
+        } else {
+          this.scorecards = [];
+        }
       },
       error: (error) => console.error('Error loading scorecards:', error),
     });
@@ -199,7 +177,7 @@ export class MatchFormComponent implements OnInit, OnDestroy {
       .subscribe((selectedScorecard) => {
         if (selectedScorecard) {
           this.matchForm.patchValue({
-            scGroupName: selectedScorecard.course || selectedScorecard.teeAbreviation || '',
+            course: selectedScorecard.course || '',
           });
         }
       });

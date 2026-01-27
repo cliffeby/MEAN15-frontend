@@ -263,7 +263,7 @@ export class SimpleScoreEntryComponent implements OnInit {
             this.playerScores[playerIndex].wonTwoBall = typeof score.wonTwoBall === 'boolean' ? score.wonTwoBall : false;
 
             // Calculate differential from total score (reverse calculation)
-            const coursePar = this.getCoursePar();
+            const coursePar = this.scorecard?.par || 72;
             const courseRating = this.scorecard?.rating || coursePar;
             this.playerScores[playerIndex].differential = totalScore - courseRating;
 
@@ -310,7 +310,7 @@ export class SimpleScoreEntryComponent implements OnInit {
     
     // Update differential based on total score
     if (score !== null) {
-      const courseRating = this.scorecard?.rating || this.getCoursePar();
+      const courseRating = this.scorecard?.rating || this.scorecard?.par || 72;
       this.playerScores[playerIndex].differential = score - courseRating;
       const playerFormGroup = this.getPlayerFormGroup(playerIndex);
       playerFormGroup.get('differential')?.setValue(this.playerScores[playerIndex].differential, { emitEvent: false });
@@ -341,7 +341,7 @@ export class SimpleScoreEntryComponent implements OnInit {
     
     // Calculate total score from differential
     if (differential !== null) {
-      const courseRating = this.scorecard?.rating || this.getCoursePar();
+      const courseRating = this.scorecard?.rating || this.scorecard?.par || 72;
       this.playerScores[playerIndex].totalScore = Math.round(differential + courseRating);
       const playerFormGroup = this.getPlayerFormGroup(playerIndex);
       playerFormGroup.get('totalScore')?.setValue(this.playerScores[playerIndex].totalScore, { emitEvent: false });
@@ -423,13 +423,13 @@ export class SimpleScoreEntryComponent implements OnInit {
            this.playerScores.some(p => p.totalScore !== null);
   }
 
-  getCoursePar(): number {
-    return this.scorecard?.par || 72;
+  getCourse():string {
+    return this.scorecard?.course || " "
   }
 
-  getCourseRating(): number {
-    return this.scorecard?.rating || this.getCoursePar();
-  }
+  // getCourseRating(): number {
+  //   return this.scorecard?.rating || this.getCoursePar();
+  // }
 
   editMatch(): void {
     this.router.navigate(['/matches/edit', this.matchId]);

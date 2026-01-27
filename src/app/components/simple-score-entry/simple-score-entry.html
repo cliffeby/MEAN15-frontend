@@ -57,12 +57,13 @@
         <!-- Course info -->
         <div class="course-info" *ngIf="scorecard">
           <mat-chip-set>
-            <mat-chip>Par: {{ getCoursePar() }}</mat-chip>
-            <mat-chip>Rating: {{ getCourseRating() }}</mat-chip>
-            <mat-chip>Slope: {{ scorecard.slope }}</mat-chip>
+            <!-- <mat-chip>Par: {{ getCoursePar() }}</mat-chip>
+            <mat-chip>Rating: {{ getCourseRating() }}</mat-chip> -->
+            <mat-chip>Course: {{ getCourse() }}</mat-chip>
           </mat-chip-set>
           
           <button mat-stroked-button 
+                  type="button"
                   color="primary" 
                   (click)="toggleEntryMode()"
                   class="entry-mode-toggle">
@@ -103,7 +104,7 @@
               <th mat-header-cell *matHeaderCellDef>
                 {{ entryMode === 'totalScore' ? 'Total Score' : 'Differential' }}
                 <small *ngIf="entryMode === 'differential'" class="column-hint">
-                  (to par: {{ getCourseRating() }})
+                  <!-- (to par: {{ getCourseRating() }}) -->
                 </small>
               </th>
               <td mat-cell *matCellDef="let player; let i = index" [formGroupName]="i">
@@ -140,10 +141,8 @@
             <ng-container matColumnDef="netScore">
               <th mat-header-cell *matHeaderCellDef>Net Score</th>
               <td mat-cell *matCellDef="let player">
-                <strong 
-                  [class.under-par]="player.netScore < getCoursePar()" 
-                  [class.over-par]="player.netScore > getCoursePar()">
-                  {{ player.netScore || '-' }}
+                <strong> 
+                 {{ player.netScore || '-' }}
                 </strong>
               </td>
             </ng-container>

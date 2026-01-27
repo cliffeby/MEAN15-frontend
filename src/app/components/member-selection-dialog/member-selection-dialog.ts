@@ -13,6 +13,8 @@ import { Member } from '../../models/member';
 export interface MemberSelectionDialogData {
   members: Member[];
   currentLineup: string[];
+  course?: string;
+  scorecards?: any[];
 }
 
 @Component({
@@ -38,21 +40,71 @@ export class MemberSelectionDialogComponent implements OnInit {
   selectedMemberIds: string[] = [];
   searchTerm: string = '';
 
+  course: string | undefined;
+  scorecards: any[] = [];
+
   constructor(
     public dialogRef: MatDialogRef<MemberSelectionDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: MemberSelectionDialogData,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    this.course = data.course;
+    this.scorecards = data.scorecards || [];
+  }
 
   ngOnInit() {
     this.allMembers = this.data.members || [];
     this.filteredMembers = [...this.allMembers];
     // Pre-select members that are already in the lineup
     this.selectedMemberIds = [...(this.data.currentLineup || [])];
-    
+    this.course = this.data.course;
+    this.scorecards = this.data.scorecards || [];
     // Debug: Log the pre-selected members
     console.log('Dialog opened with current lineup:', this.selectedMemberIds);
     console.log('Available members:', this.allMembers.length);
+    console.log('Current course for tee lookup:', this.course);
+  }
+
+  getTeeForMember(member: Member): string | undefined {
+    if (!this.course || !this.scorecards) {
+      return undefined;
+    }
+    // Gather all scorecards for this member
+    let memberScorecards: any[] = [];
+    // Try to handle both array of objects and array of strings for scorecardId/scorecardsId
+    if (Array.isArray((member as any).scorecardsId)) {
+      // scorecardsId could be array of strings or array of objects
+      if (typeof (member as any).scorecardsId[0] === 'object') {
+        memberScorecards = (member as any).scorecardsId
+          .map((obj: any) => this.scorecards.find(s => s._id === (obj.scorecardId || obj._id)))
+          .filter(Boolean);
+      } else {
+        memberScorecards = (member as any).scorecardsId
+          .map((id: string) => this.scorecards.find(s => s._id === id))
+          .filter(Boolean);
+      }
+    } else if (Array.isArray((member as any).scorecardId)) {
+      memberScorecards = (member as any).scorecardId
+        .map((obj: any) => this.scorecards.find(s => s._id === (obj.scorecardId || obj._id)))
+        .filter(Boolean);
+    } else if (typeof (member as any).scorecardId === 'string') {
+      const sc = this.scorecards.find(s => s._id === (member as any).scorecardId);
+      if (sc) memberScorecards = [sc];
+    }
+    // Debug: log what we're matching
+    console.log('getTeeForMember', {
+      member,
+      course: this.course,
+      memberScorecards,
+      allScorecards: this.scorecards
+    });
+    // Only match if the member has a scorecard for this course
+    const match = memberScorecards.find(sc => sc.course === this.course);
+    if (match) {
+      return match.tees;
+    }
+    // Do not fallback to any scorecard for the course (strict match only)
+    return undefined;
   }
 
   filterMembers() {
