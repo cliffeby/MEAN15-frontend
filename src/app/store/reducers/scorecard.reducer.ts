@@ -13,10 +13,10 @@ export const adapter: EntityAdapter<Scorecard> = createEntityAdapter<Scorecard>(
   selectId: (scorecard: Scorecard) => scorecard._id!,
   sortComparer: (a: Scorecard, b: Scorecard) => {
     // Sort by name, then by course
-    const nameA = a.name || '';
-    const nameB = b.name || '';
-    const groupA = a.course || '';
-    const groupB = b.course || '';
+    const nameA = a.course || '';
+    const nameB = b.course || '';
+    const groupA = a.tees || '';
+    const groupB = b.tees || '';
     
     if (nameA !== nameB) {
       return nameA.localeCompare(nameB);

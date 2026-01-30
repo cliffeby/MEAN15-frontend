@@ -1,9 +1,9 @@
 export interface Scorecard {
-  _id?: string;
-  course?: string;
-  tees?: string;
-  teeAbreviation?: string;
-  name?: string;
+  _id: string;
+  course: string;
+  tees: string;
+  teeAbreviation: string;
+  // name?: string;
   rating?: number;
   slope?: number;
   parInputString?: string;
@@ -28,9 +28,10 @@ export interface Scorecard {
 export interface MatchData {
   _id: string;
   description: string;
-  course: {
-    name: string;
-  };
+  // course: {
+  //   name: string;
+  // };
+  course: string
   courseTeeName?: string;
   teeAbreviation?: string;
   teeTime: string;
@@ -40,7 +41,7 @@ export interface MatchData {
 export interface ScorecardData {
   _id: string;
   course: string;
-  courseName: string;
+  // courseName: string;
   tees: string;
   teeAbreviation: string;
   pars: number[];

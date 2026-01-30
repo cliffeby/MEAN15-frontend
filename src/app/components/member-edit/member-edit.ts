@@ -1,6 +1,3 @@
-
-
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
@@ -17,6 +14,7 @@ import { Scorecard } from '../../models/scorecard.interface';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
 import { MatListModule } from '@angular/material/list';
+import { SortByCourseTeeNamePipe } from '../member-form/sort-by-course-tee-name.pipe';
 
 @Component({
   selector: 'app-member-edit',
@@ -32,7 +30,8 @@ import { MatListModule } from '@angular/material/list';
     MatSnackBarModule,
     MatCheckbox,
     MatSelectModule,
-    MatListModule
+    MatListModule,
+    SortByCourseTeeNamePipe,
   ],
 })
 export class MemberEditComponent implements OnInit {
@@ -138,7 +137,15 @@ export class MemberEditComponent implements OnInit {
       memberData.scorecardsId = [memberData.scorecardsId];
     }
     if (Array.isArray(memberData.scorecardsId)) {
-      memberData.scorecardsId = memberData.scorecardsId.map((id: string) => ({ scorecardId: id }));
+      memberData.scorecardsId = memberData.scorecardsId.map((item: any) => {
+        if (typeof item === 'string') {
+          return { scorecardId: item };
+        } else if (item && typeof item === 'object') {
+          // Prefer scorecardId, then _id, then id
+          return { scorecardId: item.scorecardId || item._id || item.id };
+        }
+        return { scorecardId: '' };
+      });
     }
 
     this.memberService.update(this.memberId, memberData).subscribe({

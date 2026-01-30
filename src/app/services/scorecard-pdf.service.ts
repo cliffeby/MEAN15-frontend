@@ -37,7 +37,7 @@ export class ScorecardPdfService {
     pdf.setFontSize(12);
     const pageWidth = pdf.internal.pageSize.getWidth();
     // Match name (left)
-    const matchName = this.formatterService.formatMatchTitle(match.course.name, match.description);
+    const matchName = this.formatterService.formatMatchTitle(match.course, match.description);
     const dateText = `Date: ${this.formatterService.formatDateForDisplay(match.teeTime)}`;
     const dateWidth = pdf.getTextWidth(dateText);
 
@@ -84,7 +84,7 @@ export class ScorecardPdfService {
     // Generate filename and handle PDF output
     const filename = options.filename || this.printService.generateFilename(
       'scorecard', 
-      match.course.name, 
+      match.course, 
       new Date(match.teeTime)
     );
     

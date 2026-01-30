@@ -1,4 +1,3 @@
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -13,7 +12,7 @@ import { MemberService } from '../../services/memberService';
 import { AuthService } from '../../services/authService';
 import { ScorecardService } from '../../services/scorecardService';
 import { Scorecard } from '../../models/scorecard.interface';
-
+import { SortByCourseTeeNamePipe } from './sort-by-course-tee-name.pipe';
 
 @Component({
   selector: 'app-member-form',
@@ -29,13 +28,14 @@ import { Scorecard } from '../../models/scorecard.interface';
     MatSnackBarModule,
     MatSelectModule,
     MatListModule,
-  
-  ]
+    SortByCourseTeeNamePipe,
+  ],
 })
 export class MemberFormComponent implements OnInit {
   memberForm: FormGroup;
   loading = false;
   scorecards: Scorecard[] = [];
+  sortedScorecards: Scorecard[] = [];
   courseControl = new FormControl<string[]>([]);
   teeControl = new FormControl('');
   defaultCourseTees: { scorecardId: string }[] = [];
@@ -46,7 +46,7 @@ export class MemberFormComponent implements OnInit {
     private memberService: MemberService,
     private snackBar: MatSnackBar,
     private authService: AuthService,
-    private scorecardService: ScorecardService
+    private scorecardService: ScorecardService,
   ) {
     this.memberForm = this.fb.group({
       firstName: ['', Validators.required],
@@ -55,13 +55,18 @@ export class MemberFormComponent implements OnInit {
       lastDatePlayed: [''],
       Email: ['', [Validators.required, Validators.email]],
       scorecardsId: [[]],
-      hidden: [false]
+      hidden: [false],
     });
   }
 
   ngOnInit(): void {
     this.scorecardService.getAll().subscribe((response) => {
       this.scorecards = Array.isArray(response) ? response : response.scorecards || [];
+      this.sortedScorecards = [...this.scorecards].sort((a, b) => {
+        const aName = (a.courseTeeName || '').toLowerCase();
+        const bName = (b.courseTeeName || '').toLowerCase();
+        return aName.localeCompare(bName);
+      });
     });
     // Sync courseControl with saved scorecardsId on init
     const saved = this.memberForm.get('scorecardsId')?.value;
@@ -75,23 +80,23 @@ export class MemberFormComponent implements OnInit {
   }
 
   get availableTees(): string[] {
-    const scorecard = this.scorecards.find(sc => sc._id === this.selectedScorecardId);
-    return scorecard && scorecard.tees ? scorecard.tees.split(',').map(t => t.trim()) : [];
+    const scorecard = this.scorecards.find((sc) => sc._id === this.selectedScorecardId);
+    return scorecard && scorecard.tees ? scorecard.tees.split(',').map((t) => t.trim()) : [];
   }
   get scorecardsId(): FormArray {
     return this.memberForm.get('scorecardsId') as FormArray;
   }
 
-    getCourseTeeName(scorecardId: string): string {
-    const sc = this.scorecards.find(s => s._id === scorecardId);
+  getCourseTeeName(scorecardId: string): string {
+    const sc = this.scorecards.find((s) => s._id === scorecardId);
     return sc?.courseTeeName || 'Course';
   }
 
   addCourseTee() {
     const scorecardIds = this.courseControl.value;
     if (Array.isArray(scorecardIds)) {
-      scorecardIds.forEach(scorecardId => {
-        if (!this.defaultCourseTees.some(e => e.scorecardId === scorecardId)) {
+      scorecardIds.forEach((scorecardId) => {
+        if (!this.defaultCourseTees.some((e) => e.scorecardId === scorecardId)) {
           this.defaultCourseTees.push({ scorecardId });
         }
       });
@@ -156,7 +161,7 @@ export class MemberFormComponent implements OnInit {
       error: () => {
         this.snackBar.open('Error creating member', 'Close', { duration: 2000 });
         this.loading = false;
-      }
+      },
     });
   }
 }

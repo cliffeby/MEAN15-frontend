@@ -35,6 +35,7 @@ export interface Score {
   scPars?: number[];
   scHCaps?: number[];
   scTees?: string;
+  scCourse?: string;
   datePlayed?: string;
   foursomeIds?: string[];
   partnerIds?: string[];

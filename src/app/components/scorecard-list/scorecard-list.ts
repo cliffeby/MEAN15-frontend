@@ -14,6 +14,7 @@ import { AuthService } from '../../services/authService';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 import * as ScorecardActions from '../../store/actions/scorecard.actions';
 import * as ScorecardSelectors from '../../store/selectors/scorecard.selectors';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-scorecard-list',
@@ -32,6 +33,7 @@ import * as ScorecardSelectors from '../../store/selectors/scorecard.selectors';
 })
 export class ScorecardListComponent implements OnInit {
   scorecards$: Observable<Scorecard[]>;
+  sortedScorecards$: Observable<Scorecard[]>;
   loading$: Observable<boolean>;
   error$: Observable<string | null>;
   displayedColumns: string[] = ['course','tees', 'rating', 'slope', 'par', 'author', 'actions'];
@@ -44,6 +46,19 @@ export class ScorecardListComponent implements OnInit {
     private confirmDialog: ConfirmDialogService
   ) {
     this.scorecards$ = this.store.select(ScorecardSelectors.selectAllScorecards);
+    this.sortedScorecards$ = this.scorecards$.pipe(
+      map((scorecards: Scorecard[]) => {
+        return [...scorecards].sort((a, b) => {
+          const courseA = a.course || '';
+          const courseB = b.course || '';
+          const teesA = a.tees || '';
+          const teesB = b.tees || '';
+          const courseCompare = courseA.localeCompare(courseB);
+          if (courseCompare !== 0) return courseCompare;
+          return teesA.localeCompare(teesB);
+        });
+      })
+    );
     this.loading$ = this.store.select(ScorecardSelectors.selectScorecardsLoading);
     this.error$ = this.store.select(ScorecardSelectors.selectScorecardsError);
   }
@@ -89,7 +104,7 @@ export class ScorecardListComponent implements OnInit {
     // Get the scorecard details for the confirmation dialog
     this.store.select(ScorecardSelectors.selectScorecardById(id)).subscribe(scorecard => {
       if (scorecard) {
-        const scorecardName = scorecard.name || scorecard.course || 'Unnamed Scorecard';
+        const scorecardName = scorecard.course || 'Unnamed Scorecard';
         
         this.confirmDialog.confirmDelete(scorecardName, 'scorecard').subscribe(confirmed => {
           if (confirmed) {

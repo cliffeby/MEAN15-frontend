@@ -219,15 +219,15 @@ export class PrintableScorecardComponent implements OnInit {
       const matchData: MatchData = {
         _id: this.match._id!,
         description: this.match.name || 'Golf Match',
-        course: { name: this.scorecard.name || 'Golf Course' },
+        course:  this.scorecard.course || 'Golf Course' ,
         teeTime: this.match.datePlayed || new Date().toISOString(),
         members: this.players.map(p => p.member._id!)
       };
 
       const scorecardData: ScorecardData = {
         _id: this.scorecard._id || '',
-        course: this.scorecard._id || '',
-        courseName: this.scorecard.name || 'Golf Course',
+        course: this.scorecard.course || '',
+        // courseName: this.scorecard.course || 'Golf Course',
         tees: this.scorecard.courseTeeName || 'Regular',
         teeAbreviation: this.scorecard.teeAbreviation || '',
         pars: this.scorecard.pars || Array(18).fill(4),

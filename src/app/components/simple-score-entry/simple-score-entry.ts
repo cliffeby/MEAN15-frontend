@@ -14,7 +14,6 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTableModule } from '@angular/material/table';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { forkJoin, of } from 'rxjs';
-
 import { MatchService } from '../../services/matchService';
 import { MemberService } from '../../services/memberService';
 import { ScoreService } from '../../services/scoreService';
@@ -24,6 +23,7 @@ import { AuthService } from '../../services/authService';
 import { Match } from '../../models/match';
 import { Member } from '../../models/member';
 import { Score } from '../../models/score';
+import { M } from '@angular/material/ripple-loader.d-9me-KFSi';
 
 interface SimplePlayerScore {
   member: Member;
@@ -35,6 +35,7 @@ interface SimplePlayerScore {
   wonOneBall: boolean;
   wonTwoBall: boolean;
   existingScoreId?: string;
+  scorecardId?: string;
 }
 
 @Component({
@@ -72,7 +73,7 @@ export class SimpleScoreEntryComponent implements OnInit {
   matchId!: string;
   match: Match | null = null;
   scorecard: Scorecard | null = null;
-  scorecardId: string = '';
+  matchScorecardId: string = '';
   playerScores: SimplePlayerScore[] = [];
   scoreForm!: FormGroup;
   loading = false;
@@ -97,41 +98,35 @@ export class SimpleScoreEntryComponent implements OnInit {
 
   private loadMatchData(): void {
     this.loading = true;
-    
     this.matchService.getById(this.matchId).subscribe({
       next: (response: any) => {
         const match = response?.match || response;
-        
         if (!match) {
           this.snackBar.open('Match not found', 'Close', { duration: 3000 });
           this.router.navigate(['/matches']);
           this.loading = false;
           return;
         }
-        
         this.match = match;
         this.isMatchCompleted = match.status === 'completed';
-        
         if (this.isMatchCompleted) {
           this.snackBar.open(
-            `Match "${match.name}" is completed. Scores cannot be modified.`, 
-            'Close', 
+            `Match "${match.name}" is completed. Scores cannot be modified.`,
+            'Close',
             { duration: 5000 }
           );
         }
-        
-        // Check for scorecard
-        const scorecardId = match.scorecardId;
-        let hasScorecard = false;
-        
-        if (typeof scorecardId === 'string' && scorecardId.trim() !== '') {
-          hasScorecard = true;
-        } else if (scorecardId && typeof scorecardId === 'object' && scorecardId !== null) {
-          hasScorecard = true;
+        // Extract scorecardId and scorecardData
+        let scorecardId: string | undefined = undefined;
+        let scorecardData: any = null;
+        if (typeof match.scorecardId === 'string' && match.scorecardId.trim() !== '') {
+          scorecardId = match.scorecardId;
+        } else if (match.scorecardId && typeof match.scorecardId === 'object' && match.scorecardId !== null) {
+          scorecardData = match.scorecardId;
+          scorecardId = match.scorecardId._id || match.scorecardId.id;
         }
-        
-        if (hasScorecard) {
-          this.loadScorecardAndMembers(match);
+        if (scorecardId) {
+          this.loadScorecardAndMembers(match, scorecardId, scorecardData);
         } else {
           this.snackBar.open('Match has no scorecard assigned', 'Close', { duration: 5000 });
           this.loading = false;
@@ -146,45 +141,75 @@ export class SimpleScoreEntryComponent implements OnInit {
     });
   }
 
-  private loadScorecardAndMembers(match: Match): void {
-    let scorecardId: string;
-    let scorecardData: any = null;
-    
-    if (typeof match.scorecardId === 'string') {
-      scorecardId = match.scorecardId;
-    } else if (match.scorecardId && typeof match.scorecardId === 'object') {
-      scorecardData = match.scorecardId;
-      scorecardId = (match.scorecardId as any)._id || (match.scorecardId as any).id;
-    } else {
-      this.snackBar.open('Invalid scorecard data', 'Close', { duration: 3000 });
-      this.loading = false;
-      return;
-    }
-    
-    this.scorecardId = scorecardId;
-    
-    // Check for members
+  private loadScorecardAndMembers(match: Match, scorecardId: string, scorecardData: any): void {
+    this.matchScorecardId = scorecardId;
     if (!match.lineUps || match.lineUps.length === 0) {
       this.snackBar.open('Match has no members assigned', 'Close', { duration: 5000 });
       this.loading = false;
       return;
     }
-    
-    const scorecardObservable = scorecardData 
-      ? of(scorecardData) 
+
+    // 1. Load the match scorecard (for course name)
+    const scorecardObservable = scorecardData
+      ? of(scorecardData)
       : this.scorecardService.getById(scorecardId);
-      
+
+    // 2. Load all members in the match
     const membersObservable = forkJoin(
       match.lineUps.map(memberId => this.memberService.getById(memberId))
     );
 
+    // 3. Load all scorecards (for member tee/rating/slope lookup)
+    const allScorecardsObservable = this.scorecardService.getAll();
+
     forkJoin({
       scorecard: scorecardObservable,
-      members: membersObservable
+      members: membersObservable,
+      allScorecards: allScorecardsObservable
     }).subscribe({
-      next: ({ scorecard, members }) => {
+      next: ({ scorecard, members, allScorecards }) => {
         this.scorecard = scorecard;
-        this.setupPlayerScores(members);
+        const matchCourse = scorecard.course;
+        // Defensive: flatten if allScorecards is wrapped
+        const scorecardList: any[] = Array.isArray(allScorecards) ? allScorecards : allScorecards.scorecards || [];
+
+        // For each member, find their scorecard for this course
+        const membersWithCourseScorecard = members.map(member => {
+          let memberScorecard: any = null;
+          if (Array.isArray(member.scorecardsId)) {
+            // Find the member's scorecard for this course
+            for (const scId of member.scorecardsId) {
+              const sc = scorecardList.find((s: any) => 
+                (s._id === scId || s.scorecardId === scId) && s.course === matchCourse);
+              console.log("SCID", scId, "MC", matchCourse);
+              if (sc) {
+                memberScorecard = sc;
+                break;
+              }
+            }
+          }
+          console.log("this.SC", this.scorecard,"MSCIDS", member.scorecardsId,"SL", scorecardList,"MC",matchCourse,"SC",scorecard, "MS", memberScorecard,`Member ${member.firstName} ${member.lastName || ''} assigned scorecard:`, memberScorecard);
+          return { ...member, memberScorecard };
+        });
+
+        // Setup player scores with member-specific tees/rating/slope
+        this.playerScores = membersWithCourseScorecard.map(({ memberScorecard, ...member }) => ({
+          member: member as Member,
+          totalScore: null,
+          differential: null,
+          handicap: (member as Member).usgaIndex || 0,
+          netScore: 0,
+          wonIndo: false,
+          wonOneBall: false,
+          wonTwoBall: false,
+          // Attach member's scorecard info for use in template or calculations
+          scorecardId: memberScorecard?._id,
+          tees: memberScorecard?.tees,
+          rating: memberScorecard?.rating,
+          slope: memberScorecard?.slope
+        }));
+
+        this.setupPlayerScores(members); // Optionally update this to use playerScores above
         this.loadExistingScores();
       },
       error: (error) => {
@@ -401,12 +426,13 @@ export class SimpleScoreEntryComponent implements OnInit {
       handicap: playerScore.handicap,
       matchId: this.match?._id,
       memberId: playerScore.member._id,
-      scorecardId: this.scorecardId,
+      scorecardId: this.scorecard?._id,
       scSlope: this.scorecard?.slope,
       scRating: this.scorecard?.rating,
       scPars: this.scorecard?.pars,
       scHCaps: this.scorecard?.hCaps,
-      scTees: this.scorecard?.course,
+      scTees: this.scorecard?.tees,
+      scCourse: this.scorecard?.course,
       datePlayed: this.match?.datePlayed,
       author: this.authService.getAuthorObject(),
       isScored: true,

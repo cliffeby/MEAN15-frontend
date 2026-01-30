@@ -11,7 +11,8 @@
 
   <mat-form-field appearance="fill">
     <mat-label>USGA Index</mat-label>
-    <input matInput formControlName="usgaIndex" type="number" step="0.1" min="-10" max="54" placeholder="Enter USGA Index (e.g. 12.5)" title="USGA Index" />
+    <input matInput formControlName="usgaIndex" type="number" step="0.1" min="-10" max="54"
+      placeholder="Enter USGA Index (e.g. 12.5)" title="USGA Index" />
     <mat-error *ngIf="isUsgaIndexMinError">
       USGA Index cannot be less than -10.0
     </mat-error>
@@ -22,7 +23,8 @@
 
   <mat-form-field appearance="fill">
     <mat-label>Last Date Played</mat-label>
-    <input matInput formControlName="lastDatePlayed" type="date" placeholder="Select last date played" title="Last Date Played" />
+    <input matInput formControlName="lastDatePlayed" type="date" placeholder="Select last date played"
+      title="Last Date Played" />
   </mat-form-field>
 
 
@@ -34,12 +36,11 @@
   <div class="default-course-tee-section">
     <h3>Default Course/Tee Combinations</h3>
     <div class="course-tee-select-row">
-      <mat-form-field appearance="fill" class="course-tee-select-field"
-        (mouseover)="onCourseMouseOver(courseSelect)"
-        (mouseleave)="onCourseMouseLeave(courseSelect)">
+      <mat-form-field appearance="fill" class="course-tee-select-field" (mouseover)="onCourseMouseOver(courseSelect)">
         <mat-label>Courses</mat-label>
-        <mat-select #courseSelect [formControl]="courseControl" multiple panelClass="hover-panel" (openedChange)="onDropdownOpened($event, courseSelect)">
-          <mat-option *ngFor="let sc of scorecards" [value]="sc._id">{{ sc.courseTeeName || 'Unnamed Course' }}</mat-option>
+        <mat-select #courseSelect [formControl]="courseControl" multiple panelClass="hover-panel"
+          (openedChange)="onDropdownOpened($event, courseSelect)">
+           <mat-option *ngFor="let sc of scorecards | sortByCourseTeeName" [value]="sc._id">{{ sc.courseTeeName || 'Unnamed Course' }}</mat-option>
         </mat-select>
       </mat-form-field>
     </div>

@@ -316,7 +316,7 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
         .subscribe(scorecard => {
           if (scorecard) {
             this.scoreForm.patchValue({
-              scName: scorecard.name || scorecard.course || '',
+              scName: scorecard.course || '',
               scRating: scorecard.rating || null,
               scSlope: scorecard.slope || null
             });

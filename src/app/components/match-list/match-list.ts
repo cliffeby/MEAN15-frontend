@@ -258,15 +258,15 @@ export class MatchListComponent implements OnInit, OnDestroy {
       const matchData: MatchData = {
          _id: match._id!,
          description: match.name || 'Golf Match',
-        course: { name: finalScorecard.name || 'Golf Course' },
+        course: scorecard.course || 'Golf Course',
         teeTime: match.datePlayed || new Date().toISOString(),
         members: players.map((p) => p.member._id!),
       };
 
       const scorecardData: ScorecardData = {
         _id: finalScorecard._id || '',
-        course: finalScorecard._id || '',
-        courseName: finalScorecard.name || 'Golf Course',
+        course: finalScorecard.course || '',
+        // courseName: finalScorecard.name || 'Golf Course',
         tees: finalScorecard.courseTeeName || 'Regular',
         teeAbreviation: finalScorecard.teeAbreviation || '',
         pars: finalScorecard.pars || Array(18).fill(4),
@@ -544,14 +544,14 @@ export class MatchListComponent implements OnInit, OnDestroy {
     scorecard: Scorecard,
     players: PrintablePlayer[]
   ): void {
-    const courseName = scorecard?.name || 'Golf Course';
+    const course= scorecard?.course || 'Golf Course';
     const matchName = match?.name || 'Match';
     const matchDate = match?.datePlayed
       ? new Date(match.datePlayed).toLocaleDateString()
       : new Date().toLocaleDateString();
 
-    const subject = `Golf Scorecard - ${courseName} - ${matchDate}`;
-    const body = `Please find attached the scorecard for ${matchName} at ${courseName} on ${matchDate}.\n\nPlayers:\n${players
+    const subject = `Golf Scorecard - ${course} - ${matchDate}`;
+    const body = `Please find attached the scorecard for ${matchName} at ${course} on ${matchDate}.\n\nPlayers:\n${players
       .map((p) => `• ${p.member.firstName} ${p.member.lastName} (${p.handicap})`)
       .join('\n')}\n\nGenerated on ${new Date().toLocaleDateString()}`;
 

@@ -28,6 +28,9 @@
 
   <mat-form-field appearance="fill">
     <mat-label>Last Date Played</mat-label>
+     <td formControlName="lastDatePlayed" type="date">
+          {{ memberForm.value.lastDatePlayed ? (memberForm.value.lastDatePlayed | date:'longDate') : 'N/A' }}
+        </td>
   <input matInput formControlName="lastDatePlayed" type="date" placeholder="Select last date played" />
   </mat-form-field>
 
@@ -48,7 +51,7 @@
       <mat-form-field appearance="fill" class="course-tee-select-field">
         <mat-label>Courses</mat-label>
         <mat-select #courseSelect [formControl]="courseControl" multiple panelClass="hover-panel" (openedChange)="onDropdownOpened($event, courseSelect)">
-          <mat-option *ngFor="let sc of scorecards" [value]="sc._id">{{ sc.courseTeeName || 'Unnamed Course' }}</mat-option>
+          <mat-option *ngFor="let sc of scorecards | sortByCourseTeeName" [value]="sc._id">{{ sc.courseTeeName || 'Unnamed Course' }}</mat-option>
         </mat-select>
       </mat-form-field>
     </div>
