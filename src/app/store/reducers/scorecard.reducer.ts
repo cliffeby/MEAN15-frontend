@@ -12,7 +12,7 @@ export interface ScorecardState extends EntityState<Scorecard> {
 export const adapter: EntityAdapter<Scorecard> = createEntityAdapter<Scorecard>({
   selectId: (scorecard: Scorecard) => scorecard._id!,
   sortComparer: (a: Scorecard, b: Scorecard) => {
-    // Sort by name, then by course
+    // Sort by course, then by tees
     const nameA = a.course || '';
     const nameB = b.course || '';
     const groupA = a.tees || '';

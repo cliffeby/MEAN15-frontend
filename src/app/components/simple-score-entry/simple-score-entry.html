@@ -83,7 +83,7 @@
               <th mat-header-cell *matHeaderCellDef>Player</th>
               <td mat-cell *matCellDef="let player">
                 <div class="player-info">
-                  <strong>{{ player.member.firstName }} {{ player.member.lastName }} {{player.member.memberScorecard?.tees}}</strong>
+                  <strong>{{ player.member.firstName }} {{ player.member.lastName }} - {{player.teeAbreviation}} </strong>
                   <small *ngIf="player.member.usgaIndex">
                     USGA Index: {{ player.member.usgaIndex | number:'1.1-1' }}
                     <br />

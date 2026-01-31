@@ -380,7 +380,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       members: membersObservable
     }).subscribe({
       next: ({ scorecard, members }) => {
-        console.log('Loaded scorecard:', scorecard);
+        console.log('Loaded scorecard SE:', scorecard);
         console.log('Loaded members:', members);
         this.scorecard = scorecard;
         this.setupHoleColumns();

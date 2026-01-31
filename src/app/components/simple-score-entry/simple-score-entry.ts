@@ -13,7 +13,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTableModule } from '@angular/material/table';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
 import { MatchService } from '../../services/matchService';
 import { MemberService } from '../../services/memberService';
 import { ScoreService } from '../../services/scoreService';
@@ -36,6 +36,11 @@ interface SimplePlayerScore {
   wonTwoBall: boolean;
   existingScoreId?: string;
   scorecardId?: string;
+  teeAbreviation?: string;
+  rating?: number;
+  slope?: number;
+  tees?: string;
+  memberScorecard?: Scorecard;
 }
 
 @Component({
@@ -54,10 +59,10 @@ interface SimplePlayerScore {
     MatDividerModule,
     MatChipsModule,
     MatTableModule,
-    MatCheckboxModule
+    MatCheckboxModule,
   ],
   templateUrl: './simple-score-entry.html',
-  styleUrls: ['./simple-score-entry.scss']
+  styleUrls: ['./simple-score-entry.scss'],
 })
 export class SimpleScoreEntryComponent implements OnInit {
   private route = inject(ActivatedRoute);
@@ -82,7 +87,7 @@ export class SimpleScoreEntryComponent implements OnInit {
   entryMode: 'totalScore' | 'differential' = 'totalScore';
   hasScoresRecordedByHole = false;
 
-  displayedColumns: string[] = ['player', 'handicap', 'totalScore', 'netScore','winnerStatus'];
+  displayedColumns: string[] = ['player', 'handicap', 'totalScore', 'netScore', 'winnerStatus'];
 
   ngOnInit(): void {
     this.matchId = this.route.snapshot.params['id'];
@@ -92,7 +97,7 @@ export class SimpleScoreEntryComponent implements OnInit {
 
   private initializeForm(): void {
     this.scoreForm = this.fb.group({
-      players: this.fb.array([])
+      players: this.fb.array([]),
     });
   }
 
@@ -113,15 +118,19 @@ export class SimpleScoreEntryComponent implements OnInit {
           this.snackBar.open(
             `Match "${match.name}" is completed. Scores cannot be modified.`,
             'Close',
-            { duration: 5000 }
+            { duration: 5000 },
           );
         }
         // Extract scorecardId and scorecardData
         let scorecardId: string | undefined = undefined;
-        let scorecardData: any = null;
+        let scorecardData: Scorecard | null = null;
         if (typeof match.scorecardId === 'string' && match.scorecardId.trim() !== '') {
           scorecardId = match.scorecardId;
-        } else if (match.scorecardId && typeof match.scorecardId === 'object' && match.scorecardId !== null) {
+        } else if (
+          match.scorecardId &&
+          typeof match.scorecardId === 'object' &&
+          match.scorecardId !== null
+        ) {
           scorecardData = match.scorecardId;
           scorecardId = match.scorecardId._id || match.scorecardId.id;
         }
@@ -137,7 +146,7 @@ export class SimpleScoreEntryComponent implements OnInit {
         this.snackBar.open('Error loading match data', 'Close', { duration: 3000 });
         this.router.navigate(['/matches']);
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -149,14 +158,12 @@ export class SimpleScoreEntryComponent implements OnInit {
       return;
     }
 
-    // 1. Load the match scorecard (for course name)
-    const scorecardObservable = scorecardData
-      ? of(scorecardData)
-      : this.scorecardService.getById(scorecardId);
+    // 1. Load the match scorecard (for course)
+    const scorecardObservable = this.scorecardService.getById(scorecardId);
 
     // 2. Load all members in the match
     const membersObservable = forkJoin(
-      match.lineUps.map(memberId => this.memberService.getById(memberId))
+      match.lineUps.map((memberId) => this.memberService.getById(memberId)),
     );
 
     // 3. Load all scorecards (for member tee/rating/slope lookup)
@@ -165,30 +172,36 @@ export class SimpleScoreEntryComponent implements OnInit {
     forkJoin({
       scorecard: scorecardObservable,
       members: membersObservable,
-      allScorecards: allScorecardsObservable
+      allScorecards: allScorecardsObservable,
     }).subscribe({
       next: ({ scorecard, members, allScorecards }) => {
-        this.scorecard = scorecard;
-        const matchCourse = scorecard.course;
+        this.scorecard = scorecard.scorecard;
+        const matchCourse = this.scorecard!.course;
+        console.log('matchCourse after assignment:', matchCourse);
         // Defensive: flatten if allScorecards is wrapped
-        const scorecardList: any[] = Array.isArray(allScorecards) ? allScorecards : allScorecards.scorecards || [];
+        const scorecardList: any[] = Array.isArray(allScorecards)
+          ? allScorecards
+          : allScorecards.scorecards || [];
 
         // For each member, find their scorecard for this course
-        const membersWithCourseScorecard = members.map(member => {
+        const membersWithCourseScorecard = members.map((member) => {
           let memberScorecard: any = null;
           if (Array.isArray(member.scorecardsId)) {
             // Find the member's scorecard for this course
-            for (const scId of member.scorecardsId) {
-              const sc = scorecardList.find((s: any) => 
-                (s._id === scId || s.scorecardId === scId) && s.course === matchCourse);
-              console.log("SCID", scId, "MC", matchCourse);
+            let scId: any;
+            for (scId of member.scorecardsId) {
+              console.log('Checking member scorecard ID:', scId.scorecardId, member.firstName);
+              const sc = scorecardList.find(
+                (s: any) => (s._id === scId.scorecardId || s.scorecardId === scId.scorecardId) && s.course === matchCourse,
+              );
               if (sc) {
                 memberScorecard = sc;
+                console.log('Found member scorecard for', member.firstName, ':',
+                  memberScorecard.tees, memberScorecard.course, memberScorecard.teeAbreviation);
                 break;
               }
             }
           }
-          console.log("this.SC", this.scorecard,"MSCIDS", member.scorecardsId,"SL", scorecardList,"MC",matchCourse,"SC",scorecard, "MS", memberScorecard,`Member ${member.firstName} ${member.lastName || ''} assigned scorecard:`, memberScorecard);
           return { ...member, memberScorecard };
         });
 
@@ -205,45 +218,61 @@ export class SimpleScoreEntryComponent implements OnInit {
           // Attach member's scorecard info for use in template or calculations
           scorecardId: memberScorecard?._id,
           tees: memberScorecard?.tees,
+          teeAbreviation: memberScorecard?.teeAbreviation,
           rating: memberScorecard?.rating,
-          slope: memberScorecard?.slope
+          slope: memberScorecard?.slope,
         }));
+        console.log('Player Scores after setup:', this.playerScores);
 
-        this.setupPlayerScores(members); // Optionally update this to use playerScores above
+        // Setup form controls for player scores
+        const playersFormArray = this.fb.array(
+          this.playerScores.map(() =>
+            this.fb.group({
+              totalScore: [null, [Validators.min(this.scorecard?.par || 0), Validators.max(200)]],
+              differential: [null, [Validators.min(-50), Validators.max(100)]],
+            }),
+          ),
+        );
+        this.scoreForm.setControl('players', playersFormArray);
+
         this.loadExistingScores();
       },
       error: (error) => {
         console.error('Error loading scorecard and members:', error);
         this.snackBar.open('Error loading data', 'Close', { duration: 3000 });
         this.loading = false;
-      }
+      },
     });
   }
 
   private setupPlayerScores(members: Member[]): void {
-    this.playerScores = members.map(member => ({
+    this.playerScores = members.map((member) => ({
       member,
       totalScore: null,
       differential: null,
       handicap: member.usgaIndex || 0,
       netScore: 0,
+      tees: '',
+      teeAbreviation: '',
       wonIndo: false,
       wonOneBall: false,
-      wonTwoBall: false
+      wonTwoBall: false,
     }));
 
     const playersFormArray = this.fb.array(
-      this.playerScores.map(() => this.fb.group({
-        totalScore: [null, [Validators.min(this.scorecard?.par || 0), Validators.max(200)]],
-        differential: [null, [Validators.min(-50), Validators.max(100)]]
-      }))
+      this.playerScores.map(() =>
+        this.fb.group({
+          totalScore: [null, [Validators.min(this.scorecard?.par || 0), Validators.max(200)]],
+          differential: [null, [Validators.min(-50), Validators.max(100)]],
+        }),
+      ),
     );
     this.scoreForm.setControl('players', playersFormArray);
   }
 
   private loadExistingScores(): void {
     const matchId = this.match?._id || this.matchId;
-    
+
     if (!matchId) {
       this.loading = false;
       return;
@@ -252,40 +281,41 @@ export class SimpleScoreEntryComponent implements OnInit {
     this.scoreService.getScoresByMatch(matchId).subscribe({
       next: (response: any) => {
         const scores = response.scores || [];
-        
+
         // Check if any scores were recorded by hole
         const byHoleScores = scores.filter((s: any) => s.scoreRecordType === 'byHole');
         if (byHoleScores.length > 0) {
           this.hasScoresRecordedByHole = true;
-          const playerNames = byHoleScores
-            .map((s: any) => s.name)
-            .join(', ');
+          const playerNames = byHoleScores.map((s: any) => s.name).join(', ');
           this.snackBar.open(
             `Warning: ${byHoleScores.length} score(s) were recorded by hole (${playerNames}). Individual hole scores will be ignored if you save in simple mode.`,
             'OK',
-            { duration: 10000 }
+            { duration: 10000 },
           );
         }
-        
+
         scores.forEach((score: any) => {
           let memberIdToMatch = score.memberId;
           if (typeof score.memberId === 'object' && score.memberId !== null) {
             memberIdToMatch = score.memberId._id;
           }
-          
+
           const playerIndex = this.playerScores.findIndex(
-            ps => ps.member._id === memberIdToMatch
+            (ps) => ps.member._id === memberIdToMatch,
           );
-          
+
           if (playerIndex >= 0) {
             const totalScore = score.score || score.postedScore;
             this.playerScores[playerIndex].totalScore = totalScore;
             this.playerScores[playerIndex].existingScoreId = score._id;
 
             // Set win booleans from backend data if present
-            this.playerScores[playerIndex].wonIndo = typeof score.wonIndo === 'boolean' ? score.wonIndo : false;
-            this.playerScores[playerIndex].wonOneBall = typeof score.wonOneBall === 'boolean' ? score.wonOneBall : false;
-            this.playerScores[playerIndex].wonTwoBall = typeof score.wonTwoBall === 'boolean' ? score.wonTwoBall : false;
+            this.playerScores[playerIndex].wonIndo =
+              typeof score.wonIndo === 'boolean' ? score.wonIndo : false;
+            this.playerScores[playerIndex].wonOneBall =
+              typeof score.wonOneBall === 'boolean' ? score.wonOneBall : false;
+            this.playerScores[playerIndex].wonTwoBall =
+              typeof score.wonTwoBall === 'boolean' ? score.wonTwoBall : false;
 
             // Calculate differential from total score (reverse calculation)
             const coursePar = this.scorecard?.par || 72;
@@ -294,10 +324,13 @@ export class SimpleScoreEntryComponent implements OnInit {
 
             const playerFormGroup = this.getPlayerFormGroup(playerIndex);
             playerFormGroup.get('totalScore')?.setValue(totalScore);
-            playerFormGroup.get('differential')?.setValue(this.playerScores[playerIndex].differential);
+            playerFormGroup
+              .get('differential')
+              ?.setValue(this.playerScores[playerIndex].differential);
 
             this.calculateNetScore(playerIndex);
           }
+          console.log('Loaded existing score for player index', playerIndex, ':', this.playerScores[playerIndex]);
         });
         this.loading = false;
       },
@@ -306,7 +339,7 @@ export class SimpleScoreEntryComponent implements OnInit {
           console.error('Error loading scores:', error);
         }
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -324,25 +357,27 @@ export class SimpleScoreEntryComponent implements OnInit {
 
     const inputValue = event.target.value.trim();
     let score: number | null = null;
-    
+
     if (!inputValue || inputValue === '0') {
       score = null;
     } else if (!isNaN(inputValue)) {
       score = parseInt(inputValue);
     }
-    
+
     this.playerScores[playerIndex].totalScore = score;
-    
+
     // Update differential based on total score
     if (score !== null) {
       const courseRating = this.scorecard?.rating || this.scorecard?.par || 72;
       this.playerScores[playerIndex].differential = score - courseRating;
       const playerFormGroup = this.getPlayerFormGroup(playerIndex);
-      playerFormGroup.get('differential')?.setValue(this.playerScores[playerIndex].differential, { emitEvent: false });
+      playerFormGroup
+        .get('differential')
+        ?.setValue(this.playerScores[playerIndex].differential, { emitEvent: false });
     } else {
       this.playerScores[playerIndex].differential = null;
     }
-    
+
     this.calculateNetScore(playerIndex);
   }
 
@@ -355,25 +390,27 @@ export class SimpleScoreEntryComponent implements OnInit {
 
     const inputValue = event.target.value.trim();
     let differential: number | null = null;
-    
+
     if (!inputValue) {
       differential = null;
     } else if (!isNaN(inputValue)) {
       differential = parseFloat(inputValue);
     }
-    
+
     this.playerScores[playerIndex].differential = differential;
-    
+
     // Calculate total score from differential
     if (differential !== null) {
       const courseRating = this.scorecard?.rating || this.scorecard?.par || 72;
       this.playerScores[playerIndex].totalScore = Math.round(differential + courseRating);
       const playerFormGroup = this.getPlayerFormGroup(playerIndex);
-      playerFormGroup.get('totalScore')?.setValue(this.playerScores[playerIndex].totalScore, { emitEvent: false });
+      playerFormGroup
+        .get('totalScore')
+        ?.setValue(this.playerScores[playerIndex].totalScore, { emitEvent: false });
     } else {
       this.playerScores[playerIndex].totalScore = null;
     }
-    
+
     this.calculateNetScore(playerIndex);
   }
 
@@ -396,14 +433,14 @@ export class SimpleScoreEntryComponent implements OnInit {
     }
 
     this.saving = true;
-    
+
     try {
       for (const playerScore of this.playerScores) {
         if (playerScore.totalScore !== null) {
           await this.savePlayerScore(playerScore);
         }
       }
-      
+
       this.snackBar.open('Scores saved successfully!', 'Close', { duration: 3000 });
       this.router.navigate(['/matches']);
     } catch (error) {
@@ -431,26 +468,30 @@ export class SimpleScoreEntryComponent implements OnInit {
       scRating: this.scorecard?.rating,
       scPars: this.scorecard?.pars,
       scHCaps: this.scorecard?.hCaps,
-      scTees: this.scorecard?.tees,
+      scTees: playerScore.teeAbreviation,
       scCourse: this.scorecard?.course,
       datePlayed: this.match?.datePlayed,
       author: this.authService.getAuthorObject(),
       isScored: true,
       wonIndo: playerScore.wonIndo,
       wonOneBall: playerScore.wonOneBall,
-      wonTwoBall: playerScore.wonTwoBall  
+      wonTwoBall: playerScore.wonTwoBall,
     };
 
     await this.scoreService.savePlayerScore(scoreData, playerScore.existingScoreId);
   }
 
   canSave(): boolean {
-    return !this.loading && !this.saving && !this.isMatchCompleted && 
-           this.playerScores.some(p => p.totalScore !== null);
+    return (
+      !this.loading &&
+      !this.saving &&
+      !this.isMatchCompleted &&
+      this.playerScores.some((p) => p.totalScore !== null)
+    );
   }
 
-  getCourse():string {
-    return this.scorecard?.course || " "
+  getCourse(): string {
+    return this.scorecard?.course || ' ';
   }
 
   // getCourseRating(): number {
