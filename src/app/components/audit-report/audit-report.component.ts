@@ -5,6 +5,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
+import { PageEvent } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 
@@ -28,6 +29,9 @@ export class AuditReportComponent implements OnInit {
   filterValue = '';
   loading = true;
   error = '';
+  total = 0;
+  page = 1;
+  pageSize = 10;
 
   private _sort!: MatSort;
   private _paginator!: any;
@@ -58,7 +62,11 @@ export class AuditReportComponent implements OnInit {
 
   fetchLogs() {
     this.loading = true;
-    this.auditService.getAuditLogs().subscribe({
+    this.auditService.getAuditLogs({
+      page: this.page,
+      pageSize: this.pageSize,
+      name: this.filterValue
+    }).subscribe({
       next: (res) => {
         this.dataSource.data = res.logs.map((log: any) => ({
           ...log,
@@ -83,9 +91,8 @@ export class AuditReportComponent implements OnInit {
               : log.route.includes('hcaps')
                 ? 'Handicap/Score'
                 : log.route
-
-
         }));
+        this.total = res.total;
         this.loading = false;
       },
       error: (_err) => {
@@ -95,8 +102,15 @@ export class AuditReportComponent implements OnInit {
     });
   }
 
+  onPageChange(event: PageEvent) {
+    this.page = event.pageIndex + 1;
+    this.pageSize = event.pageSize;
+    this.fetchLogs();
+  }
+
   applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.filterValue = (event.target as HTMLInputElement).value;
+    this.page = 1;
+    this.fetchLogs();
   }
 }

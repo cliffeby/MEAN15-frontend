@@ -29,8 +29,11 @@ export class AuditService {
     return throwError(() => new Error(errorMsg));
   }
 
-  getAuditLogs(): Observable<any> {
-    return this.http.get(this.baseUrl, this.getHeaders())
+  getAuditLogs(params: { page?: number; pageSize?: number; name?: string; dateFrom?: string; dateTo?: string } = {}): Observable<any> {
+    const query: any = { ...params };
+    // Remove undefined/null
+    Object.keys(query).forEach((k) => (query[k] == null || query[k] === '') && delete query[k]);
+    return this.http.get(this.baseUrl, { ...this.getHeaders(), params: query })
       .pipe(catchError(this.handleError));
   }
 }

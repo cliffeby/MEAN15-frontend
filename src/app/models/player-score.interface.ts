@@ -6,7 +6,20 @@ export interface PlayerScore {
   frontNine: number;
   backNine: number;
   total: number;
+  totalScore: number | null;
+  differential: number | null;
   handicap: number;
   netScore: number;
+  wonIndo: boolean;
+  wonOneBall: boolean;
+  wonTwoBall: boolean;
   existingScoreId?: string;
+  scorecardId?: string;
+  // Scorecard enrichment fields
+  tees?: string;
+  course?: string;
+  teeAbreviation?: string;
+  rating?: number;
+  slope?: number;
 }
+

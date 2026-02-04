@@ -24,6 +24,7 @@ import { Match } from '../../models/match';
 import { Member } from '../../models/member';
 import { Score } from '../../models/score';
 import { M } from '@angular/material/ripple-loader.d-9me-KFSi';
+import { getMemberScorecard, getMatchScorecard } from '../../utils/score-entry-utils';
 
 interface SimplePlayerScore {
   member: Member;
@@ -121,6 +122,7 @@ export class SimpleScoreEntryComponent implements OnInit {
             { duration: 5000 },
           );
         }
+
         // Extract scorecardId and scorecardData
         let scorecardId: string | undefined = undefined;
         let scorecardData: Scorecard | null = null;
@@ -159,7 +161,7 @@ export class SimpleScoreEntryComponent implements OnInit {
     }
 
     // 1. Load the match scorecard (for course)
-    const scorecardObservable = this.scorecardService.getById(scorecardId);
+    const scorecardObservable1 = this.scorecardService.getById(scorecardId);
 
     // 2. Load all members in the match
     const membersObservable = forkJoin(
@@ -170,38 +172,27 @@ export class SimpleScoreEntryComponent implements OnInit {
     const allScorecardsObservable = this.scorecardService.getAll();
 
     forkJoin({
-      scorecard: scorecardObservable,
+      scorecard: scorecardObservable1,
       members: membersObservable,
       allScorecards: allScorecardsObservable,
     }).subscribe({
       next: ({ scorecard, members, allScorecards }) => {
-        this.scorecard = scorecard.scorecard;
-        const matchCourse = this.scorecard!.course;
-        console.log('matchCourse after assignment:', matchCourse);
         // Defensive: flatten if allScorecards is wrapped
         const scorecardList: any[] = Array.isArray(allScorecards)
           ? allScorecards
           : allScorecards.scorecards || [];
+        // Get the actual scorecard for this match
+        console.log('MatchId:', match, 'Scorecard list:', scorecardList);
+        this.scorecard = getMatchScorecard(match, scorecardList);
+        const matchCourse = this.scorecard?.course;
+        console.log('matchCourse after assignment:', match, this.scorecard, matchCourse);
 
         // For each member, find their scorecard for this course
         const membersWithCourseScorecard = members.map((member) => {
-          let memberScorecard: any = null;
-          if (Array.isArray(member.scorecardsId)) {
-            // Find the member's scorecard for this course
-            let scId: any;
-            for (scId of member.scorecardsId) {
-              console.log('Checking member scorecard ID:', scId.scorecardId, member.firstName);
-              const sc = scorecardList.find(
-                (s: any) => (s._id === scId.scorecardId || s.scorecardId === scId.scorecardId) && s.course === matchCourse,
-              );
-              if (sc) {
-                memberScorecard = sc;
-                console.log('Found member scorecard for', member.firstName, ':',
-                  memberScorecard.tees, memberScorecard.course, memberScorecard.teeAbreviation);
-                break;
-              }
-            }
-          }
+          const memberScorecard: Scorecard | null = getMemberScorecard(
+            matchCourse ?? '',
+            member.scorecardsId ?? [],scorecardList);
+          console.log('Member:', member, 'Member Scorecard:', memberScorecard);
           return { ...member, memberScorecard };
         });
 
@@ -330,7 +321,12 @@ export class SimpleScoreEntryComponent implements OnInit {
 
             this.calculateNetScore(playerIndex);
           }
-          console.log('Loaded existing score for player index', playerIndex, ':', this.playerScores[playerIndex]);
+          console.log(
+            'Loaded existing score for player index',
+            playerIndex,
+            ':',
+            this.playerScores[playerIndex],
+          );
         });
         this.loading = false;
       },

@@ -6,7 +6,7 @@
         Score Entry
       </mat-card-title>
       <mat-card-subtitle *ngIf="match && scorecard">
-        {{ match.name }} - {{ scorecard.course }}
+        {{ match.name }} - 
       </mat-card-subtitle>
     </mat-card-header>
 
@@ -61,9 +61,7 @@
         <div class="course-info" *ngIf="scorecard">
           <div class="info-chips">
             <mat-chip-set>
-              <mat-chip>Par: {{ getCoursePar() }}</mat-chip>
-              <mat-chip>Rating: {{ scorecard.rating }}</mat-chip>
-              <mat-chip>Slope: {{ scorecard.slope }}</mat-chip>
+              <mat-chip>Course: {{ scorecard.course }}</mat-chip>
             </mat-chip-set>
           </div>
         </div>
@@ -134,7 +132,7 @@
                   <!-- Player name and handicap -->
                   <td class="player-column">
                     <div class="player-info">
-                      <strong>{{ player.member.firstName }} {{ player.member.lastName }}</strong>
+                      <strong>{{ player.member.firstName }} {{ player.member.lastName }} - {{player.teeAbreviation}}</strong>
                       <small *ngIf="player.member.usgaIndex">USGA: {{ player.member.usgaIndex | number:'1.1-1' }}</small>
                       <div class="save-status" [ngClass]="getPlayerSaveColor(playerIndex)">
                         <mat-icon class="save-icon">{{ getPlayerSaveIcon(playerIndex) }}</mat-icon>
