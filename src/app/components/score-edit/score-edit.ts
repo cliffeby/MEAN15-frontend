@@ -106,9 +106,11 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
       scorecardId: [''],
       scSlope: [null],
       scRating: [null],
+      scPar: [null],
       scPars: this.fb.array([]),
       scHCaps: this.fb.array([]),
-      scName: [''],
+      scCourse: [''],
+      scTees: [''],
       datePlayed: [new Date()],
       foursomeIds: this.fb.array([]),
       partnerIds: this.fb.array([])
@@ -205,9 +207,11 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
       matchName: this.matchName,
       memberId: typeof score.memberId === 'string' ? score.memberId : (score.memberId?._id || ''),
       scorecardId: score.scorecardId,
+      scPar: score.scPar,
       scSlope: score.scSlope,
       scRating: score.scRating,
-      scName: score.scTees,
+      scCourse: score.scCourse || '',
+      scTees: score.scTees || '',
       datePlayed: score.datePlayed ? new Date(score.datePlayed) : new Date()
     });
 
@@ -316,7 +320,8 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
         .subscribe(scorecard => {
           if (scorecard) {
             this.scoreForm.patchValue({
-              scName: scorecard.course || '',
+              scCourse: scorecard.course || '',
+              scTees: scorecard.tees || '',
               scRating: scorecard.rating || null,
               scSlope: scorecard.slope || null
             });
@@ -343,7 +348,8 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
     } else {
       // Clear scorecard-related fields when no scorecard is selected
       this.scoreForm.patchValue({
-        scName: '',
+        scCourse: '',
+        scTees: '',
         scRating: null,
         scSlope: null
       });

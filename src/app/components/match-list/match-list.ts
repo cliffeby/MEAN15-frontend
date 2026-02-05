@@ -87,7 +87,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
     private store: Store,
     private router: Router,
     private authService: AuthService,
-    private confirmDialog: ConfirmDialogService
+    private confirmDialog: ConfirmDialogService,
   ) {
     this.matches$ = this.store.select(selectAllMatches);
     this.loading$ = this.store.select(selectMatchesLoading);
@@ -124,7 +124,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
       map((matches) => {
         const startIndex = this.pageIndex * this.pageSize;
         return matches.slice(startIndex, startIndex + this.pageSize);
-      })
+      }),
     );
 
     // Subscribe to configuration changes so pageSize and paginator options update dynamically
@@ -195,7 +195,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
     try {
       // Load match data
       const matchResponse = await lastValueFrom(this.matchService.getById(id));
-       const match = matchResponse?.match || matchResponse;
+      const match = matchResponse?.match || matchResponse;
 
       if (!match) {
         this.snackBar.open('Match not found', 'Close', { duration: 3000 });
@@ -218,7 +218,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
           forkJoin({
             scorecard: this.scorecardService.getById(finalScorecardId),
             members: this.memberService.getAll(),
-          })
+          }),
         )) || {};
 
       const finalScorecard = scorecard?.scorecard || scorecard;
@@ -241,7 +241,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
                 member,
                 handicap: this.handicapService.calculateCourseHandicap(
                   member.usgaIndex || 0,
-                  finalScorecard?.slope
+                  finalScorecard?.slope,
                 ),
               };
             }
@@ -256,8 +256,8 @@ export class MatchListComponent implements OnInit, OnDestroy {
 
       // Convert to interface types expected by the service
       const matchData: MatchData = {
-         _id: match._id!,
-         description: match.name || 'Golf Match',
+        _id: match._id!,
+        description: match.name || 'Golf Match',
         course: scorecard.course || 'Golf Course',
         teeTime: match.datePlayed || new Date().toISOString(),
         members: players.map((p) => p.member._id!),
@@ -288,7 +288,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
       this.snackBar.open(
         'Scorecard ready - choose Download, Email, or Print from the preview window!',
         'Close',
-        { duration: 5000 }
+        { duration: 5000 },
       );
     } catch (error) {
       console.error('Error generating scorecard:', error);
@@ -335,35 +335,40 @@ export class MatchListComponent implements OnInit, OnDestroy {
       .pipe(take(1))
       .subscribe((match) => {
         if (!match) return;
-        
+
         const name = match.name;
         const author = match.author;
-        
+
         // Warn user and create HCap records when completing a match
         const completing =
-          (status || '').toLowerCase() === 'completed' || (status || '').toLowerCase() === 'complete';
+          (status || '').toLowerCase() === 'completed' ||
+          (status || '').toLowerCase() === 'complete';
         if (completing) {
           this.confirmDialog
             .confirmAction(
               'Complete Match',
               'Completing this match will create/update handicap records for players with posted score > 50. Do you want to continue?',
               'Complete',
-              'Cancel'
+              'Cancel',
             )
             .subscribe(async (confirmed) => {
               if (!confirmed) return;
               try {
                 await this.createHcapRecordsForMatch(id);
                 this.store.dispatch(MatchActions.updateMatchStatus({ id, status, name, author }));
-                this.snackBar.open('Match completed — handicaps updated (where applicable).', 'Close', {
-                  duration: 4000,
-                });
+                this.snackBar.open(
+                  'Match completed — handicaps updated (where applicable).',
+                  'Close',
+                  {
+                    duration: 4000,
+                  },
+                );
               } catch (err) {
                 console.error('Error creating HCap records:', err);
                 this.snackBar.open(
                   'Error creating handicap records. Match status not changed.',
                   'Close',
-                  { duration: 6000 }
+                  { duration: 6000 },
                 );
               }
             });
@@ -381,7 +386,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
     // const currentUserEmail = await this.getCurrentUserEmail();
     const currentUser = this.authService.getAuthorObject();
     // const currentUserId = currentUser?.name || currentUser?.id || currentUser?.email || null;
-// console.log('Current user for HCap creation:', currentUserId, currentUserEmail);
+    // console.log('Current user for HCap creation:', currentUserId, currentUserEmail);
     // Filter players with postedScore > 50 (or score if postedScore missing)
     const eligible = scores.filter((s: any) => {
       const posted = s.postedScore ?? s.score ?? 0;
@@ -461,6 +466,11 @@ export class MatchListComponent implements OnInit, OnDestroy {
                 ? score.scorecardId
                 : score.scorecardId._id)) ||
             null,
+          scCourse: score.scCourse || '',
+          scTees: score.scTees || '',
+          scRating: score.scRating || null,
+          scSlope: score.scSlope || null,
+          scPar: score.scPar || null,
           matchId:
             (score.matchId &&
               (typeof score.matchId === 'string' ? score.matchId : score.matchId._id)) ||
@@ -536,15 +546,14 @@ export class MatchListComponent implements OnInit, OnDestroy {
     return 0;
   }
 
-
   private emailScorecard(
     pdfBlob: Blob,
     filename: string,
     match: Match,
     scorecard: Scorecard,
-    players: PrintablePlayer[]
+    players: PrintablePlayer[],
   ): void {
-    const course= scorecard?.course || 'Golf Course';
+    const course = scorecard?.course || 'Golf Course';
     const matchName = match?.name || 'Match';
     const matchDate = match?.datePlayed
       ? new Date(match.datePlayed).toLocaleDateString()
@@ -567,14 +576,14 @@ export class MatchListComponent implements OnInit, OnDestroy {
 
     // Open default email client
     const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
-      body + '\n\n[Please attach the downloaded PDF file: ' + filename + ']'
+      body + '\n\n[Please attach the downloaded PDF file: ' + filename + ']',
     )}`;
     window.open(mailtoLink);
 
     this.snackBar.open(
       `PDF downloaded as: ${filename}. Check your Downloads folder to attach to email.`,
       'Close',
-      { duration: 10000 }
+      { duration: 10000 },
     );
   }
 
@@ -587,7 +596,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
       map((matches) => {
         const startIndex = this.pageIndex * this.pageSize;
         return matches.slice(startIndex, startIndex + this.pageSize);
-      })
+      }),
     );
   }
 }

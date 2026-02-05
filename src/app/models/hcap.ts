@@ -12,6 +12,11 @@ export interface HCap {
   handicapDifferential: number;
   scoreId: string;
   scorecardId: string;
+  scPar: number;
+  scRating: number;
+  scSlope: number;
+  scCourse: string;
+  scTees: string;
   matchId: string;
   memberId: string;
   // userId: string;

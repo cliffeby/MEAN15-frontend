@@ -30,6 +30,7 @@ export interface Score {
     _id?: string;
     tees: string;
   };
+  scPar?: number;
   scSlope?: number;
   scRating?: number;
   scPars?: number[];

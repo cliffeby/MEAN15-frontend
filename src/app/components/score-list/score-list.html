@@ -21,7 +21,7 @@
             </div>
           </mat-panel-title>
           <mat-panel-description *ngIf="group.matchDate">
-            {{ formatDate(group.matchDate) }}
+            {{ group.scores[0].scCourse || 'Unknown Course' }} - {{ formatDate(group.matchDate) }}
           </mat-panel-description>
         </mat-expansion-panel-header>
         
@@ -52,8 +52,8 @@
 
             <!-- Course Column -->
             <ng-container matColumnDef="course">
-              <th mat-header-cell *matHeaderCellDef>Course</th>
-              <td mat-cell *matCellDef="let score">{{ score.scName || 'N/A' }}</td>
+              <th mat-header-cell *matHeaderCellDef>Tees</th>
+              <td mat-cell *matCellDef="let score">{{ score.scTees || 'N/A' }}</td>
             </ng-container>
 
            
@@ -164,8 +164,8 @@
 
                   <!-- Course Column -->
                   <ng-container matColumnDef="course">
-                    <th mat-header-cell *matHeaderCellDef>Course</th>
-                    <td mat-cell *matCellDef="let score">{{ score.scName || 'N/A' }}</td>
+                    <th mat-header-cell *matHeaderCellDef>Course-Tees</th>
+                    <td mat-cell *matCellDef="let score">{{ score.scCourse }} - {{ score.scTees || 'N/A' }}</td>
                   </ng-container>
 
 
