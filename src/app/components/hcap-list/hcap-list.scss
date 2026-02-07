@@ -1,3 +1,38 @@
+// --- Column Selector Dropdown Styles ---
+.column-selector-dropdown-container {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1em;
+  z-index: 10;
+}
+.column-selector-dropdown-trigger {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.column-selector-dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 2.5em;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  padding: 1em 1.5em 1em 1em;
+  min-width: 180px;
+  min-height: 2em;
+}
+.column-selector-dropdown-trigger:hover .column-selector-dropdown-content,
+.column-selector-dropdown-trigger:focus-within .column-selector-dropdown-content {
+  display: block;
+}
+.column-selector-dropdown-content mat-checkbox {
+  display: block;
+  margin-bottom: 0.5em;
+}
 .hcap-list {
   .toolbar {
     display: flex;

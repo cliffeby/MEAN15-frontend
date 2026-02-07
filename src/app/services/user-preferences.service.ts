@@ -1,3 +1,4 @@
+
 import { Injectable } from '@angular/core';
 import { AuthService } from './authService';
 
@@ -24,6 +25,50 @@ export class UserPreferencesService {
   ];
 
   constructor(private authService: AuthService) {}
+
+  /**
+   * Save custom column preferences for a given key (e.g. hcapListColumns)
+   */
+  saveCustomColumnPreferences(key: string, columns: ColumnPreference[]): void {
+    const preferences = this.getUserPreferences();
+    (preferences as any)[key] = columns;
+    this.saveUserPreferences(preferences);
+  }
+
+  /**
+   * Get custom column preferences for a given key, with fallback to defaults
+   */
+  getCustomColumnPreferences(key: string, defaultColumns: ColumnPreference[]): ColumnPreference[] {
+    try {
+      const preferences = this.getUserPreferences();
+      const customPrefs = (preferences as any)[key];
+      if (customPrefs && Array.isArray(customPrefs)) {
+        const validColumns = (customPrefs as ColumnPreference[]).filter((col: any) => this.isValidColumnPreference(col));
+        if (validColumns.length > 0) {
+          // Merge with defaults to handle new columns
+          return this.mergeWithCustomDefaults(validColumns, defaultColumns);
+        }
+      }
+    } catch (error) {
+      console.warn('Error loading custom column preferences:', error);
+    }
+    return [...defaultColumns];
+  }
+
+  /**
+   * Merge saved preferences with custom default columns
+   */
+  mergeWithCustomDefaults(savedColumns: ColumnPreference[], defaultColumns: ColumnPreference[]): ColumnPreference[] {
+    const mergedColumns: ColumnPreference[] = [];
+    defaultColumns.forEach((defaultCol: ColumnPreference) => {
+      const savedCol = savedColumns.find((saved: ColumnPreference) => saved.key === defaultCol.key);
+      mergedColumns.push({
+        key: defaultCol.key,
+        visible: savedCol ? savedCol.visible : defaultCol.visible
+      });
+    });
+    return mergedColumns;
+  }
 
   /**
    * Get the storage key for the current user
