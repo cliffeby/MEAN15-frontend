@@ -196,7 +196,7 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
       score: score.score,
       postedScore: score.postedScore,
       usgaIndex: score.usgaIndex,
-      usgaIndexForTodaysScore: score.usgaIndexForTodaysScore,
+      usgaDifferentialToday: score.usgaDifferentialToday,
       handicap: score.handicap,
       wonTwoBall: score.wonTwoBall,
       wonOneBall: score.wonOneBall,

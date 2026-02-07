@@ -14,12 +14,8 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatChipsModule } from '@angular/material/chips';
 import { forkJoin, of, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, delay, take } from 'rxjs/operators';
-
-interface ScoresApiResponse {
-  success: boolean;
-  count: number;
-  scores: Score[];
-}
+import { buildScoreData } from '../../utils/score-data-builder';
+import { calculateUSGADifferentialToday } from '../../utils/score-utils';
 
 import { MatchService } from '../../services/matchService';
 import { MemberService } from '../../services/memberService';
@@ -29,7 +25,7 @@ import { Scorecard } from '../../models/scorecard.interface';
 import { AuthService } from '../../services/authService';
 import { Match } from '../../models/match';
 import { Member } from '../../models/member';
-import { Score } from '../../models/score';
+import { Score, SimplePlayerScore, ScoresApiResponse } from '../../models/score';
 import type { PlayerScore } from '../../models/player-score.interface';
 import {
   sumScores,
@@ -431,14 +427,14 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       allScorecards: allScorecardsObservable,
     }).subscribe({
       next: ({ scorecard, members, allScorecards }) => {
-        console.log('Loaded scorecard SE:', scorecard, 'SECourse',scorecard.scorecard.course);
+        console.log('Loaded scorecard SE:', scorecard, 'SECourse', scorecard.scorecard.course);
         console.log('Loaded members:', members);
         // Defensive: flatten if allScorecards is wrapped
         const scorecardList: any[] = Array.isArray(allScorecards)
           ? allScorecards
           : allScorecards.scorecards || [];
         this.scorecard = scorecard.scorecard;
-        const matchCourse:string= this.scorecard?.course || '';
+        const matchCourse: string = this.scorecard?.course || '';
         // For each member, find their scorecard for this course
         const membersWithCourseScorecard = members.map((member) => {
           const memberScorecard: Scorecard | null = getMemberScorecard(
@@ -489,6 +485,9 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       wonIndo: false,
       wonOneBall: false,
       wonTwoBall: false,
+      usgaDifferentialToday: 0,
+      rochDifferentialToday: 0,
+      othersDifferentialToday: 0,
       // Attach member's scorecard info for use in template or calculations
       scorecardId: member.scorecard?._id,
       tees: member.memberScorecard?.tees,
@@ -497,8 +496,8 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       slope: member.memberScorecard?.slope,
       scores: [], // <-- required
       frontNine: 0, // <-- should be a number
-      backNine: 0,  // <-- should be a number
-      total: 0      // <-- should be a number
+      backNine: 0, // <-- should be a number
+      total: 0, // <-- should be a number
     }));
 
     // Setup form array
@@ -842,39 +841,48 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       this.saving = false;
     }
   }
-
-  private async savePlayerScore(playerScore: any): Promise<void> {
-    const scoreData: Partial<Score> = {
-      name: `${playerScore.member.firstName} ${playerScore.member.lastName || ''}`.trim(),
-      score: playerScore.total,
-      postedScore: playerScore.total,
-      scores: playerScore.scores.map((s: any) => s || 0),
-      scoresToPost: playerScore.scores.map((s: any) => s || 0),
-      scoreRecordType: 'byHole',
-      usgaIndex: playerScore.member.usgaIndex,
-      handicap: calculateCourseHandicap(playerScore.handicap, this.scorecard?.slope),
-      matchId: this.match?._id,
-      memberId: playerScore.member._id,
-      // scorecardId: this.scorecardId,
-      scorecardId: this.scorecardId && this.scorecardId.trim() !== '' ? this.scorecardId : undefined,
-      scSlope: this.scorecard?.slope,
-      scRating: this.scorecard?.rating,
-      scPars: this.scorecard?.pars,
-      scHCaps: this.scorecard?.hCaps,
-      scTees: this.scorecard?.tees,
-      scCourse: this.scorecard?.course,
-      datePlayed: this.match?.datePlayed,
-      author: this.authService.getAuthorObject(),
-      isScored: true,
-    };
-
-    try {
-      await this.scoreService.savePlayerScore(scoreData, playerScore.existingScoreId);
-    } catch (error) {
-      console.error(`Error saving score for ${playerScore.member.firstName}:`, error);
-      throw error;
-    }
+  private async savePlayerScore(playerScore: SimplePlayerScore): Promise<void> {
+    const scoreData = buildScoreData(
+      playerScore,
+      this.match!,
+      this.scorecard!,
+      'totalScore',
+      this.authService.getAuthorObject(),
+    );
+    await this.scoreService.savePlayerScore(scoreData, playerScore.existingScoreId);
   }
+  // private async savePlayerScore(playerScore: any): Promise<void> {
+  //   const scoreData: Partial<Score> = {
+  //     name: `${playerScore.member.firstName} ${playerScore.member.lastName || ''}`.trim(),
+  //     score: playerScore.total,
+  //     postedScore: playerScore.total,
+  //     scores: playerScore.scores.map((s: any) => s || 0),
+  //     scoresToPost: playerScore.scores.map((s: any) => s || 0),
+  //     scoreRecordType: 'byHole',
+  //     usgaIndex: playerScore.member.usgaIndex,
+  //     handicap: calculateCourseHandicap(playerScore.handicap, this.scorecard?.slope),
+  //     matchId: this.match?._id,
+  //     memberId: playerScore.member._id,
+  //     // scorecardId: this.scorecardId,
+  //     scorecardId: this.scorecardId && this.scorecardId.trim() !== '' ? this.scorecardId : undefined,
+  //     scSlope: this.scorecard?.slope,
+  //     scRating: this.scorecard?.rating,
+  //     scPars: this.scorecard?.pars,
+  //     scHCaps: this.scorecard?.hCaps,
+  //     scTees: this.scorecard?.tees,
+  //     scCourse: this.scorecard?.course,
+  //     datePlayed: this.match?.datePlayed,
+  //     author: this.authService.getAuthorObject(),
+  //     isScored: true,
+  //   };
+
+  //   try {
+  //     await this.scoreService.savePlayerScore(scoreData, playerScore.existingScoreId);
+  //   } catch (error) {
+  //     console.error(`Error saving score for ${playerScore.member.firstName}:`, error);
+  //     throw error;
+  //   }
+  // }
 
   canSave(): boolean {
     return !this.loading && !this.saving && !this.isMatchCompleted && this.playerScores.length > 0;

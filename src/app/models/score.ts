@@ -8,7 +8,9 @@ export interface Score {
   scoringMethod: string;
   scoreRecordType: 'byHole' | 'total' | 'differential';
   usgaIndex?: number;
-  usgaIndexForTodaysScore?: number;
+  usgaDifferentialToday: number | undefined;
+  rochDifferentialToday: number | undefined;
+  othersDifferentialToday: number | undefined;
   handicap: number;
   wonTwoBall?: boolean;
   wonOneBall?: boolean;
@@ -37,6 +39,7 @@ export interface Score {
   scHCaps?: number[];
   scTees?: string;
   scCourse?: string;
+  // teeAbreviation?: string;
   datePlayed?: string;
   foursomeIds?: string[];
   partnerIds?: string[];
@@ -47,4 +50,33 @@ export interface Score {
   };
   createdAt?: string;
   updatedAt?: string;
+}
+
+import { Member } from './member';
+import { Scorecard } from './scorecard.interface';
+export interface SimplePlayerScore {
+  member: Member;
+  totalScore: number | null;
+  differential: number | null;
+  usgaDifferentialToday: number | undefined;
+  rochDifferentialToday: number | undefined;
+  othersDifferentialToday: number | undefined;
+  handicap: number;
+  netScore: number;
+  wonIndo: boolean;
+  wonOneBall: boolean;
+  wonTwoBall: boolean;
+  existingScoreId?: string;
+  scorecardId?: string;
+  teeAbreviation?: string;
+  rating?: number;
+  slope?: number;
+  tees?: string;
+  memberScorecard?: Scorecard;
+}
+
+export interface ScoresApiResponse {
+  success: boolean;
+  count: number;
+  scores: Score[];
 }

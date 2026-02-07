@@ -19,30 +19,14 @@ import { MemberService } from '../../services/memberService';
 import { ScoreService } from '../../services/scoreService';
 import { ScorecardService } from '../../services/scorecardService';
 import { Scorecard } from '../../models/scorecard.interface';
+import { SimplePlayerScore } from '../../models/score';
 import { AuthService } from '../../services/authService';
 import { Match } from '../../models/match';
 import { Member } from '../../models/member';
 import { Score } from '../../models/score';
-import { M } from '@angular/material/ripple-loader.d-9me-KFSi';
 import { getMemberScorecard, getMatchScorecard } from '../../utils/score-entry-utils';
-
-interface SimplePlayerScore {
-  member: Member;
-  totalScore: number | null;
-  differential: number | null;
-  handicap: number;
-  netScore: number;
-  wonIndo: boolean;
-  wonOneBall: boolean;
-  wonTwoBall: boolean;
-  existingScoreId?: string;
-  scorecardId?: string;
-  teeAbreviation?: string;
-  rating?: number;
-  slope?: number;
-  tees?: string;
-  memberScorecard?: Scorecard;
-}
+import { calculateUSGADifferentialToday } from '../../utils/score-utils';
+import { buildScoreData } from '../../utils/score-data-builder';
 
 @Component({
   selector: 'app-simple-score-entry',
@@ -87,7 +71,6 @@ export class SimpleScoreEntryComponent implements OnInit {
   isMatchCompleted = false;
   entryMode: 'totalScore' | 'differential' = 'totalScore';
   hasScoresRecordedByHole = false;
-
   displayedColumns: string[] = ['player', 'handicap', 'totalScore', 'netScore', 'winnerStatus'];
 
   ngOnInit(): void {
@@ -201,6 +184,9 @@ export class SimpleScoreEntryComponent implements OnInit {
           member: member as Member,
           totalScore: null,
           differential: null,
+          usgaDifferentialToday: 0,
+          rochDifferentialToday: 0,
+          othersDifferentialToday: 0,
           handicap: (member as Member).usgaIndex || 0,
           netScore: 0,
           wonIndo: false,
@@ -212,6 +198,7 @@ export class SimpleScoreEntryComponent implements OnInit {
           teeAbreviation: memberScorecard?.teeAbreviation,
           rating: memberScorecard?.rating,
           slope: memberScorecard?.slope,
+          par: memberScorecard?.par
         }));
         console.log('Player Scores after setup:', this.playerScores);
 
@@ -234,21 +221,6 @@ export class SimpleScoreEntryComponent implements OnInit {
         this.loading = false;
       },
     });
-  }
-
-  private setupPlayerScores(members: Member[]): void {
-    this.playerScores = members.map((member) => ({
-      member,
-      totalScore: null,
-      differential: null,
-      handicap: member.usgaIndex || 0,
-      netScore: 0,
-      tees: '',
-      teeAbreviation: '',
-      wonIndo: false,
-      wonOneBall: false,
-      wonTwoBall: false,
-    }));
 
     const playersFormArray = this.fb.array(
       this.playerScores.map(() =>
@@ -310,8 +282,13 @@ export class SimpleScoreEntryComponent implements OnInit {
 
             // Calculate differential from total score (reverse calculation)
             const coursePar = this.scorecard?.par || 72;
-            const courseRating = this.scorecard?.rating || coursePar;
+            const courseRating = this.playerScores[playerIndex].rating || coursePar;
+            const courseSlope = this.playerScores[playerIndex].slope || 113;
             this.playerScores[playerIndex].differential = totalScore - courseRating;
+            this.playerScores[playerIndex].usgaDifferentialToday = 
+             calculateUSGADifferentialToday(totalScore,courseSlope,courseRating) ;
+             this.playerScores[playerIndex].rochDifferentialToday = 
+             calculateUSGADifferentialToday(totalScore,courseSlope,courseRating) ;
 
             const playerFormGroup = this.getPlayerFormGroup(playerIndex);
             playerFormGroup.get('totalScore')?.setValue(totalScore);
@@ -350,22 +327,20 @@ export class SimpleScoreEntryComponent implements OnInit {
       this.snackBar.open('Cannot modify scores - match is completed', 'Close', { duration: 3000 });
       return;
     }
-
     const inputValue = event.target.value.trim();
     let score: number | null = null;
-
     if (!inputValue || inputValue === '0') {
       score = null;
     } else if (!isNaN(inputValue)) {
       score = parseInt(inputValue);
     }
-
     this.playerScores[playerIndex].totalScore = score;
-
+    this.playerScores[playerIndex].usgaDifferentialToday = calculateUSGADifferentialToday(score || 0, this.playerScores[playerIndex].slope || 113, this.playerScores[playerIndex].rating || 72) || 0;
+    this.playerScores[playerIndex].rochDifferentialToday = calculateUSGADifferentialToday(score || 0, this.playerScores[playerIndex].slope || 113, this.playerScores[playerIndex].rating || 72) || 0;
     // Update differential based on total score
     if (score !== null) {
-      const courseRating = this.scorecard?.rating || this.scorecard?.par || 72;
-      this.playerScores[playerIndex].differential = score - courseRating;
+      // const courseRating = this.scorecard?.rating || this.scorecard?.par || 72;
+      this.playerScores[playerIndex].differential = score - this.playerScores[playerIndex].rating!;
       const playerFormGroup = this.getPlayerFormGroup(playerIndex);
       playerFormGroup
         .get('differential')
@@ -383,16 +358,13 @@ export class SimpleScoreEntryComponent implements OnInit {
       this.snackBar.open('Cannot modify scores - match is completed', 'Close', { duration: 3000 });
       return;
     }
-
     const inputValue = event.target.value.trim();
     let differential: number | null = null;
-
     if (!inputValue) {
       differential = null;
     } else if (!isNaN(inputValue)) {
       differential = parseFloat(inputValue);
     }
-
     this.playerScores[playerIndex].differential = differential;
 
     // Calculate total score from differential
@@ -406,7 +378,6 @@ export class SimpleScoreEntryComponent implements OnInit {
     } else {
       this.playerScores[playerIndex].totalScore = null;
     }
-
     this.calculateNetScore(playerIndex);
   }
 
@@ -427,11 +398,10 @@ export class SimpleScoreEntryComponent implements OnInit {
     if (!this.match || !this.scorecard || this.isMatchCompleted) {
       return;
     }
-
     this.saving = true;
-
     try {
       for (const playerScore of this.playerScores) {
+        console.log('Saving score for player:', playerScore.member.firstName, playerScore.member.lastName, 'Score:', playerScore);
         if (playerScore.totalScore !== null) {
           await this.savePlayerScore(playerScore);
         }
@@ -448,32 +418,13 @@ export class SimpleScoreEntryComponent implements OnInit {
   }
 
   private async savePlayerScore(playerScore: SimplePlayerScore): Promise<void> {
-    const scoreData: Partial<Score> = {
-      name: `${playerScore.member.firstName} ${playerScore.member.lastName || ''}`.trim(),
-      score: playerScore.totalScore || 0,
-      postedScore: playerScore.totalScore || 0,
-      scores: new Array(18).fill(0), // Empty hole scores for simple mode
-      scoresToPost: new Array(18).fill(0),
-      scoreRecordType: this.entryMode === 'differential' ? 'differential' : 'total',
-      usgaIndex: playerScore.member.usgaIndex,
-      handicap: playerScore.handicap,
-      matchId: this.match?._id,
-      memberId: playerScore.member._id,
-      scorecardId: this.scorecard?._id,
-      scSlope: this.scorecard?.slope,
-      scRating: this.scorecard?.rating,
-      scPars: this.scorecard?.pars,
-      scHCaps: this.scorecard?.hCaps,
-      scTees: playerScore.teeAbreviation,
-      scCourse: this.scorecard?.course,
-      datePlayed: this.match?.datePlayed,
-      author: this.authService.getAuthorObject(),
-      isScored: true,
-      wonIndo: playerScore.wonIndo,
-      wonOneBall: playerScore.wonOneBall,
-      wonTwoBall: playerScore.wonTwoBall,
-    };
-
+    const scoreData = buildScoreData(
+      playerScore,
+      this.match!,
+      this.scorecard!,
+      this.entryMode,
+      this.authService.getAuthorObject()
+    );
     await this.scoreService.savePlayerScore(scoreData, playerScore.existingScoreId);
   }
 
@@ -489,10 +440,6 @@ export class SimpleScoreEntryComponent implements OnInit {
   getCourse(): string {
     return this.scorecard?.course || ' ';
   }
-
-  // getCourseRating(): number {
-  //   return this.scorecard?.rating || this.getCoursePar();
-  // }
 
   editMatch(): void {
     this.router.navigate(['/matches/edit', this.matchId]);

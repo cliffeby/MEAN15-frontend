@@ -21,5 +21,8 @@ export interface PlayerScore {
   teeAbreviation?: string;
   rating?: number;
   slope?: number;
+  usgaDifferentialToday: number;
+  rochDifferentialToday: number;
+  othersDifferentialToday: number;
 }
 
