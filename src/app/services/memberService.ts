@@ -83,6 +83,25 @@ export class MemberService {
     return this.membersCache$;
   }
 
+  getAllMembersWithRecentPlayAndHCap(): Observable<any[]> {
+    return this.getAll().pipe(
+      map((members: Member[]) => {
+        return members.map((m: Member) => {
+          // Use lastDatePlayed from member for most recent date
+          const recentDate: string | null = m.lastDatePlayed ?? null;
+          // Use handicap as the best source for newHCap
+          return {
+            firstName: m.firstName,
+            lastName: m.lastName,
+            handicap: typeof m.handicap === 'number' ? m.handicap : null,
+            usgaIndex: typeof m.usgaIndex === 'number' ? m.usgaIndex : null,
+            recentDateOfPlay: recentDate,
+          };
+        });
+      })
+    );
+  }
+
   getById(id: string): Observable<Member> {
     return this.http
       .get<{ success: boolean; member: Member }>(`${this.baseUrl}/${id}`, this.getHeaders())

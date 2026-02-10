@@ -1,0 +1,59 @@
+<div class="reports-container">
+  <h2>Reports</h2>
+  <div class="report-actions no-print">
+    <button mat-raised-button color="primary" (click)="showMemberReport()">Member Recent Play & HCap</button>
+    <!-- Add more report buttons here -->
+  </div>
+  <div *ngIf="showingMemberReport">
+    <div *ngIf="filteredReport.length === 0" class="debug-message">
+      <p>No member data found for report. Please check filter logic.</p>
+    </div>
+    <div class="print-header" *ngIf="filteredReport.length > 0">
+      <div class="header-row">
+        <h3 class="report-title">Member Handicaps/Recent Play</h3>
+        <span class="print-date">{{ today | date:'fullDate' }}</span>
+        <button mat-icon-button [matMenuTriggerFor]="columnMenu" matTooltip="Show/Hide Columns ({{ getVisibleColumnsCount() }} visible)" class="column-select-btn no-print">
+          <mat-icon>view_column</mat-icon>
+        </button>
+        <button mat-raised-button color="accent" class="no-print print-btn" (click)="printMemberReport()">Print</button>
+      </div>
+      <mat-menu #columnMenu="matMenu" class="column-menu">
+        <div class="menu-header">
+          <strong>Show/Hide Columns</strong>
+        </div>
+        <div *ngFor="let column of allColumns" class="column-menu-item">
+          <mat-checkbox 
+            [checked]="column.visible" 
+            (change)="toggleColumnVisibility(column.key)"
+            class="column-checkbox">
+            {{ column.label }}
+          </mat-checkbox>
+        </div>
+        <mat-divider></mat-divider>
+        <button mat-menu-item (click)="resetColumns()">
+          <mat-icon>refresh</mat-icon>
+          <span>Show All Columns</span>
+        </button>
+      </mat-menu>
+    </div>
+    <table class="report-table" *ngIf="filteredReport.length > 0">
+      <thead>
+        <tr>
+          <th *ngIf="isColumnVisible('name')" (click)="setSort('lastName')">Name <span *ngIf="sortField==='lastName'">{{sortDirection==='asc' ? '▲' : '▼'}}</span></th>
+          <th *ngIf="isColumnVisible('recentDateOfPlay')" (click)="setSort('recentDateOfPlay')">Most Recent Date of Play <span *ngIf="sortField==='recentDateOfPlay'">{{sortDirection==='asc' ? '▲' : '▼'}}</span></th>
+          <th *ngIf="isColumnVisible('usgaIndex')" (click)="setSort('usgaIndex')">USGA Index <span *ngIf="sortField==='usgaIndex'">{{sortDirection==='asc' ? '▲' : '▼'}}</span></th>
+          <th *ngIf="isColumnVisible('handicap')" (click)="setSort('handicap')">newHCap <span *ngIf="sortField==='handicap'">{{sortDirection==='asc' ? '▲' : '▼'}}</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let member of filteredReport">
+          <td *ngIf="isColumnVisible('name')">{{ member.name }}</td>
+          <td *ngIf="isColumnVisible('recentDateOfPlay')">{{ member.recentDateOfPlay | date:'shortDate' }}</td>
+          <td *ngIf="isColumnVisible('usgaIndex')">{{ member.usgaIndex !== null && member.usgaIndex !== undefined ? (member.usgaIndex | number:'1.1-1') : '' }}</td>
+          <td *ngIf="isColumnVisible('handicap')">{{ member.handicap !== null && member.handicap !== undefined ? (member.handicap | number:'1.1-1') : '' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+

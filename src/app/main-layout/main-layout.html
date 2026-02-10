@@ -52,3 +52,14 @@
     </mat-sidenav-content>
   
   </mat-sidenav-container>
+
+<style>
+@media print {
+  .sidenav, .top-navbar, .footer, .mat-nav-list, .sidenav-header, .no-print { display: none !important; }
+  .main-content, .reports-container, .report-table, .print-date, .debug-message { display: block !important; }
+  .main-content { margin: 0; padding: 0; }
+  .report-table { width: 100%; border-collapse: collapse; }
+  .report-table th, .report-table td { border: 1px solid #333; padding: 0.5em; }
+  body { background: #fff; }
+}
+</style>

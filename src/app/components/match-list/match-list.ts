@@ -491,7 +491,16 @@ export class MatchListComponent implements OnInit, OnDestroy {
             console.warn('Failed to update existing HCap, will try create as fallback:', e);
           }
         }
-
+const memRecord: any = {
+          handicap: score.newHCap || null,
+          datePlayed: score.datePlayed || new Date().toISOString(),
+}
+        if (memberId) {
+          // Update member's handicap as well
+          try {this.memberService.update(memberId, memRecord);} catch (e) {
+            console.warn('Failed to update member date played and handicap:', e);
+          }
+        }
         // Call HCap service to create record
         return await lastValueFrom(this.hcapService.create(hcapRecord));
       } catch (err) {

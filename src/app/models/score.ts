@@ -56,6 +56,7 @@ export interface Score {
   };
   createdAt?: string;
   updatedAt?: string;
+  newHCap?: number; // <-- Add newHCap property for reporting
 }
 
 import { Member } from './member';

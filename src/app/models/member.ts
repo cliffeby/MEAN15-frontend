@@ -1,3 +1,5 @@
+import type { Score } from './score';
+
 export interface Member {
   _id?: string;
   firstName: string;
@@ -7,7 +9,6 @@ export interface Member {
   GHIN?: string;
   lastDatePlayed?: string;
   scorecardsId?: string[];
-  // user?: string;
   author?: {
     id: string;
     email: string;
@@ -18,4 +19,6 @@ export interface Member {
   fullName?: string;
   fullNameR?: string;
   name?: string;
+  scores?: Score[]; // <-- Add scores property for member's scores
+  newHCap?: number; // <-- Add newHCap property for reporting
 }

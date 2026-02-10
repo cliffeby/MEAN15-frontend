@@ -27,6 +27,7 @@ import { AdminConfigurationComponent } from './components/admin-configuration/ad
 import { OrphanManagementComponent } from './components/orphan-management/orphan-management';
 import { HcapListComponent } from './components/hcap-list/hcap-list';
 import { AuditReportComponent } from './components/audit-report/audit-report.component';
+import { ReportsComponent } from './components/reports/reports';
 
 export const routes: Routes = [
   // Public
@@ -147,6 +148,7 @@ export const routes: Routes = [
         canActivate: [roleGuard],
         data: { role: 'admin' },
       },
+      { path: 'reports', component: ReportsComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },

@@ -50,6 +50,7 @@ export class MainLayoutComponent {
       { label: 'Scores', route: '/scores' },
       { label: 'HCaps', route: '/hcaps' },
       { label: 'Matches', route: '/matches' },
+      { label: 'Reports', route: '/reports' }, // <-- Add Reports option
     ];
     if (this.auth.hasRole && this.auth.hasRole('developer')) {
       links.push({ label: 'Read Me', route: '/read-me' });
