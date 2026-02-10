@@ -183,6 +183,7 @@ export class SimpleScoreEntryComponent implements OnInit {
         this.playerScores = membersWithCourseScorecard.map(({ memberScorecard, ...member }) => ({
           member: member as Member,
           totalScore: null,
+          scores: [],  //Added to get score-entry working with by-hole scores in simple mode
           differential: null,
           usgaDifferentialToday: 0,
           rochDifferentialToday: 0,

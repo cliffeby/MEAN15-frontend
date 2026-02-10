@@ -579,13 +579,13 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
 
           // Match existing scores with players
           scores.forEach((score: any, scoreIndex: number) => {
-            console.log(`Processing score ${scoreIndex + 1}:`, {
-              scoreId: score._id,
-              memberId: score.memberId,
-              memberIdType: typeof score.memberId,
-              scoreLength: score.scores?.length,
-              scores: score.scores,
-            });
+            // console.log(`Processing score ${scoreIndex + 1}:`, {
+            //   scoreId: score._id,
+            //   memberId: score.memberId,
+            //   memberIdType: typeof score.memberId,
+            //   scoreLength: score.scores?.length,
+            //   scores: score.scores,
+            // });
 
             // Try to find player by memberId (handle both string and object cases)
             let memberIdToMatch = score.memberId;
@@ -607,6 +607,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
               // Prefer `_id` but fall back to `id` if backend returns a different property name
               this.playerScores[playerIndex].existingScoreId =
                 score._id || (score.id as string) || undefined;
+              console.log(`Set existingScoreId for player ${playerIndex}:`, this.playerScores[playerIndex].existingScoreId);
 
               // Update form with existing scores
               const playerFormGroup = this.getPlayerFormGroup(playerIndex);
@@ -679,13 +680,13 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   }
 
   onScoreChange(playerIndex: number, holeIndex: number, event: any): void {
-    console.log('🔥 onScoreChange called:', {
-      playerIndex,
-      holeIndex,
-      isMatchCompleted: this.isMatchCompleted,
-      value: event.target.value,
-      timestamp: new Date().toISOString(),
-    });
+    // console.log('🔥 onScoreChange called:', {
+    //   playerIndex,
+    //   holeIndex,
+    //   isMatchCompleted: this.isMatchCompleted,
+    //   value: event.target.value,
+    //   timestamp: new Date().toISOString(),
+    // });
 
     // Prevent score changes if match is completed - HARD STOP
     if (this.isMatchCompleted) {
@@ -703,33 +704,43 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       return;
     }
 
-    console.log('✅ Score change allowed - processing...');
+    // console.log('✅ Score change allowed - processing...');
 
-    const inputValue = event.target.value.trim();
+    const holesFormArray = this.getHolesFormArray(playerIndex);
+    let inputValue = event && event.target ? event.target.value.trim() : '';
     let score: number | null = null;
 
     // Handle empty input or zero
     if (!inputValue || inputValue === '0') {
       score = null;
-      event.target.value = '';
+      if (event && event.target) event.target.value = '';
+      holesFormArray.at(holeIndex).setValue(null);
     } else if (!isNaN(inputValue)) {
-      const numValue = parseInt(inputValue);
+      const numValue = parseInt(inputValue, 10);
       // Allow scores from 1 to 15 for golf (zero is not valid)
       if (numValue >= 1 && numValue <= 15) {
         score = numValue;
       } else {
         // Invalid score, clear the input and don't set a score
-        event.target.value = '';
+        if (event && event.target) event.target.value = '';
+        holesFormArray.at(holeIndex).setValue(null);
         score = null;
       }
     } else {
       // Non-numeric input, clear the field
-      event.target.value = '';
+      if (event && event.target) event.target.value = '';
+      holesFormArray.at(holeIndex).setValue(null);
       score = null;
     }
 
-    this.playerScores[playerIndex].scores[holeIndex] = score;
-    this.calculatePlayerTotals(playerIndex);
+    // Only update the form control; model will be updated from form at save time
+      holesFormArray.at(holeIndex).setValue(score);
+      // Update playerScores[playerIndex].scores from form controls
+      this.playerScores[playerIndex].scores = holesFormArray.controls.map(ctrl => ctrl.value);
+      // Recalculate and update totals in both model and form
+      this.calculatePlayerTotals(playerIndex);
+      // Optionally update form controls for totals if needed (if you have controls for totals)
+      // If totals are displayed via playerScores, this is sufficient.
 
     // Mark as unsaved and trigger auto-save
     this.playerSaveStatus.set(playerIndex, 'unsaved');
@@ -764,10 +775,10 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   private calculatePlayerTotals(playerIndex: number): void {
     const player = this.playerScores[playerIndex];
     const scores = player.scores;
-    const { frontNine, backNine, total, netScore } = calculatePlayerTotals(scores, player.handicap);
+    const { frontNine, backNine, totalScore, netScore } = calculatePlayerTotals(scores, player.handicap);
     player.frontNine = frontNine;
     player.backNine = backNine;
-    player.total = total;
+    player.totalScore = totalScore;
     player.netScore = netScore;
   }
 
@@ -827,7 +838,14 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       // Save scores sequentially to avoid overwhelming the server
       for (let i = 0; i < this.playerScores.length; i++) {
         this.playerSaveStatus.set(i, 'saving');
+        // Always pull latest scores from form controls before saving
+        const holesFormArray = this.getHolesFormArray(i);
+        this.playerScores[i].scores = holesFormArray.controls.map(ctrl => ctrl.value);
+        // Recalculate totals before saving
+        this.calculatePlayerTotals(i);
+        console.log('About to save player', i, 'playerScore:', this.playerScores[i]);
         await this.savePlayerScore(this.playerScores[i]);
+        console.log('Saved player', this.playerScores[i], new Date().toLocaleTimeString());
         this.playerSaveStatus.set(i, 'saved');
         this.lastSaveTime.set(i, new Date());
         // Small delay between saves to further reduce server load
@@ -842,6 +860,20 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
     }
   }
   private async savePlayerScore(playerScore: SimplePlayerScore): Promise<void> {
+    // Prevent duplicate creates: if a create is in progress and existingScoreId is not set, block further saves
+    if (!playerScore.existingScoreId && playerScore.creating) {
+      console.warn('Duplicate create blocked for player:', playerScore.member, 'creating:', playerScore.creating);
+      return;
+    }
+
+    console.log('savePlayerScore: playerScore.scores before buildScoreData1:', playerScore.scores);
+    // Ensure scores are updated from form controls before saving
+    const playerIndex = this.playerScores.findIndex(ps => ps.member._id === playerScore.member._id);
+    if (playerIndex >= 0) {
+      const holesFormArray = this.getHolesFormArray(playerIndex);
+      playerScore.scores = holesFormArray.controls.map(ctrl => ctrl.value);
+      console.log('savePlayerScore: playerScore.scores before buildScoreData2:', playerScore.scores);
+    }
     const scoreData = buildScoreData(
       playerScore,
       this.match!,
@@ -849,7 +881,31 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       'totalScore',
       this.authService.getAuthorObject(),
     );
-    await this.scoreService.savePlayerScore(scoreData, playerScore.existingScoreId);
+    console.log('savePlayerScore: scoreData to backend:', scoreData);
+    // Only create if no existingScoreId, otherwise update
+    let response;
+    if (playerScore.existingScoreId) {
+      response = await this.scoreService.savePlayerScore(scoreData, playerScore.existingScoreId); // update
+    } else {
+      console.log('Setting creating=true for player:', playerScore.member);
+      playerScore.creating = true;
+      response = await this.scoreService.savePlayerScore(scoreData); // create
+      // Set existingScoreId after create
+      if (response && response.score && response.score._id) {
+        playerScore.existingScoreId = response.score._id;
+        console.log('Setting creating=false for player:', playerScore.member);
+        playerScore.creating = false;
+      } else {
+        console.log('Setting creating=false for player (no _id):', playerScore.member);
+        playerScore.creating = false;
+      }
+    }
+    // Optionally refresh player score after save (if backend returns updated record)
+    if (response && response.scores) {
+      playerScore.scores = response.scores;
+      playerScore.totalScore = response.score;
+      playerScore.postedScore = response.postedScore;
+    }
   }
   // private async savePlayerScore(playerScore: any): Promise<void> {
   //   const scoreData: Partial<Score> = {

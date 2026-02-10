@@ -4,6 +4,8 @@ export interface HCap {
   currentHCap: number;
   newHCap: string;
   datePlayed: Date;
+  rochDifferentialToday: number;
+  usgaDifferentialToday: number;
   usgaIndexForTodaysScore: {
     type: number;
     min: [-10, 'USGA Index for today cannot be less than -10.0'];

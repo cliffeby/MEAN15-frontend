@@ -34,12 +34,12 @@ export function getBackNinePar(pars?: number[]): number {
 export function calculatePlayerTotals(scores: (number | null)[], handicap: number): {
   frontNine: number;
   backNine: number;
-  total: number;
+  totalScore: number;
   netScore: number;
 } {
   const frontNine = sumScores(scores.slice(0, 9));
   const backNine = sumScores(scores.slice(9, 18));
-  const total = frontNine + backNine;
-  const netScore = total - handicap;
-  return { frontNine, backNine, total, netScore };
+  const totalScore = frontNine + backNine;
+  const netScore = totalScore - handicap;
+  return { frontNine, backNine, totalScore, netScore };
 }

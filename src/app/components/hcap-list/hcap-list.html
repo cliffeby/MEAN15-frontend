@@ -40,9 +40,9 @@
       <td mat-cell *matCellDef="let row"> {{ row.postedScore ?? '-' }} </td>
     </ng-container>
 
-    <ng-container matColumnDef="differential">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> Differential </th>
-      <td mat-cell *matCellDef="let row"> {{ row.usgaIndexForTodaysScore ?? '-' }} </td>
+    <ng-container matColumnDef="rochDifferentialToday">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Today's<br>Differential </th>
+      <td mat-cell *matCellDef="let row"> {{ row.rochDifferentialToday ?? '-' }} </td>
     </ng-container>
 
     <ng-container matColumnDef="currentHCap">

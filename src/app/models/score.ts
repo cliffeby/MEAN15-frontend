@@ -17,21 +17,27 @@ export interface Score {
   wonIndo?: boolean;
   isPaired?: boolean;
   isScored?: boolean;
-  matchId?: string | {
-    _id?: string;
-    name: string;
-    datePlayed?: string;
-    status?: string;
-  };
-  memberId?: string | {
-    _id?: string;
-    name: string;
-    email?: string;
-  };
-  scorecardId?: string | {
-    _id?: string;
-    tees: string;
-  };
+  matchId?:
+    | string
+    | {
+        _id?: string;
+        name: string;
+        datePlayed?: string;
+        status?: string;
+      };
+  memberId?:
+    | string
+    | {
+        _id?: string;
+        name: string;
+        email?: string;
+      };
+  scorecardId?:
+    | string
+    | {
+        _id?: string;
+        tees: string;
+      };
   scPar?: number;
   scSlope?: number;
   scRating?: number;
@@ -55,8 +61,11 @@ export interface Score {
 import { Member } from './member';
 import { Scorecard } from './scorecard.interface';
 export interface SimplePlayerScore {
+  creating?: boolean;
+  postedScore?: number;
   member: Member;
   totalScore: number | null;
+  scores: (number | null)[];
   differential: number | null;
   usgaDifferentialToday: number | undefined;
   rochDifferentialToday: number | undefined;

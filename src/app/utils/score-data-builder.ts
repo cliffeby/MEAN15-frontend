@@ -24,8 +24,8 @@ export function buildScoreData(
     name: `${playerScore.member.firstName} ${playerScore.member.lastName || ''}`.trim(),
     score: playerScore.totalScore || 0,
     postedScore: playerScore.totalScore || 0,
-    scores: new Array(18).fill(0), // Empty hole scores for simple mode
-    scoresToPost: new Array(18).fill(0),
+    scores: (playerScore.scores ? playerScore.scores.map(s => s == null ? 0 : s) : new Array(18).fill(0)),
+    scoresToPost: (playerScore.scores ? playerScore.scores.map(s => s == null ? 0 : s) : new Array(18).fill(0)),
     scoreRecordType: entryMode === 'differential' ? 'differential' : 'total',
     usgaIndex: playerScore.member.usgaIndex,
     handicap: playerScore.handicap,

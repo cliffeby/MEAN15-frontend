@@ -83,6 +83,7 @@ export class ScoreService {
   update(id: string, score: Score): Observable<any> {
     const author = this.auth.getAuthorObject();
     const scoreWithAuthor = { ...score, author };
+    console.log('Updating score with data from service:', scoreWithAuthor);
     return this.http.put(`${this.baseUrl}/${id}`, scoreWithAuthor, this.getHeaders())
       .pipe(
         retryWhen(errors => 
@@ -133,6 +134,7 @@ export class ScoreService {
 
   savePlayerScore(scoreData: Partial<Score>, existingScoreId?: string): Promise<any> {
     if (existingScoreId) {
+      console.log('savePlayerScore: updating existing score with ID:', existingScoreId);
       return lastValueFrom(
         this.update(existingScoreId, scoreData as Score).pipe(
           retryWhen(errors => errors.pipe(delay(500), take(2))),
@@ -141,6 +143,7 @@ export class ScoreService {
         )
       );
     } else {
+      console.log('savePlayerScore: creating new score',scoreData);
       return lastValueFrom(
         this.create(scoreData as Score).pipe(
           retryWhen(errors => errors.pipe(delay(500), take(2))),

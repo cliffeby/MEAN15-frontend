@@ -456,6 +456,8 @@ export class MatchListComponent implements OnInit, OnDestroy {
           postedScore: score.postedScore ?? score.score ?? null,
           currentHCap: member?.handicap ?? member?.usgaIndex ?? null,
           newHCap: null,
+          rochDifferentialToday:score.rochDifferentialToday ?? null,
+          usgaDifferentialToday: score.usgaDifferentialToday ?? null,
           datePlayed: score.datePlayed || new Date().toISOString(),
           usgaIndexForTodaysScore: score.usgaIndexForTodaysScore ?? score.usgaIndex ?? null,
           handicap: member?.handicap ?? null,

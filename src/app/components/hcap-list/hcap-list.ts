@@ -54,7 +54,8 @@ export class HcapListComponent implements OnInit {
   allColumns: { key: string, label: string }[] = [
     { key: 'name', label: 'Name' },
     { key: 'postedScore', label: 'Posted Score' },
-    { key: 'differential', label: 'Differential' },
+    // { key: 'differential', label: 'Differential' },
+    { key: 'rochDifferentialToday', label: 'Todays Differential' },
     { key: 'currentHCap', label: 'Played HCap Index' },
     { key: 'newHCap', label: 'New HCap Index' },
     { key: 'datePlayed', label: 'Date' },
