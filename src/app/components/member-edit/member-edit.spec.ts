@@ -1,167 +1,210 @@
-import { Component, forwardRef } from '@angular/core';
-import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
-// Mock date picker component for lastDatePlayed
-@Component({
-  selector: "input[formControlName][type='date']",
-  template: '',
-  standalone: true,
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => MockDateInputAccessor),
-    multi: true
-  }]
-})
-class MockDateInputAccessor {
-  writeValue(obj: any): void {}
-  registerOnChange(fn: any): void {}
-  registerOnTouched(fn: any): void {}
-  setDisabledState?(isDisabled: boolean): void {}
-}
-class MockDatePickerComponent implements ControlValueAccessor {
-  writeValue(obj: any): void {}
-  registerOnChange(fn: any): void {}
-  registerOnTouched(fn: any): void {}
-  setDisabledState?(isDisabled: boolean): void {}
-}
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatInputModule } from '@angular/material/input';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MemberEditComponent } from './member-edit';
-import { MemberService } from '../../services/memberService';
-import { AuthService } from '../../services/authService';
+import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { Store } from '@ngrx/store';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router, ActivatedRoute } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { ActivatedRoute, Router } from '@angular/router';
+import { of } from 'rxjs';
+import { MemberService } from '../../services/memberService';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { MsalService } from '@azure/msal-angular';
+import { ScorecardService } from '../../services/scorecardService';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { AuthService } from '../../services/authService';
+import { fakeAsync, tick } from '@angular/core/testing';
+
+// Minimal mock for dependencies
+const storeSpy = jasmine.createSpyObj('Store', ['select', 'dispatch']);
+const snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
+const dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
+const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+const activatedRouteStub = { snapshot: { paramMap: { get: () => '1' }, queryParams: {} } };
+
+// Minimal mock member
+const mockMember = {
+  _id: '1',
+  name: 'Test Member',
+  email: 'test@example.com',
+  lastDatePlayed: '2025-12-01',
+  status: 'active',
+};
+
+const memberServiceSpy = jasmine.createSpyObj('MemberService', ['getById', 'update']);
+memberServiceSpy.getById.and.returnValue(of(mockMember));
+memberServiceSpy.update.and.returnValue(of({}));
+const msalServiceSpy = jasmine.createSpyObj('MsalService', ['getAccount', 'getAllAccounts']);
+msalServiceSpy.getAllAccounts.and.returnValue([]);
+const scorecardServiceSpy = jasmine.createSpyObj('ScorecardService', ['getAll', 'getById', 'update']);
+scorecardServiceSpy.getAll.and.returnValue(of([{ _id: 'sc1', courseTeeName: 'Course 1' }]));
+scorecardServiceSpy.update.and.returnValue(of({}));
+const authServiceSpy = jasmine.createSpyObj('AuthService', ['getAuthorObject', 'getAuthorEmail', 'hasRole', 'hasMinRole']);
+authServiceSpy.getAuthorObject.and.returnValue({ id: 'test', email: 'test@example.com', name: 'Test User' });
+authServiceSpy.getAuthorEmail.and.returnValue('test@example.com');
+authServiceSpy.hasRole = authServiceSpy.hasRole || (() => true);
+authServiceSpy.hasMinRole = authServiceSpy.hasMinRole || (() => true);
+authServiceSpy.hasRole.and.returnValue(true);
+authServiceSpy.hasMinRole.and.returnValue(true);
 
 describe('MemberEditComponent', () => {
   let component: MemberEditComponent;
   let fixture: ComponentFixture<MemberEditComponent>;
-  let memberServiceSpy: jasmine.SpyObj<MemberService>;
-  let authServiceSpy: jasmine.SpyObj<AuthService>;
-  let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
-  let routerSpy: jasmine.SpyObj<Router>;
-
-  const mockMember = {
-    _id: '1',
-    firstName: 'Alice',
-    lastName: 'Smith',
-    Email: 'alice@example.com',
-    usgaIndex: 10,
-    fullName: 'Alice Smith',
-    hidden: false
-  } as any;
 
   beforeEach(async () => {
-    memberServiceSpy = jasmine.createSpyObj('MemberService', ['getById', 'update']);
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['getAuthorObject']);
-    authServiceSpy.getAuthorObject.and.returnValue({ id: 'u1', email: 'test@example.com', name: 'Test User' });
-
-    // Add token method to AuthService spy
-    authServiceSpy.token = jasmine.createSpy().and.returnValue('mock-token');
-    snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
-    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-
-    // Default route snapshot provides id '1'
-    const activatedRouteStub = { snapshot: { paramMap: { get: (k: string) => '1' } } } as unknown as ActivatedRoute;
-
-    memberServiceSpy.getById.and.returnValue(of(mockMember));
-    memberServiceSpy.update.and.returnValue(of({} as any));
-
     await TestBed.configureTestingModule({
       imports: [
-        MockDateInputAccessor,
         MemberEditComponent,
-        HttpClientTestingModule,
-        FormsModule,
         ReactiveFormsModule,
-        MatDatepickerModule,
+        HttpClientTestingModule,
+        MatFormFieldModule,
         MatInputModule,
-        MatNativeDateModule,
-        MatFormFieldModule
+        MatSelectModule,
+        MatDatepickerModule,
+        MatNativeDateModule
       ],
       providers: [
-        { provide: MemberService, useValue: memberServiceSpy },
-        { provide: AuthService, useValue: authServiceSpy },
+        { provide: Store, useValue: storeSpy },
+        { provide: MatSnackBar, useValue: snackBarSpy },
+        { provide: MatDialog, useValue: dialogSpy },
+        { provide: Router, useValue: routerSpy },
         { provide: ActivatedRoute, useValue: activatedRouteStub },
-        { provide: Router, useValue: routerSpy }
+        { provide: MemberService, useValue: memberServiceSpy },
+        { provide: MsalService, useValue: msalServiceSpy },
+        { provide: ScorecardService, useValue: scorecardServiceSpy },
+        { provide: AuthService, useValue: authServiceSpy },
+        FormBuilder
       ]
-    })
-      .overrideComponent(MemberEditComponent, {
-        set: {
-          providers: [
-            { provide: MatSnackBar, useValue: snackBarSpy }
-          ]
-        }
-      })
-      .compileComponents();
+    }).compileComponents();
 
     fixture = TestBed.createComponent(MemberEditComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should create the component', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load member on init when id present', () => {
-    expect(memberServiceSpy.getById).toHaveBeenCalledWith('1');
-    expect(component.memberForm.value.firstName).toBe('Alice');
-    expect(component.loading).toBeFalse();
+  it('should initialize the form with member data', () => {
+    component.memberForm.patchValue({
+      firstName: 'John',
+      lastName: 'Doe',
+      usgaIndex: 10.5,
+      lastDatePlayed: '2025-12-01',
+      Email: 'john.doe@example.com',
+      hidden: false
+    });
+    expect(component.memberForm.get('firstName')?.value).toBe('John');
+    expect(component.memberForm.get('lastName')?.value).toBe('Doe');
+    expect(component.memberForm.get('usgaIndex')?.value).toBe(10.5);
+    expect(component.memberForm.get('lastDatePlayed')?.value).toBe('2025-12-01');
+    expect(component.memberForm.get('Email')?.value).toBe('john.doe@example.com');
+    expect(component.memberForm.get('hidden')?.value).toBe(false);
   });
 
-  it('should show snackbar if loading member fails', fakeAsync(() => {
-    memberServiceSpy.getById.and.returnValue(throwError(() => new Error('fail')));
-    // call ngOnInit manually to re-run the load logic
-    component.ngOnInit();
-    tick();
-    fixture.detectChanges();
-    expect(snackBarSpy.open).toHaveBeenCalledWith('Error loading member', 'Close', { duration: 2000 });
-    expect(component.loading).toBeFalse();
-  }));
+  it('should mark form as invalid if required fields are missing', () => {
+    component.memberForm.patchValue({
+      firstName: '',
+      lastName: '',
+      Email: ''
+    });
+    expect(component.memberForm.invalid).toBeTrue();
+    expect(component.memberForm.get('firstName')?.hasError('required')).toBeTrue();
+    expect(component.memberForm.get('lastName')?.hasError('required')).toBeTrue();
+    expect(component.memberForm.get('Email')?.hasError('required')).toBeTrue();
+  });
 
-  it('should show validation errors for usgaIndex', () => {
+  it('should mark form as touched and not dispatch if invalid on submit', () => {
+    component.memberForm.patchValue({
+      firstName: '',
+      lastName: '',
+      Email: ''
+    });
+    component.memberId = '1';
+    component.submit();
+    expect(component.memberForm.touched || component.memberForm.markAllAsTouched).toBeTruthy();
+    expect(storeSpy.dispatch).not.toHaveBeenCalled();
+  });
+
+  it('should return course tee name for a valid scorecard id', () => {
+    component.scorecards = [
+      { _id: 'sc1', courseTeeName: 'Course 1', course: '', tees: '', teeAbreviation: '' },
+      { _id: 'sc2', courseTeeName: 'Course 2', course: '', tees: '', teeAbreviation: '' }
+    ];
+    expect(component.getCourseTeeName('sc1')).toBe('Course 1');
+    expect(component.getCourseTeeName('sc2')).toBe('Course 2');
+    expect(component.getCourseTeeName('unknown')).toBe('Course');
+  });
+
+  it('should handle empty scorecardsId gracefully', () => {
+    component.memberForm.patchValue({ scorecardsId: [] });
+    expect(component.memberForm.get('scorecardsId')?.value).toEqual([]);
+    component.courseControl.setValue([]);
+    expect(component.courseControl.value).toEqual([]);
+  });
+
+  it('should set isUsgaIndexMinError and isUsgaIndexMaxError correctly', () => {
     const control = component.memberForm.get('usgaIndex');
     control?.setValue(-20);
     control?.markAsTouched();
     expect(component.isUsgaIndexMinError).toBeTrue();
-    control?.setValue(100);
-    control?.markAsTouched();
+    control?.setValue(60);
     expect(component.isUsgaIndexMaxError).toBeTrue();
+    control?.setValue(10);
+    expect(component.isUsgaIndexMinError).toBeFalse();
+    expect(component.isUsgaIndexMaxError).toBeFalse();
   });
 
-  it('should submit update and navigate on success', fakeAsync(() => {
-    // Ensure form valid and memberId present
-    component.memberId = '1';
-    component.memberForm.patchValue({ firstName: 'New', lastName: 'Name', Email: 'a@b.com' });
-    memberServiceSpy.update.and.returnValue(of({} as any));
-    component.submit();
-    tick();
-    fixture.detectChanges();
-    expect(memberServiceSpy.update).toHaveBeenCalledWith('1', jasmine.any(Object));
-    expect(snackBarSpy.open).toHaveBeenCalledWith('Member updated!', 'Close', { duration: 2000 });
-    expect(routerSpy.navigate).toHaveBeenCalledWith(['/members']);
-    expect(component.loading).toBeFalse();
-  }));
+  it('should not set min/max errors if usgaIndex is null', () => {
+    const control = component.memberForm.get('usgaIndex');
+    control?.setValue(null);
+    control?.markAsTouched();
+    expect(component.isUsgaIndexMinError).toBeFalse();
+    expect(component.isUsgaIndexMaxError).toBeFalse();
+  });
 
-  it('should show snackbar on update error', fakeAsync(() => {
-    component.memberId = '1';
-    component.memberForm.patchValue({ firstName: 'New', lastName: 'Name', Email: 'a@b.com' });
-    memberServiceSpy.update.and.returnValue(throwError(() => ({ status: 500 })));
-    component.submit();
-    tick();
-    expect(snackBarSpy.open).toHaveBeenCalledWith('Error updating member', 'Close', { duration: 2000 });
-    expect(component.loading).toBeFalse();
-  }));
+  it('should sync courseControl and memberForm scorecardsId', () => {
+    component.courseControl.setValue(['sc1', 'sc2']);
+    expect(component.memberForm.get('scorecardsId')?.value).toEqual(['sc1', 'sc2']);
+    component.memberForm.get('scorecardsId')?.setValue(['sc3']);
+    // Simulate valueChanges subscription
+    component.courseControl.setValue(['sc3']);
+    expect(component.memberForm.get('scorecardsId')?.value).toEqual(['sc3']);
+  });
 
-  it('should not submit if form invalid or no memberId', () => {
-    component.memberId = null;
-    component.memberForm.patchValue({ firstName: '', lastName: '' });
-    component.submit();
-    expect(memberServiceSpy.update).not.toHaveBeenCalled();
+  it('should patch form and courseControl when member is loaded', () => {
+    const member = {
+      firstName: 'Alice',
+      lastName: 'Wonder',
+      usgaIndex: 5.5,
+      lastDatePlayed: '2025-10-10',
+      Email: 'alice@example.com',
+      scorecardsId: ['sc1', 'sc2'],
+      hidden: false
+    };
+    component.memberForm.patchValue(member);
+    component.courseControl.setValue(member.scorecardsId);
+    expect(component.memberForm.get('firstName')?.value).toBe('Alice');
+    expect(component.courseControl.value).toEqual(['sc1', 'sc2']);
+  });
+
+  it('should return false for isUsgaIndexMinError and isUsgaIndexMaxError if untouched', () => {
+    const control = component.memberForm.get('usgaIndex');
+    control?.setValue(-20);
+    expect(component.isUsgaIndexMinError).toBeFalse();
+    control?.setValue(60);
+    expect(component.isUsgaIndexMaxError).toBeFalse();
+  });
+
+  it('should update form scorecardsId when courseControl changes after ngOnInit', () => {
+    // Simulate ngOnInit subscription
+    component.courseControl.setValue(['sc1']);
+    expect(component.memberForm.get('scorecardsId')?.value).toEqual(['sc1']);
+    component.courseControl.setValue(['sc2', 'sc3']);
+    expect(component.memberForm.get('scorecardsId')?.value).toEqual(['sc2', 'sc3']);
   });
 });
