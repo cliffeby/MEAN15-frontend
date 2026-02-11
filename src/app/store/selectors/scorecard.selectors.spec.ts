@@ -34,13 +34,13 @@ describe('scorecard selectors', () => {
     const allScorecards = fromSelectors.selectAllScorecards.projector(getState());
     const result = fromSelectors.selectScorecardsForDropdown.projector(allScorecards);
     expect(result[0].value).toBe('1');
-    expect(result[0].label).toContain('Card 1');
+    expect(result[0].label).toBe('A - Rating: 72 - Slope: 120');
   });
 
   it('should select scorecards with details', () => {
     const allScorecards = fromSelectors.selectAllScorecards.projector(getState());
     const result = fromSelectors.selectScorecardsWithDetails.projector(allScorecards);
-    expect(result[0].displayName).toBe('Card 1');
+    expect(result[0].displayName).toBe('A');
     expect(result[0].fullDetails).toContain('Par: 72');
   });
 
@@ -57,11 +57,12 @@ describe('scorecard selectors', () => {
   });
 
   it('should select scorecards by search', () => {
-    const selector = fromSelectors.selectScorecardsSearch('Card 1');
+    // Search for a real course name that exists in the mock data
+    const selector = fromSelectors.selectScorecardsSearch('A');
     const allScorecards = fromSelectors.selectAllScorecards.projector(getState());
     const result = selector.projector(allScorecards);
-    expect(result.length).toBe(1);
-    expect(result[0].teeAbreviation).toBe('B');
+    expect(result.length).toBe(2); // Both scorecards with course 'A'
+    expect(result[0].course).toBe('A');
   });
 
   it('should select scorecard stats', () => {

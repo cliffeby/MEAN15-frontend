@@ -1,4 +1,35 @@
+import { Component, forwardRef } from '@angular/core';
+import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
+// Mock date picker component for lastDatePlayed
+@Component({
+  selector: "input[formControlName][type='date']",
+  template: '',
+  standalone: true,
+  providers: [{
+    provide: NG_VALUE_ACCESSOR,
+    useExisting: forwardRef(() => MockDateInputAccessor),
+    multi: true
+  }]
+})
+class MockDateInputAccessor {
+  writeValue(obj: any): void {}
+  registerOnChange(fn: any): void {}
+  registerOnTouched(fn: any): void {}
+  setDisabledState?(isDisabled: boolean): void {}
+}
+class MockDatePickerComponent implements ControlValueAccessor {
+  writeValue(obj: any): void {}
+  registerOnChange(fn: any): void {}
+  registerOnTouched(fn: any): void {}
+  setDisabledState?(isDisabled: boolean): void {}
+}
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatInputModule } from '@angular/material/input';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MemberEditComponent } from './member-edit';
 import { MemberService } from '../../services/memberService';
 import { AuthService } from '../../services/authService';
@@ -28,6 +59,9 @@ describe('MemberEditComponent', () => {
     memberServiceSpy = jasmine.createSpyObj('MemberService', ['getById', 'update']);
     authServiceSpy = jasmine.createSpyObj('AuthService', ['getAuthorObject']);
     authServiceSpy.getAuthorObject.and.returnValue({ id: 'u1', email: 'test@example.com', name: 'Test User' });
+
+    // Add token method to AuthService spy
+    authServiceSpy.token = jasmine.createSpy().and.returnValue('mock-token');
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
@@ -38,7 +72,17 @@ describe('MemberEditComponent', () => {
     memberServiceSpy.update.and.returnValue(of({} as any));
 
     await TestBed.configureTestingModule({
-      imports: [MemberEditComponent],
+      imports: [
+        MockDateInputAccessor,
+        MemberEditComponent,
+        HttpClientTestingModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatDatepickerModule,
+        MatInputModule,
+        MatNativeDateModule,
+        MatFormFieldModule
+      ],
       providers: [
         { provide: MemberService, useValue: memberServiceSpy },
         { provide: AuthService, useValue: authServiceSpy },

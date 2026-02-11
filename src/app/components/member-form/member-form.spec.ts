@@ -4,6 +4,7 @@ import { MemberService } from '../../services/memberService';
 import { AuthService } from '../../services/authService';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { of, throwError } from 'rxjs';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('MemberFormComponent', () => {
   let component: MemberFormComponent;
@@ -16,10 +17,13 @@ describe('MemberFormComponent', () => {
     memberServiceSpy = jasmine.createSpyObj('MemberService', ['create']);
     authServiceSpy = jasmine.createSpyObj('AuthService', ['getAuthorObject']);
     authServiceSpy.getAuthorObject.and.returnValue({ id: 'u1', email: 'test@example.com', name: 'Test User' });
+
+    // Add token method to AuthService spy
+    authServiceSpy.token = jasmine.createSpy().and.returnValue('mock-token');
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
 
     await TestBed.configureTestingModule({
-      imports: [MemberFormComponent],
+      imports: [MemberFormComponent, HttpClientTestingModule],
       providers: [
         { provide: MemberService, useValue: memberServiceSpy },
         { provide: AuthService, useValue: authServiceSpy }

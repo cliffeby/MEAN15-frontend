@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HcapListComponent } from './hcap-list';
 import { HCapService } from '../../services/hcapService';
+import { AuthService } from '../../services/authService';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { of, throwError } from 'rxjs';
 import { HCap } from '../../models/hcap';
@@ -119,6 +120,11 @@ describe('HcapListComponent', () => {
     scoreServiceSpy = jasmine.createSpyObj('ScoreService', ['getAll']);
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
     const msalServiceStub = {};
+    const authServiceStub = {
+      getAllAccounts: () => [{ username: 'test@example.com' }],
+      getAuthorObject: () => ({ id: 'u1', email: 'test@example.com', name: 'Test User' }),
+      token: () => 'mock-token'
+    };
 
     hcapServiceSpy.getAll.and.returnValue(of(mockHcaps));
     scoreServiceSpy.getAll.and.returnValue(of({ scores: mockScores }));
@@ -129,6 +135,7 @@ describe('HcapListComponent', () => {
         { provide: HCapService, useValue: hcapServiceSpy },
         { provide: ScoreService, useValue: scoreServiceSpy },
         { provide: MsalService, useValue: msalServiceStub },
+        { provide: AuthService, useValue: authServiceStub },
       ],
     })
       .overrideComponent(HcapListComponent, {
@@ -147,12 +154,15 @@ describe('HcapListComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load hcaps on init', () => {
+  it('should load hcaps on init', fakeAsync(() => {
+    component.loadHcaps();
+    tick();
+    fixture.detectChanges();
     expect(hcapServiceSpy.getAll).toHaveBeenCalled();
     expect(component.hcaps.length).toBe(2);
     expect(component.filtered.length).toBe(2);
     expect(component.loading).toBeFalse();
-  });
+  }));
 
   it('should filter by name or memberId', () => {
     component.search = 'alice';

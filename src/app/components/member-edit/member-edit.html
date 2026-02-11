@@ -28,10 +28,7 @@
 
   <mat-form-field appearance="fill">
     <mat-label>Last Date Played</mat-label>
-     <td formControlName="lastDatePlayed" type="date">
-          {{ memberForm.value.lastDatePlayed ? (memberForm.value.lastDatePlayed | date:'longDate') : 'N/A' }}
-        </td>
-  <input matInput formControlName="lastDatePlayed" type="date" placeholder="Select last date played" />
+  <input formControlName="lastDatePlayed" type="date" placeholder="Select last date played" />
   </mat-form-field>
 
   <mat-form-field appearance="fill">
