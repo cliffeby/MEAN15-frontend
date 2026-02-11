@@ -9,6 +9,7 @@ const mockScorecard = {
   _id: '1',
   course: 'Group 1',
   tees: 'Course 1',
+  teeAbreviation: 'C1',
   rating: 72.5,
   slope: 130,
   par: 72,

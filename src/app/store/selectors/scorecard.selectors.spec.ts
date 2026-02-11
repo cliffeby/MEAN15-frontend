@@ -3,9 +3,9 @@ import { ScorecardState } from '../reducers/scorecard.reducer';
 import { Scorecard } from '../../models/scorecard.interface';
 
 const mockScorecards: Scorecard[] = [
-  { _id: '1', name: 'Card 1', course: 'A', rating: 72, slope: 120, par: 72, author: { id: 'user1', email: 'user1@example.com', name: 'User One' }, courseTeeName: 'Blue' },
-  { _id: '2', name: 'Card 2', course: 'B', rating: 70, slope: 118, par: 70, author: { id: 'user2', email: 'user2@example.com', name: 'User Two' }, courseTeeName: 'White' },
-  { _id: '3', name: 'Card 3', course: 'A', author: { id: 'user1', email: 'user1@example.com', name: 'User One' }, courseTeeName: 'Red' },
+  { _id: '1',  course: 'A',tees: 'Blue',teeAbreviation: 'B', rating: 72, slope: 120, par: 72, author: { id: 'user1', email: 'user1@example.com', name: 'User One' }, courseTeeName: 'Blue' },
+  { _id: '2', course: 'B', tees: 'White', teeAbreviation: 'W', rating: 70, slope: 118, par: 70, author: { id: 'user2', email: 'user2@example.com', name: 'User Two' }, courseTeeName: 'White' },
+  { _id: '3', course: 'A', tees: 'Red', teeAbreviation: 'R', author: { id: 'user1', email: 'user1@example.com', name: 'User One' }, courseTeeName: 'Red' },
 ];
 
 const getState = (extra: Partial<ScorecardState> = {}): ScorecardState => ({
@@ -61,7 +61,7 @@ describe('scorecard selectors', () => {
     const allScorecards = fromSelectors.selectAllScorecards.projector(getState());
     const result = selector.projector(allScorecards);
     expect(result.length).toBe(1);
-    expect(result[0].name).toBe('Card 1');
+    expect(result[0].teeAbreviation).toBe('B');
   });
 
   it('should select scorecard stats', () => {

@@ -8,18 +8,22 @@ import { of } from 'rxjs';
 const mockScorecards = [
   {
     _id: '1',
-    name: 'Course 1',
+    course: 'Course 1',
     rating: 72.5,
     slope: 130,
     par: 72,
+    tees: 'Blue',
+    teeAbreviation: 'B',
     author: { id: 'u1', email: 'test@example.com', name: 'Test User' }
   },
   {
     _id: '2',
-    name: 'Course 2',
+    course: 'Course 2',
     rating: 70.0,
     slope: 120,
     par: 70,
+    tees: 'White',
+    teeAbreviation: 'W',
     author: { id: 'u2', email: 'other@example.com', name: 'Other User' }
   }
 ];

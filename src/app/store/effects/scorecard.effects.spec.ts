@@ -15,7 +15,7 @@ describe('ScorecardEffects', () => {
   let snackBar: jasmine.SpyObj<MatSnackBar>;
   let router: jasmine.SpyObj<Router>;
 
-  const mockScorecards = [{ _id: 's1', name: 'Round 1' }];
+  const mockScorecards = [{ _id: 's1', course: 'Round 1', tees: 'Blue', teeAbreviation: 'B', par: 72, author: { id: 'u1', email: 'test@example.com', name: 'Tester' } }];
   const auth = { user: { id: 'u1', _id: 'u1' } } as any;
 
   beforeEach(() => {

@@ -36,6 +36,13 @@ describe('HcapListComponent', () => {
       author: { id: 'u1', email: 'test@example.com', name: 'Test User' },
       createdAt: new Date(),
       updatedAt: new Date(),
+      usgaDifferentialToday: 12,
+      rochDifferentialToday: 12,
+      scCourse: 'hhh',
+      scTees: 'White', 
+      scPar: 72,
+      scSlope: 113,
+      scRating: 72,
     },
     {
       name: 'Bob',
@@ -56,6 +63,13 @@ describe('HcapListComponent', () => {
       author: { id: 'u1', email: 'test@example.com', name: 'Test User' },
       createdAt: new Date(),
       updatedAt: new Date(),
+      usgaDifferentialToday: 12,
+      rochDifferentialToday: 12,
+      scCourse: 'hhh',
+      scTees: 'White', 
+      scPar: 72,
+      scSlope: 113,
+      scRating: 72,
     },
   ];
 
@@ -75,6 +89,9 @@ describe('HcapListComponent', () => {
       scSlope: 113,
       scRating: 72,
       datePlayed: new Date().toISOString(),
+      usgaDifferentialToday: 12,
+      rochDifferentialToday: 12,
+      othersDifferentialToday: 12,
     },
     {
       _id: 's2',
@@ -91,6 +108,9 @@ describe('HcapListComponent', () => {
       scSlope: 113,
       scRating: 72,
       datePlayed: new Date().toISOString(),
+      usgaDifferentialToday: 12,
+      rochDifferentialToday: 12,
+      othersDifferentialToday: 12,
     },
   ];
 

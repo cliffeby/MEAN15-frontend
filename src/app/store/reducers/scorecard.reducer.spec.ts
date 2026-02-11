@@ -5,7 +5,12 @@ import { Scorecard } from '../../models/scorecard.interface';
 describe('scorecardReducer', () => {
   const mockScorecard: Scorecard = {
     _id: '1',
-    name: 'Test Scorecard',
+    tees: 'Blue',
+    teeAbreviation: 'B',
+    rating: 72,
+    slope: 120,
+    par: 72,
+    author: { id: 'user1', email: 'user1@example.com', name: 'User One' },
     course: 'A',
   };
 

@@ -6,8 +6,8 @@ import { AuthService } from '../services/authService';
 import { environment } from '../../environments/environment';
 
 const mockScorecards: Scorecard[] = [
-  { _id: 'sc1', name: 'Front Nine', par: 36, author: { id: 'test-id', email: 'test@example.com', name: 'Test User' } },
-  { _id: 'sc2', name: 'Back Nine', par: 36, author: { id: 'test-id', email: 'test@example.com', name: 'Test User' }  },
+  { _id: 'sc1', course: 'Front Nine',tees: 'Blue', teeAbreviation: 'B', par: 36, author: { id: 'test-id', email: 'test@example.com', name: 'Test User' } },
+  { _id: 'sc2', course: 'Back Nine', tees: 'White', teeAbreviation: 'W', par: 36, author: { id: 'test-id', email: 'test@example.com', name: 'Test User' }  },
 ];
 
 const mockToken = 'mock-jwt-token';
@@ -82,7 +82,7 @@ describe('ScorecardService', () => {
   describe('create', () => {
     it('should create a scorecard with auth header', () => {
       authService.token.and.returnValue(mockToken);
-      const newScorecard: Scorecard = { name: 'Full Course', par: 72, author: { id: 'test-id', email: 'test@example.com', name: 'Test User' } };
+      const newScorecard: Scorecard = { _id: '', course: 'Full Course', tees: 'Blue', teeAbreviation: 'B', par: 72, author: { id: 'test-id', email: 'test@example.com', name: 'Test User' } };
 
       service.create(newScorecard).subscribe((res) => {
         expect(res.scorecard).toEqual({ ...newScorecard, _id: 'sc3' });
@@ -97,7 +97,7 @@ describe('ScorecardService', () => {
 
     it('should handle 409 conflict on create', () => {
       authService.token.and.returnValue(mockToken);
-      const dup: Scorecard = { name: 'Front Nine', author: { id: 'test-id', email: 'test@example.com', name: 'Test User' } };
+      const dup: Scorecard = { _id: '', course: 'Full Course', tees: 'Blue', teeAbreviation: 'B', author: { id: 'test-id', email: 'test@example.com', name: 'Test User' } };
 
       service.create(dup).subscribe({
         next: () => fail('should have failed with 409'),
@@ -139,7 +139,7 @@ describe('ScorecardService', () => {
   describe('update', () => {
     it('should update scorecard and send auth header', () => {
       authService.token.and.returnValue(mockToken);
-      const updated: Scorecard = { ...mockScorecards[0], name: 'Front 9 Updated' };
+      const updated: Scorecard = { ...mockScorecards[0], course: 'Front 9 Updated' };
 
       service.update('sc1', updated).subscribe((res) => {
         expect(res.scorecard).toEqual(updated);
@@ -154,7 +154,7 @@ describe('ScorecardService', () => {
 
     it('should handle error on update', () => {
       authService.token.and.returnValue(mockToken);
-      const updated: Scorecard = { ...mockScorecards[0], name: 'Bad Update' };
+      const updated: Scorecard = { ...mockScorecards[0], course: 'Bad Update' };
 
       service.update('sc1', updated).subscribe({
         next: () => fail('should have failed with 400'),

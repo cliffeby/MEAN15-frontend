@@ -22,6 +22,9 @@ const mockScores: Score[] = [
     usgaIndex: 12.5,
     scoringMethod: 'byHole',
     author: { id: 'test-id', email: 'test@example.com', name: 'Test User' },
+    usgaDifferentialToday: 0,
+    rochDifferentialToday: 0,
+    othersDifferentialToday: 0,
   },
   {
     _id: 's2',
@@ -35,6 +38,9 @@ const mockScores: Score[] = [
     usgaIndex: 12.5,
     scoringMethod: 'byHole',
     author: { id: 'test-id', email: 'test@example.com', name: 'Test User' },
+    usgaDifferentialToday: 0,
+    rochDifferentialToday: 0,
+    othersDifferentialToday: 0,
   },
 ];
 
