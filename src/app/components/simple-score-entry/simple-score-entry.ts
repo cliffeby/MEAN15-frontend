@@ -447,6 +447,8 @@ export class SimpleScoreEntryComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/matches']);
+    // Restore pagination state from query params
+    const queryParams = this.route.snapshot.queryParams;
+    this.router.navigate(['/matches'], { queryParams });
   }
 }

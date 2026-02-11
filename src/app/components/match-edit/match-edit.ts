@@ -75,6 +75,8 @@ export class MatchEditComponent implements OnInit, OnDestroy {
 
   statusOptions = MATCH_STATUS_OPTIONS;
 
+  pageIndex: number = 0;
+  pageSize: number = 10;
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -151,6 +153,14 @@ export class MatchEditComponent implements OnInit, OnDestroy {
     }, 1000);
     
     this.matchId = this.route.snapshot.paramMap.get('id');
+    // Read pagination state from query params
+    const queryParams = this.route.snapshot.queryParams;
+    if (queryParams['pageIndex']) {
+      this.pageIndex = parseInt(queryParams['pageIndex'], 10);
+    }
+    if (queryParams['pageSize']) {
+      this.pageSize = parseInt(queryParams['pageSize'], 10);
+    }
     
     if (this.matchId) {
       // Dispatch action to load the match
@@ -290,6 +300,10 @@ export class MatchEditComponent implements OnInit, OnDestroy {
           const newLineUps = formValue.lineUps || [];
           removedPlayers = (currentMatch as any).lineUps.filter((id: string) => !newLineUps.includes(id));
         }
+        const queryParams = {
+          pageIndex: this.pageIndex,
+          pageSize: this.pageSize
+        };
         if (removedPlayers.length > 0) {
           this.dialog.open(ConfirmDialogComponent, {
             data: {
@@ -304,6 +318,7 @@ export class MatchEditComponent implements OnInit, OnDestroy {
                 id: this.matchId!,
                 match: formValue
               }));
+              this.router.navigate(['/matches'], { queryParams });
             }
           });
         } else {
@@ -311,6 +326,7 @@ export class MatchEditComponent implements OnInit, OnDestroy {
             id: this.matchId!,
             match: formValue
           }));
+          this.router.navigate(['/matches'], { queryParams });
         }
       });
     }
@@ -402,7 +418,11 @@ export class MatchEditComponent implements OnInit, OnDestroy {
   }
 
   cancel() {
-    this.router.navigate(['/matches']);
+    const queryParams = {
+      pageIndex: this.pageIndex,
+      pageSize: this.pageSize
+    };
+    this.router.navigate(['/matches'], { queryParams });
   }
 
   ngOnDestroy() {

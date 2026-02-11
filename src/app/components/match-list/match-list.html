@@ -35,35 +35,41 @@
       No matches found.
     </div>
     <mat-list-item *ngFor="let match of matches">
-      <h3 mat-line class="match-title">{{ match.name }}</h3>
-      <p mat-line>
+      <div class="match-title-row">
+        <h3 mat-line class="match-title">{{ match.name }}</h3>
+        <div class="button-group">
+          <button *ngIf="match.scorecardId" mat-button color="accent" (click)="printScorecard((match._id) || '')">
+            <mat-icon>print</mat-icon>
+            Print Scorecard
+          </button>
+          <button *ngIf="isAuthorized && match.scorecardId && match.status !== 'completed'" mat-button color="primary" (click)="enterScores((match._id) || '')">
+            <mat-icon>scorecard</mat-icon>
+            Enter Scores
+          </button>
+          <button *ngIf="isAuthorized" mat-button color="accent" (click)="editMatch(( match._id) || '')">Edit</button>
+          <button mat-button color="primary" (click)="updateStatus((match._id) || '', 'completed')" 
+            *ngIf="isAuthorized && match.status !== 'completed'">Complete</button>
+          <button *ngIf="isAuthorized" mat-button color="warn" (click)="deleteMatch((match._id) || '')">Delete</button>
+        </div>
+        <span class="date-on-right">{{ formatDate(match.datePlayed || match.createdAt) }}</span>
+      </div>
+      
+      <p mat-line class="player-count-line">
+        <span>Course: TODO</span>
         <span *ngIf="match.scGroupName">Course: {{ match.scGroupName }}</span>
         <span *ngIf="getPlayerCount(match) > 0"> | {{ getPlayerCount(match) }} Players</span>
       </p>
-      <p mat-line class="status-line">
-        <mat-chip [color]="getStatusColor(match.status)" selected>
-          {{ match.status | titlecase }}
-        </mat-chip>
-        <mat-chip *ngIf="!match.scorecardId" color="warn" selected>
-          <mat-icon>warning</mat-icon>
-          No Scorecard
-        </mat-chip>
-        <span class="date-on-right">{{ formatDate(match.datePlayed || match.createdAt) }}</span>
-      </p>
-      <span class="spacer"></span>
-      <div class="button-group" matListItemMeta>
-        <button *ngIf="match.scorecardId" mat-button color="accent" (click)="printScorecard((match._id) || '')">
-          <mat-icon>print</mat-icon>
-          Print Scorecard
-        </button>
-        <button *ngIf="isAuthorized && match.scorecardId" mat-button color="primary" (click)="enterScores((match._id) || '')">
-          <mat-icon>scorecard</mat-icon>
-          Enter Scores
-        </button>
-        <button *ngIf="isAuthorized" mat-button color="accent" (click)="editMatch(( match._id) || '')">Edit</button>
-        <button mat-button color="primary" (click)="updateStatus((match._id) || '', 'completed')" 
-          *ngIf="isAuthorized && match.status !== 'completed'">Complete</button>
-        <button *ngIf="isAuthorized" mat-button color="warn" (click)="deleteMatch((match._id) || '')">Delete</button>
+      <div class="chip-action-row">
+        <div class="status-chips">
+          <mat-chip [color]="getStatusColor(match.status)" selected>
+            {{ match.status | titlecase }}
+          </mat-chip>
+          <mat-chip *ngIf="!match.scorecardId" color="warn" selected>
+            <mat-icon>warning</mat-icon>
+            No Scorecard
+          </mat-chip>
+        </div>
+        <!-- button-group moved up -->
       </div>
     </mat-list-item>
   </mat-list>

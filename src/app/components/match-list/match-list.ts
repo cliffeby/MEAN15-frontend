@@ -8,7 +8,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable, Subject, forkJoin, lastValueFrom } from 'rxjs';
 import { takeUntil, map, take } from 'rxjs/operators';
@@ -55,6 +55,7 @@ import {
   ],
 })
 export class MatchListComponent implements OnInit, OnDestroy {
+
   // Removed auto-refresh subscription
   matches$: Observable<Match[]>;
   loading$: Observable<boolean>;
@@ -88,6 +89,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
     private router: Router,
     private authService: AuthService,
     private confirmDialog: ConfirmDialogService,
+    private route: ActivatedRoute,
   ) {
     this.matches$ = this.store.select(selectAllMatches);
     this.loading$ = this.store.select(selectMatchesLoading);
@@ -107,18 +109,29 @@ export class MatchListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    // Read pagination state from query params
+    this.route.queryParams.subscribe((params: { [key: string]: any }) => {
+      if (params['pageIndex']) {
+        this.pageIndex = parseInt(params['pageIndex'], 10);
+      }
+      if (params['pageSize']) {
+        this.pageSize = parseInt(params['pageSize'], 10);
+      }
+      // Setup pagination after reading params
+      this.setupPagination();
+      // Scroll to match list after navigation (restores scroll position)
+      setTimeout(() => {
+        const el = document.querySelector('.match-list');
+        if (el) {
+          el.scrollIntoView({ behavior: 'auto', block: 'start' });
+        }
+      }, 0);
+    });
     // Dispatch action to load matches
     this.store.dispatch(MatchActions.loadMatches());
-
-    // Setup pagination with configuration
-    this.setupPagination();
   }
 
   private setupPagination(): void {
-    // Get page size from configuration
-    const displayConfig = this.configService.displayConfig();
-    this.pageSize = displayConfig.matchListPageSize;
-
     // Setup paginated matches observable
     this.paginatedMatches$ = this.matches$.pipe(
       map((matches) => {
@@ -129,30 +142,20 @@ export class MatchListComponent implements OnInit, OnDestroy {
 
     // Subscribe to configuration changes so pageSize and paginator options update dynamically
     this.configService.config$.pipe(takeUntil(this.unsubscribe$)).subscribe((cfg) => {
-      const newSize = cfg?.display?.matchListPageSize;
       const newPageSizeOptions = cfg?.pagination?.pageSizeOptions;
       const newShowFirstLast = cfg?.pagination?.showFirstLastButtons;
       const newShowPageSizeOptions = cfg?.pagination?.showPageSizeOptions;
-
-      // Update page size options if changed
       if (
         Array.isArray(newPageSizeOptions) &&
         JSON.stringify(newPageSizeOptions) !== JSON.stringify(this.pageSizeOptions)
       ) {
         this.pageSizeOptions = newPageSizeOptions;
       }
-
       if (typeof newShowFirstLast === 'boolean') {
         this.showFirstLastButtons = newShowFirstLast;
       }
-
       if (typeof newShowPageSizeOptions === 'boolean') {
         this.showPageSizeOptions = newShowPageSizeOptions;
-      }
-
-      // Update pageSize and reset to first page when page size changes to avoid empty page
-      if (typeof newSize === 'number' && newSize > 0 && newSize !== this.pageSize) {
-        this.onPageChange({ pageIndex: 0, pageSize: newSize } as PageEvent);
       }
     });
   }
@@ -167,7 +170,27 @@ export class MatchListComponent implements OnInit, OnDestroy {
       // Could add snackbar notification here if needed
       return;
     }
-    this.router.navigate(['/matches/edit', id]);
+    // Pass current pagination state as query params
+    this.router.navigate(['/matches/edit', id], {
+      queryParams: {
+        pageIndex: this.pageIndex,
+        pageSize: this.pageSize
+      }
+    });
+  }
+  onPageChange(event: PageEvent) {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    // Update query params to reflect new pagination state
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        pageIndex: this.pageIndex,
+        pageSize: this.pageSize
+      },
+      queryParamsHandling: 'merge',
+    });
+    this.setupPagination();
   }
 
   enterScores(id: string) {
@@ -184,7 +207,13 @@ export class MatchListComponent implements OnInit, OnDestroy {
         ? ['/matches', id, 'simple-score-entry']
         : ['/matches', id, 'score-entry'];
 
-    this.router.navigate(route);
+    // Pass pagination state as query params
+    this.router.navigate(route, {
+      queryParams: {
+        pageIndex: this.pageIndex,
+        pageSize: this.pageSize
+      }
+    });
   }
 
   async printScorecard(id: string) {
@@ -273,7 +302,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
         hCaps: finalScorecard.hCaps || Array.from({ length: 18 }, (_, i) => i + 1),
         distances: finalScorecard.yards || Array(18).fill(0),
       };
-
+     
       // Generate PDF using the service
       // Group players into foursomes
       const groups: PrintablePlayer[][] = [];
@@ -327,6 +356,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
         }
       });
   }
+
 
   updateStatus(id: string, status: string) {
     // Get match details for audit logging
@@ -598,16 +628,5 @@ const memRecord: any = {
     );
   }
 
-  onPageChange(event: PageEvent): void {
-    this.pageIndex = event.pageIndex;
-    this.pageSize = event.pageSize;
 
-    // Update paginated matches
-    this.paginatedMatches$ = this.matches$.pipe(
-      map((matches) => {
-        const startIndex = this.pageIndex * this.pageSize;
-        return matches.slice(startIndex, startIndex + this.pageSize);
-      }),
-    );
-  }
 }
