@@ -16,9 +16,9 @@ jobs:
     name: Build and Deploy Job
     steps:
       - uses: actions/checkout@v3
-        # with:
-        #   submodules: true
-        #   lfs: false
+        with:
+          submodules: true
+          lfs: false
         #   app_location: "/"
         #   output_location: "dist/rochester-golf/browser"
       - name: Build And Deploy
