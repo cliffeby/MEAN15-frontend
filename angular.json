@@ -32,7 +32,7 @@
             "styles": [
               "src/styles.scss"
             ],
-            "outputPath": "dist/rochester-golf"
+            "outputPath": "dist/rochester-golf/browser"
           },
           "configurations": {
             "production": {
