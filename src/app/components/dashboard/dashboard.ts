@@ -100,7 +100,7 @@ export class Dashboard implements OnInit, AfterViewInit {
     return sorted;
   });
 
-  // Update the currentTheme property to use the uiConfig computed property
+  // Update the currentTheme property to use the uiConfig computed property.
   currentTheme = this.configService.uiConfig().theme;
 
   constructor() {
