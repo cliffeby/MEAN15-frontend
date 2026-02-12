@@ -70,7 +70,7 @@ export class MainLayoutComponent {
   logout() {
     // MSAL logout will redirect, no need to navigate manually
     this.msalService.logoutRedirect({
-      postLogoutRedirectUri: 'http://localhost:4200/login'
+      postLogoutRedirectUri: 'https://brave-tree-00ac3970f.1.azurestaticapps.net//login'
     });
   }
 
