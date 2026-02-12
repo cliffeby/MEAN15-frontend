@@ -1,5 +1,5 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:5001/api',
-  // apiUrl: 'https://rochwebappeasttwo-cffheedghmhpb7ad.eastus-01.azurewebsites.net/api',
+  // apiUrl: 'http://localhost:5001/api',
+  apiUrl: 'https://rochwebappeasttwo-cffheedghmhpb7ad.eastus-01.azurewebsites.net/api',
 };

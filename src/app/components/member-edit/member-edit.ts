@@ -70,7 +70,19 @@ export class MemberEditComponent implements OnInit {
       this.loading = true;
       this.memberService.getById(this.memberId).subscribe({
         next: (member) => {
-          this.memberForm.patchValue(member);
+          // Format lastDatePlayed for date input
+          let patchMember = { ...member };
+          if (patchMember.lastDatePlayed) {
+            // Accept ISO string or Date object
+            const date = typeof patchMember.lastDatePlayed === 'string'
+              ? new Date(patchMember.lastDatePlayed)
+              : patchMember.lastDatePlayed;
+            if (!isNaN(date.getTime())) {
+              // Format as YYYY-MM-DD
+              patchMember.lastDatePlayed = date.toISOString().slice(0, 10);
+            }
+          }
+          this.memberForm.patchValue(patchMember);
           // Support both [{scorecardId}] and [string] for scorecardsId
           let ids: string[] = [];
           if (Array.isArray(member.scorecardsId) && member.scorecardsId.length > 0) {

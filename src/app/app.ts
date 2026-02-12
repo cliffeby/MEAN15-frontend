@@ -4,7 +4,7 @@ import { ReportsComponent } from './components/reports/reports';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ReportsComponent],
+  imports: [RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
