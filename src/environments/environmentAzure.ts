@@ -1,4 +1,4 @@
 export const environment = {
-  production: false,
+  production: true,
   apiUrl: 'https://rochwebappeasttwo-cffheedghmhpb7ad.eastus-01.azurewebsites.net/api',
 };
