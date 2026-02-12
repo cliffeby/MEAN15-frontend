@@ -20,7 +20,7 @@ jobs:
           submodules: true
           lfs: false
           app_location: "frontend"
-          output_location: "dist/rochester-golf"
+          output_location: "dist/rochester-golf/browser"
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
