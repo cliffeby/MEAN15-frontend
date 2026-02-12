@@ -19,7 +19,7 @@ jobs:
         with:
           submodules: true
           lfs: false
-          app_location: "frontend"
+          app_location: "/"
           output_location: "dist/rochester-golf/browser"
       - name: Build And Deploy
         id: builddeploy
