@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 
 import { Component, inject, signal, computed, OnInit, AfterViewInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -127,7 +128,7 @@ export class Dashboard implements OnInit, AfterViewInit {
   }
 
   private loadDbType() {
-    fetch('/api/config/db-type', { credentials: 'include' })
+    fetch(`${environment.apiUrl}/config/db-type`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         this.dbType.set(data.dbType || 'Unknown');
