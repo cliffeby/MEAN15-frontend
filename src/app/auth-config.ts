@@ -1,7 +1,7 @@
 import { BrowserCacheLocation, Configuration } from '@azure/msal-browser';
 import { environment } from '../environments/environment';
 
-// MSAL.js configuration for Microsoft Entra External ID
+// MSAL.js configuration for Microsoft Entra External ID.
 export const msalConfig: Configuration = {
   auth: {
     clientId: 'aa1ad4fb-4f38-46ba-970d-9af33e9a2e52',
