@@ -47,6 +47,11 @@ export class Dashboard implements OnInit, AfterViewInit {
   allScores = signal<Score[]>([]);
   allMatches = signal<Match[]>([]);
 
+  // DB type signal
+  dbType = signal<string>('');
+  dbName = signal<string>('');
+  server = signal<string>('');
+
   // Date calculations
   public currentDate = new Date();
   public currentYear = this.currentDate.getFullYear();
@@ -117,6 +122,23 @@ export class Dashboard implements OnInit, AfterViewInit {
   ngOnInit() {
     this.auth.updateRoles();
     this.loadDashboardData();
+    this.loadDbType();
+
+  }
+
+  private loadDbType() {
+    fetch('/api/config/db-type', { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        this.dbType.set(data.dbType || 'Unknown');
+        this.dbName.set(data.dbName || 'Unknown');
+        this.server.set(data.server || 'Unknown');
+      })
+      .catch(() => {
+        this.dbType.set('Unknown');
+        this.dbName.set('Unknown');
+        this.server.set('Unknown');
+      });
   }
 
   ngAfterViewInit() {

@@ -1,5 +1,6 @@
 export const environment = {
-  production: true,
-  // apiUrl: 'http://localhost:5001/api',
-  apiUrl: 'https://rochwebappeasttwo-cffheedghmhpb7ad.eastus-01.azurewebsites.net/api',
+  production: false,
+  apiUrl: 'http://localhost:5001/api',
+  redirectUri: 'http://localhost:4200/',
+  postLogoutRedirectUri: 'http://localhost:4200/login'
 };
