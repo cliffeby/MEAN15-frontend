@@ -31,6 +31,7 @@ jobs:
           app_location: "/" # App source code path
           # api_location: "https://rochwebappeasttwo-cffheedghmhpb7ad.eastus-01.azurewebsites.net/api" # (Commented out: use environment.prod.ts apiUrl for Azure API)
           output_location: "dist/rochester-golf/browser" # Built app content directory - optional
+          app_build_command: "npm run build:prod" # Force production build with environment.prod.ts
           ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:
