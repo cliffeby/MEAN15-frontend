@@ -28,7 +28,7 @@ jobs:
           action: "upload"
           ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
           # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "/frontend" # App source code path
+          app_location: "/" # App source code path (root of frontend repo)
           # api_location: "https://rochwebappeasttwo-cffheedghmhpb7ad.eastus-01.azurewebsites.net/api" # (Commented out: use environment.prod.ts apiUrl for Azure API)
           output_location: "dist/rochester-golf/browser" # Built app content directory - optional
           app_build_command: "npm run build:prod" # Force production build with environment.prod.ts
