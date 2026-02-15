@@ -8,6 +8,7 @@ import { MsalService, MsalBroadcastService } from '@azure/msal-angular';
 import { InteractionStatus, EventType } from '@azure/msal-browser';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -98,7 +99,7 @@ export class Login implements OnInit, OnDestroy {
     
     // Logout redirect will navigate away, no need to handle response
     this.msalService.logoutRedirect({
-      postLogoutRedirectUri: 'http://localhost:4200/login'
+      postLogoutRedirectUri: environment.postLogoutRedirectUri
     });
   }
 
