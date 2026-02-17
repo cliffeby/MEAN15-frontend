@@ -42,6 +42,7 @@ export interface EmailResponse {
   status?: string;
   recipientCount?: number;
   invalidEmails?: number;
+  invalidEmailAddresses?: string[];
   total?: number;
   successful?: number;
   failed?: number;

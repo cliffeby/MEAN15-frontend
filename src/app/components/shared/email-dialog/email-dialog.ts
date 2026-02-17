@@ -263,10 +263,17 @@ export class EmailDialogComponent {
       if (hasErrors) {
         // Normalize failures array
         const errs = response.errors ? [...response.errors] : [];
-        // If only invalidEmails present, create a summary entry
-        if (errs.length === 0 && (response.invalidEmails ?? 0) > 0) {
+        
+        // If invalidEmails present, add specific entries for each invalid email
+        if ((response.invalidEmails ?? 0) > 0 && response.invalidEmailAddresses?.length) {
+          response.invalidEmailAddresses?.forEach((email: string) => {
+            errs.push({ email, error: 'Invalid email format' });
+          });
+        } else if (errs.length === 0 && (response.invalidEmails ?? 0) > 0) {
+          // Fallback if we only have count but not addresses
           errs.push({ email: 'unknown', error: `${response.invalidEmails} invalid email(s)` });
         }
+        
         this.failures.set(errs);
         this.ackRequired.set(true);
         this.sending.set(false);
