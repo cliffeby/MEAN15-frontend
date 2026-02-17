@@ -107,7 +107,19 @@ export class EmailManagerComponent implements OnInit {
     this.memberService.getAll().subscribe({
       next: (members) => {
         // Filter to only members with email addresses
-        const membersWithEmail = members.filter(m => m.Email && m.Email.trim() !== '');
+        const membersWithEmail = (members || []).filter(m => m.Email && m.Email.trim() !== '');
+        // Sort alphabetically by lastName (case-insensitive), then firstName
+        membersWithEmail.sort((a, b) => {
+          const aLast = (a.lastName || '').toLowerCase();
+          const bLast = (b.lastName || '').toLowerCase();
+          if (aLast < bLast) return -1;
+          if (aLast > bLast) return 1;
+          const aFirst = (a.firstName || '').toLowerCase();
+          const bFirst = (b.firstName || '').toLowerCase();
+          if (aFirst < bFirst) return -1;
+          if (aFirst > bFirst) return 1;
+          return 0;
+        });
         this.members.set(membersWithEmail);
         this.filteredMembers.set(membersWithEmail);
         this.loading.set(false);
@@ -132,6 +144,18 @@ export class EmailManagerComponent implements OnInit {
       (m.lastName && m.lastName.toLowerCase().includes(term)) ||
       m.Email.toLowerCase().includes(term)
     );
+    // Keep filtered list sorted by last name, then first name
+    filtered.sort((a, b) => {
+      const aLast = (a.lastName || '').toLowerCase();
+      const bLast = (b.lastName || '').toLowerCase();
+      if (aLast < bLast) return -1;
+      if (aLast > bLast) return 1;
+      const aFirst = (a.firstName || '').toLowerCase();
+      const bFirst = (b.firstName || '').toLowerCase();
+      if (aFirst < bFirst) return -1;
+      if (aFirst > bFirst) return 1;
+      return 0;
+    });
     this.filteredMembers.set(filtered);
   }
 
@@ -187,13 +211,15 @@ export class EmailManagerComponent implements OnInit {
     const selectedMembers = this.selection.selected;
     const memberIds = selectedMembers.map(m => m._id || '').filter(id => id !== '');
     const memberNames = selectedMembers.map(m => `${m.firstName} ${m.lastName || ''}`);
+    const memberEmails = selectedMembers.map(m => m.Email || '').filter(e => e && e.trim() !== '');
 
     const dialogRef = this.dialog.open(EmailDialogComponent, {
       width: '700px',
       disableClose: false,
       data: {
         memberIds,
-        memberNames,
+          memberNames,
+          memberEmails,
         sendToAll: false
       } as EmailDialogData
     });

@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
@@ -17,6 +18,7 @@ export interface EmailDialogData {
   memberIds?: string[]; // If provided, send to specific members
   sendToAll?: boolean;  // If true, send to all members
   memberNames?: string[]; // Display names in dialog
+  memberEmails?: string[]; // Optional list of emails corresponding to memberIds
 }
 
 export interface EmailDialogResult {
@@ -40,6 +42,7 @@ export interface EmailDialogResult {
     MatTooltipModule,
     MatChipsModule,
     MatSelectModule
+    ,MatCardModule
   ],
   templateUrl: './email-dialog.html',
   styleUrls: ['./email-dialog.scss']
@@ -51,6 +54,8 @@ export class EmailDialogComponent {
   // Form fields
   subject = signal('');
   message = signal('');
+  // Comma-separated CC emails (user-entered)
+  cc = signal('');
   personalize = signal(true);
   includeHidden = signal(false);
   previewMode = signal(false);
@@ -76,7 +81,7 @@ export class EmailDialogComponent {
       // subjectTemplate will be processed to include upcoming Sat/Sun dates
       subjectTemplate: 'Weekend Schedule: Sat {{sat}} — Sun {{sun}}',
       body:
-        'Ladies,\n\nPlease see the schedule for the upcoming weekend:\n\n{{snippet}}\n\nBest,\nRochester Golf Team',
+        'Ladies,\n\nPlease see the schedule for the upcoming weekend:\n\n{{snippet}}\n\nBest,\nRochester Golf Commish',
       snippets: [
         { id: 'full', label: 'Full Schedule', text: 'Saturday: 8:30 AM Tee times, Cardroom by 8:00 AM.\nSunday: 8:40 AM shotgun start.' },
         { id: 'reminder', label: 'Quick Reminder', text: 'Reminder: Expected temps are -' },
@@ -96,11 +101,19 @@ export class EmailDialogComponent {
   // State
   sending = signal(false);
   error = signal<string | null>(null);
+  // Failures returned from backend (errors array or invalid count)
+  failures = signal<any[] | null>(null);
+  ackRequired = signal(false);
   
   public isSendToAll!: boolean;
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: EmailDialogData) {
     this.isSendToAll = !!this.data?.sendToAll;
+    // If memberEmails provided, prefill CC with those emails (comma-separated)
+    if (this.data?.memberEmails && this.data.memberEmails.length > 0) {
+      // Prefill CC with the provided emails
+      this.cc.set(this.data.memberEmails.join(', '));
+    }
   }
 
   get recipientCount(): number {
@@ -112,7 +125,9 @@ export class EmailDialogComponent {
   }
 
   get displayRecipients(): string[] {
-    return this.data.memberNames?.slice(0, 10) || [];
+    const names = this.data.memberNames || [];
+    // Sort alphabetically, case-insensitive, then take first 10
+    return names.slice().sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })).slice(0, 10);
   }
 
   get hasMoreRecipients(): boolean {
@@ -205,6 +220,12 @@ export class EmailDialogComponent {
 
       let response;
 
+      // Parse CC emails into array (trim, remove empties)
+      const ccEmails = (this.cc() || '')
+        .split(',')
+        .map(e => e.trim())
+        .filter(e => e.length > 0);
+
       if (this.isSendToAll) {
         // Send to all members
         response = await this.emailService.sendToAllMembers({
@@ -212,7 +233,8 @@ export class EmailDialogComponent {
           htmlContent,
           plainTextContent: this.message().trim(),
           personalize: this.personalize(),
-          includeHidden: this.includeHidden()
+          includeHidden: this.includeHidden(),
+          cc: ccEmails
         }).toPromise();
       } else {
         // Send to specific members
@@ -225,8 +247,30 @@ export class EmailDialogComponent {
           subject: this.subject().trim(),
           htmlContent,
           plainTextContent: this.message().trim(),
-          personalize: this.personalize()
+          personalize: this.personalize(),
+          cc: ccEmails
         }).toPromise();
+      }
+
+      // If the API returned no response object, close and return
+      if (!response) {
+        this.dialogRef.close({ sent: true, response } as EmailDialogResult);
+        return;
+      }
+
+      // If response contains failures, show them and require user acknowledgement
+      const hasErrors = ((response.errors?.length ?? 0) > 0) || ((response.invalidEmails ?? 0) > 0) || ((response.failed ?? 0) > 0);
+      if (hasErrors) {
+        // Normalize failures array
+        const errs = response.errors ? [...response.errors] : [];
+        // If only invalidEmails present, create a summary entry
+        if (errs.length === 0 && (response.invalidEmails ?? 0) > 0) {
+          errs.push({ email: 'unknown', error: `${response.invalidEmails} invalid email(s)` });
+        }
+        this.failures.set(errs);
+        this.ackRequired.set(true);
+        this.sending.set(false);
+        return;
       }
 
       this.dialogRef.close({ sent: true, response } as EmailDialogResult);
@@ -239,5 +283,10 @@ export class EmailDialogComponent {
 
   cancel(): void {
     this.dialogRef.close({ sent: false } as EmailDialogResult);
+  }
+
+  acknowledgeAndClose(): void {
+    const resp = { acknowledged: true, errors: this.failures() };
+    this.dialogRef.close({ sent: true, response: resp } as EmailDialogResult);
   }
 }

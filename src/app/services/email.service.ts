@@ -19,6 +19,7 @@ export interface SendEmailRequest {
   htmlContent: string;
   plainTextContent?: string;
   personalize?: boolean;
+  cc?: string[];
 }
 
 export interface SendAllEmailRequest {
@@ -27,6 +28,7 @@ export interface SendAllEmailRequest {
   plainTextContent?: string;
   personalize?: boolean;
   includeHidden?: boolean;
+  cc?: string[];
 }
 
 export interface TestEmailRequest {

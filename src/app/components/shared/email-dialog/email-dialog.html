@@ -67,6 +67,18 @@
         <mat-icon matPrefix>subject</mat-icon>
       </mat-form-field>
 
+      <!-- CC -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>CC (optional)</mat-label>
+        <input
+          matInput
+          [(ngModel)]="cc"
+          placeholder="Comma-separated email addresses (e.g. joe@example.com, jane@example.com)"
+          [disabled]="sending()">
+        <mat-icon matPrefix>alternate_email</mat-icon>
+        <mat-hint>Enter one or more email addresses separated by commas</mat-hint>
+      </mat-form-field>
+
       <!-- Message -->
       <mat-form-field appearance="outline" class="full-width message-field" [class.preview-hidden]="previewMode()">
         <mat-label>Message</mat-label>
@@ -138,6 +150,23 @@
       <div class="error-message" *ngIf="error()">
         <mat-icon>error</mat-icon>
         <span>{{ error() }}</span>
+      </div>
+
+      <!-- Failure Details (requires acknowledgement) -->
+      <div class="failure-details" *ngIf="ackRequired()">
+        <mat-card>
+          <mat-card-title>Failed Email Deliveries</mat-card-title>
+          <mat-card-content>
+            <p>Some email addresses failed to deliver. Please review the details below.</p>
+            <p><strong>Count:</strong> {{ (failures() || []).length }}</p>
+            <ul>
+              <li *ngFor="let f of (failures() || [])">{{ f.email }} — {{ f.error }}</li>
+            </ul>
+          </mat-card-content>
+          <mat-card-actions align="end">
+            <button mat-raised-button color="primary" (click)="acknowledgeAndClose()">Acknowledge and Close</button>
+          </mat-card-actions>
+        </mat-card>
       </div>
 
       <!-- Sending Indicator -->
