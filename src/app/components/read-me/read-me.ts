@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
@@ -13,10 +13,10 @@ import { API } from '../apis/apis';
   templateUrl: './read-me.html',
   styleUrls: ['./read-me.scss']
 })
-export class ReadMe implements OnInit, OnDestroy {
-  view: 'overview' | 'instructions' | 'api' = 'overview';
+export class ReadMe {
+  view: 'overview' | 'instructions' | 'api' | 'config' | 'initialSetup' = 'overview';
 
-  setView(v: 'overview' | 'instructions' | 'api') {
+  setView(v: 'overview' | 'instructions' | 'api' | 'config' | 'initialSetup') {
     this.view = v;
   }
 

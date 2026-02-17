@@ -7,12 +7,26 @@
     <button mat-button color="primary" (click)="setView('instructions')" [class.active]="view === 'instructions'">Instructions</button>
     <button mat-button color="primary" (click)="setView('overview')" [class.active]="view === 'overview'">Overview</button>
     <button mat-button color="primary" (click)="setView('api')" [class.active]="view === 'api'">API Details</button>
+    <button mat-button color="primary" (click)="setView('config')" [class.active]="view === 'config'">Configuration (TODO)</button>
+    <button mat-button color="primary" (click)="setView('initialSetup')" [class.active]="view === 'initialSetup'">Initial Setup (TODO)</button>
   </mat-card-actions>
 
   <mat-card-content>
     <div *ngIf="view === 'instructions'">
       <h3>Instructions</h3>
       <p><em>TODO: Add detailed setup and usage instructions here.</em></p>
+    </div>
+
+    <div *ngIf="view === 'config'">
+      <h3>Configuration</h3>
+      <mat-divider></mat-divider>
+      <p><em>TODO: Document configuration options, environment variables, and deployment settings.</em></p>
+    </div>
+
+    <div *ngIf="view === 'initialSetup'">
+      <h3>Initial Setup</h3>
+      <mat-divider></mat-divider>
+      <p><em>TODO: Add initial setup steps (DB migration, seeding, admin user creation, environment setup).</em></p>
     </div>
 
     <div *ngIf="view === 'overview'">
@@ -257,11 +271,13 @@
       </p>
       <h4>Frontend (Angular)</h4>
       <ul>
-        <li><strong>Components:</strong> <code>src/app/components/hcap-list/</code>, <code>hcap-form/</code>, <code>hcap-history/</code></li>
-        <li><strong>Service:</strong> <code>src/app/services/hcapService.ts</code></li>
-        <li><strong>Model:</strong> <code>src/app/models/hcap.ts</code></li>
-        <li><strong>Routes:</strong> <code>/hcaps</code>, <code>/hcaps/upload</code>, <code>/hcaps/history/:memberId</code></li>
-        <li><strong>UI:</strong> Tables for current handicaps, per-member history view, upload/import UI for handicap files, and controls to recalculate handicaps.</li>
+          <li><strong>Components:</strong> <code>src/app/components/hcap-list/</code>, <code>hcap-form/</code>, <code>hcap-history/</code></li>
+          <li><strong>Service:</strong> <code>src/app/services/hcapService.ts</code></li>
+          <li><strong>Model:</strong> <code>src/app/models/hcap.ts</code></li>
+          <li><strong>Routes:</strong> <code>/hcaps</code>, <code>/hcaps/upload</code>, <code>/hcaps/history/:memberId</code></li>
+          <li><strong>Actions:</strong> Load current hcaps, import/update handicaps, load history (invoked via <code>HCapService</code>, not NgRx)</li>
+          <li><strong>State:</strong> Managed by <code>HCapService</code> and component-local state (no NgRx feature)</li>
+          <li><strong>UI:</strong> Tables for current handicaps, per-member history view, upload/import UI for handicap files, and controls to recalculate handicaps.</li>
       </ul>
       <h4>NgRx Store Usage</h4>
       <ul>
