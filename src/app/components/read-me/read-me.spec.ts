@@ -1,4 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute } from '@angular/router';
+import { of } from 'rxjs';
 
 import { ReadMe } from './read-me';
 
@@ -8,7 +10,17 @@ describe('ReadMe', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ReadMe]
+      imports: [ReadMe],
+      providers: [
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: { paramMap: { get: () => null }, queryParams: {} },
+            paramMap: of(new Map()),
+            queryParams: of({})
+          }
+        }
+      ]
     })
     .compileComponents();
 

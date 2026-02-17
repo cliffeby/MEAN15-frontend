@@ -78,7 +78,7 @@ export class EmailDialogComponent {
     {
       id: 'weekend-schedule',
       name: 'Weekend Schedule',
-      // subjectTemplate will be processed to include upcoming Sat/Sun dates
+      // subjectTemplate will be processed to include upcoming Sat/Sun dates.
       subjectTemplate: 'Weekend Schedule: Sat {{sat}} — Sun {{sun}}',
       body:
         'Ladies,\n\nPlease see the schedule for the upcoming weekend:\n\n{{snippet}}\n\nBest,\nRochester Golf Commish',

@@ -62,22 +62,53 @@ describe('MemberListComponent', () => {
       'confirmDelete',
       'confirmAction',
     ]);
+    confirmDialogSpy.confirmAction.and.returnValue(of(true));
+    confirmDialogSpy.confirmDelete.and.returnValue(of(true));
     preferencesSpy = jasmine.createSpyObj('UserPreferencesService', [
       'getMemberListColumnPreferences',
       'saveMemberListColumnPreferences',
       'clearUserPreferences',
     ]);
+    preferencesSpy.getMemberListColumnPreferences.and.returnValue([]);
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
     configServiceSpy = jasmine.createSpyObj('ConfigurationService', ['displayConfig', 'paginationConfig', 'uiConfig'], {
       config$: of({ ui: { theme: 'light' }, display: { memberListPageSize: 20 }, pagination: { pageSizeOptions: [10, 20, 50] } })
     });
     
-    // Set up spy return values
-    configServiceSpy.displayConfig.and.returnValue({ memberListPageSize: 20 });
-    configServiceSpy.paginationConfig.and.returnValue({ pageSizeOptions: [10, 20, 50, 100] });
-    configServiceSpy.uiConfig.and.returnValue({ theme: 'light' });
-provideHttpClient(),
+    // Set up spy return values with all required properties
+    configServiceSpy.displayConfig.and.returnValue({ 
+      memberListPageSize: 20,
+      matchListPageSize: 20,
+      scoreListPageSize: 20,
+      showMemberPhotos: true,
+      showScoreDetails: true,
+      defaultDateFormat: 'MM/dd/yyyy',
+      timeZone: 'America/New_York'
+    });
+    configServiceSpy.paginationConfig.and.returnValue({ 
+      pageSizeOptions: [10, 20, 50, 100],
+      enablePagination: true,
+      showPageSizeOptions: true,
+      showFirstLastButtons: true
+    });
+    configServiceSpy.uiConfig.and.returnValue({ 
+      theme: 'light',
+      enableAnimations: true,
+      showTooltips: true,
+      confirmDeletions: true,
+      autoSaveInterval: 30,
+      sessionTimeout: 60
+    });
+    
+    memberServiceSpy.getAll.and.returnValue(of(mockMembers));
+    memberServiceSpy.delete.and.returnValue(of({}));
+    memberServiceSpy.removeDuplicateEmails.and.returnValue(of({ deletedCount: 1 }));
+
+    await TestBed.configureTestingModule({
+      imports: [MemberListComponent],
+      providers: [
+        provideHttpClient(),
         provideHttpClientTesting(),
         { provide: MemberService, useValue: memberServiceSpy },
         { provide: AuthService, useValue: authServiceSpy },
@@ -85,19 +116,7 @@ provideHttpClient(),
         { provide: UserPreferencesService, useValue: preferencesSpy },
         { provide: MatSnackBar, useValue: snackBarSpy },
         { provide: Router, useValue: routerSpy },
-
-        { provide: ConfigurationService, useValue: configService(of({}));
-    memberServiceSpy.removeDuplicateEmails.and.returnValue(of({ deletedCount: 1 }));
-
-    await TestBed.configureTestingModule({
-      imports: [MemberListComponent],
-      providers: [
-        { provide: MemberService, useValue: memberServiceSpy },
-        { provide: AuthService, useValue: authServiceSpy },
-        { provide: ConfirmDialogService, useValue: confirmDialogSpy },
-        { provide: UserPreferencesService, useValue: preferencesSpy },
-        { provide: MatSnackBar, useValue: snackBarSpy },
-        { provide: Router, useValue: routerSpy },
+        { provide: ConfigurationService, useValue: configServiceSpy },
       ],
     })
       .overrideComponent(MemberListComponent, {
