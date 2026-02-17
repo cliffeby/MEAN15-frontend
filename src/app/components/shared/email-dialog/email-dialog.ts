@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatSelectModule } from '@angular/material/select';
 import { EmailService } from '../../../services/email.service';
 
 export interface EmailDialogData {
@@ -37,7 +38,8 @@ export interface EmailDialogResult {
     MatIconModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    MatChipsModule
+    MatChipsModule,
+    MatSelectModule
   ],
   templateUrl: './email-dialog.html',
   styleUrls: ['./email-dialog.scss']
@@ -52,15 +54,53 @@ export class EmailDialogComponent {
   personalize = signal(true);
   includeHidden = signal(false);
   previewMode = signal(false);
+  // Templates
+  templates = [
+    {
+      id: 'welcome',
+      name: 'Welcome New Member',
+      subject: 'Welcome to Rochester Golf — Next Steps',
+      body:
+        'Hi {{firstName}} {{lastName}},\n\n' +
+        'Welcome to the Rochester Golf! We\'re excited to have another pigeon on board.\n\n' +
+        'Next steps:\n' +
+        '- When the weekend matches are scheduled you will get an email. Respond promptly if you plan to participate.\n' +
+        '- - You will recieve a confirmation on your status. If you do not, resend your requestReview upcoming events and join a match or practice session.\n\n' +
+        'If you have any questions, show up at 8AM and we will be happy to offer insults to your unnecessary questions.\n\n' +
+        'Best regards,\n' +
+        'Rochester Golf Commish'
+    },
+    {
+      id: 'weekend-schedule',
+      name: 'Weekend Schedule',
+      // subjectTemplate will be processed to include upcoming Sat/Sun dates
+      subjectTemplate: 'Weekend Schedule: Sat {{sat}} — Sun {{sun}}',
+      body:
+        'Ladies,\n\nPlease see the schedule for the upcoming weekend:\n\n{{snippet}}\n\nBest,\nRochester Golf Team',
+      snippets: [
+        { id: 'full', label: 'Full Schedule', text: 'Saturday: 8:30 AM Tee times, Cardroom by 8:00 AM.\nSunday: 8:40 AM shotgun start.' },
+        { id: 'reminder', label: 'Quick Reminder', text: 'Reminder: Expected temps are -' },
+        { id: 'notes', label: 'Notes', text: 'Notes: Protect the field.' }
+      ]
+    }
+  ];
+
+  selectedTemplateId = signal<string | null>(null);
+  // Selected snippets (allow multiple) for templates that support multiple body snippets
+  selectedSnippet = signal<string[]>([]);
+  // Helper to access currently selected template object
+  get currentTemplate() {
+    return this.templates.find(t => t.id === this.selectedTemplateId());
+  }
   
   // State
   sending = signal(false);
   error = signal<string | null>(null);
   
-  constructor(@Inject(MAT_DIALOG_DATA) public data: EmailDialogData) {}
+  public isSendToAll!: boolean;
 
-  get isSendToAll(): boolean {
-    return this.data.sendToAll || false;
+  constructor(@Inject(MAT_DIALOG_DATA) public data: EmailDialogData) {
+    this.isSendToAll = !!this.data?.sendToAll;
   }
 
   get recipientCount(): number {
@@ -88,15 +128,67 @@ export class EmailDialogComponent {
     this.message.set(currentMessage + placeholder);
   }
 
+  selectTemplate(templateId: string): void {
+    const t = this.templates.find(x => x.id === templateId);
+    if (!t) return;
+    // Apply template (admin can still edit afterwards)
+    this.selectedTemplateId.set(templateId);
+    // If the template provides a subjectTemplate (with placeholders), compute dates
+    if ((t as any).subjectTemplate) {
+      const sat = this.formatUpcomingDateForWeekday(6); // Saturday
+      const sun = this.formatUpcomingDateForWeekday(0); // Sunday
+      const subj = (t as any).subjectTemplate.replace('{{sat}}', sat).replace('{{sun}}', sun);
+      this.subject.set(subj);
+    } else if ((t as any).subject) {
+      this.subject.set((t as any).subject);
+    }
+
+    // If template has snippets, select the first by default and apply
+    if ((t as any).snippets && (t as any).snippets.length > 0) {
+      const firstId = (t as any).snippets[0].id;
+      this.selectedSnippet.set([firstId]);
+      this.applySnippetToMessage(t, [firstId]);
+    } else {
+      this.selectedSnippet.set([]);
+      this.message.set((t as any).body || '');
+    }
+  }
+  onSnippetChange(snippetIds: string[] | null): void {
+    const ids = snippetIds || [];
+    const t = this.currentTemplate as any;
+    if (!t) return;
+    this.selectedSnippet.set(ids);
+    this.applySnippetToMessage(t, ids);
+  }
+
+  private applySnippetToMessage(tpl: any, snippetIds: string[]): void {
+    const texts = (snippetIds || []).map((id: string) => tpl.snippets?.find((s: any) => s.id === id)?.text || '').filter((t: string) => !!t);
+    const combined = texts.join('\n\n');
+    const body = (tpl.body || '').replace('{{snippet}}', combined);
+    this.message.set(body);
+  }
+
+  private formatUpcomingDateForWeekday(targetWeekday: number): string {
+    const today = new Date();
+    const todayDay = today.getDay(); // 0 = Sun ... 6 = Sat
+    let diff = (targetWeekday - todayDay + 7) % 7;
+    // If diff === 0, use today (upcoming)
+    const target = new Date(today);
+    target.setDate(today.getDate() + diff);
+    return target.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
   togglePreview(): void {
     this.previewMode.update(v => !v);
   }
 
   getPreviewHtml(): string {
     // Simple preview - replace placeholders with example values
-    return this.message()
+    const replaced = this.message()
       .replace(/{{firstName}}/g, '<strong>[FirstName]</strong>')
       .replace(/{{lastName}}/g, '<strong>[LastName]</strong>');
+    // Preserve line breaks in HTML preview
+    return replaced.replace(/\n/g, '<br>');
   }
 
   async sendEmail(): Promise<void> {

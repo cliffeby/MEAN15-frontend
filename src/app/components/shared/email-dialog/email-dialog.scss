@@ -60,6 +60,52 @@
   }
 
   .email-form {
+    .templates-section {
+      margin-bottom: 12px;
+
+      .templates-header {
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #333;
+      }
+
+      mat-chip-listbox {
+        display: flex;
+        gap: 8px;
+      }
+
+      mat-chip.selected {
+        background: #e6eefc;
+        border-color: #667eea;
+      }
+    }
+
+    .preview-panel {
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px dashed #d0d7e9;
+      background: #fbfdff;
+      border-radius: 6px;
+
+      .preview-subject {
+        font-size: 14px;
+        margin-bottom: 6px;
+      }
+
+      .preview-recipients {
+        font-size: 13px;
+        margin-bottom: 10px;
+        color: #555;
+      }
+
+      .message-preview {
+        min-height: 160px;
+        padding: 12px;
+        background: #ffffff;
+        border: 1px solid #e6eefc;
+        border-radius: 4px;
+      }
+    }
     .full-width {
       width: 100%;
     }
