@@ -126,10 +126,10 @@
         <th mat-header-cell *matHeaderCellDef>Actions</th>
         <td mat-cell *matCellDef="let member" class="actions-cell">
           <div class="action-buttons">
-            <button *ngIf="isAuthorized" mat-icon-button color="accent" (click)="editMember((member.id ?? member._id) || '')" matTooltip="Edit Member">
+            <button *ngIf="isAuthorized" mat-icon-button color="accent" (click)="editMember(member._id || '')" matTooltip="Edit Member">
               <mat-icon>edit</mat-icon>
             </button>
-            <button *ngIf="isAuthorized" mat-icon-button color="warn" (click)="deleteMember((member.id ?? member._id) || '')" matTooltip="Delete Member">
+            <button *ngIf="isAuthorized" mat-icon-button color="warn" (click)="deleteMember(member._id || '')" matTooltip="Delete Member">
               <mat-icon>delete</mat-icon>
             </button>
           </div>

@@ -54,7 +54,9 @@ export class MainLayoutComponent {
     ];
     if (this.auth.hasRole && this.auth.hasRole('developer')) {
       links.push({ label: 'Read Me', route: '/read-me' });
-      links.push({ label: 'API Details', route: '/apis' });
+    }
+    if (this.auth.hasMinRole && this.auth.hasMinRole('admin')) {
+      links.push({ label: 'Email', route: '/email' });
     }
     return links;
   }

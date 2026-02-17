@@ -116,6 +116,7 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.sortDirection = 'asc'; // Set initial sort direction to ascending
     this.initializeColumns();
     this.loadMembers();
+    
     // Apply theme from configuration and listen for changes
     try {
       const ui = this.configService.uiConfig();
@@ -554,4 +555,6 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.applyFilter();
   }
+
+
 }

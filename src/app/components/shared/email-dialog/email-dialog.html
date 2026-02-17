@@ -1,0 +1,152 @@
+<div class="email-dialog">
+  <h2 mat-dialog-title>
+    <mat-icon>email</mat-icon>
+    <span>{{ isSendToAll ? 'Send Email to All Members' : 'Send Email to Members' }}</span>
+  </h2>
+
+  <mat-dialog-content>
+    <!-- Recipients Info -->
+    <div class="recipients-section">
+      <div class="recipients-header">
+        <mat-icon>people</mat-icon>
+        <span class="recipients-count">
+          {{ isSendToAll ? 'All Members' : recipientCount + ' Recipient' + (recipientCount !== 1 ? 's' : '') }}
+        </span>
+      </div>
+      
+      @if (!isSendToAll && recipientCount > 0) {
+        <div class="recipients-list">
+          <mat-chip-listbox>
+            @for (name of displayRecipients; track name) {
+              <mat-chip>{{ name }}</mat-chip>
+            }
+            @if (hasMoreRecipients) {
+              <mat-chip class="more-chip">
+                +{{ additionalRecipients }} more
+              </mat-chip>
+            }
+          </mat-chip-listbox>
+        </div>
+      }
+    </div>
+
+    <!-- Email Form -->
+    <div class="email-form">
+      <!-- Subject -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Subject</mat-label>
+        <input 
+          matInput 
+          [(ngModel)]="subject" 
+          placeholder="Enter email subject"
+          [disabled]="sending()"
+          required>
+        <mat-icon matPrefix>subject</mat-icon>
+      </mat-form-field>
+
+      <!-- Message -->
+      <mat-form-field appearance="outline" class="full-width message-field" [class.preview-hidden]="previewMode()">
+        <mat-label>Message</mat-label>
+        <textarea 
+          matInput 
+          [(ngModel)]="message"
+          placeholder="Enter your message here..."
+          rows="10"
+          [disabled]="sending()"
+          required>
+        </textarea>
+        <mat-icon matPrefix>message</mat-icon>
+        <mat-hint>Use {{"{{"}}firstName{{"}}"}} and {{"{{"}}lastName{{"}}"}} for personalization</mat-hint>
+      </mat-form-field>
+
+      <!-- Message Preview -->
+      @if (previewMode()) {
+        <div class="message-preview-container">
+          <div class="preview-label">Preview:</div>
+          <div class="message-preview" [innerHTML]="getPreviewHtml()"></div>
+        </div>
+      }
+
+      <!-- Placeholder Buttons -->
+      <div class="placeholder-buttons">
+        <button 
+          mat-stroked-button 
+          type="button"
+          (click)="insertPlaceholder('{{firstName}}')"
+          [disabled]="sending() || previewMode()"
+          matTooltip="Insert first name placeholder">
+          <mat-icon>person</mat-icon>
+          First Name
+        </button>
+        <button 
+          mat-stroked-button 
+          type="button"
+          (click)="insertPlaceholder('{{lastName}}')"
+          [disabled]="sending() || previewMode()"
+          matTooltip="Insert last name placeholder">
+          <mat-icon>person_outline</mat-icon>
+          Last Name
+        </button>
+        <button 
+          mat-stroked-button 
+          type="button"
+          (click)="togglePreview()"
+          [disabled]="sending()"
+          [color]="previewMode() ? 'accent' : ''">
+          <mat-icon>{{ previewMode() ? 'edit' : 'visibility' }}</mat-icon>
+          {{ previewMode() ? 'Edit' : 'Preview' }}
+        </button>
+      </div>
+
+      <!-- Options -->
+      <div class="options-section">
+        <mat-checkbox 
+          [(ngModel)]="personalize"
+          [disabled]="sending()">
+          Personalize emails (use name placeholders)
+        </mat-checkbox>
+
+        @if (isSendToAll) {
+          <mat-checkbox 
+            [(ngModel)]="includeHidden"
+            [disabled]="sending()">
+            Include hidden members
+          </mat-checkbox>
+        }
+      </div>
+
+      <!-- Error Message -->
+      @if (error()) {
+        <div class="error-message">
+          <mat-icon>error</mat-icon>
+          <span>{{ error() }}</span>
+        </div>
+      }
+
+      <!-- Sending Indicator -->
+      @if (sending()) {
+        <div class="sending-indicator">
+          <mat-spinner diameter="24"></mat-spinner>
+          <span>Sending emails...</span>
+        </div>
+      }
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button 
+      mat-button 
+      (click)="cancel()"
+      [disabled]="sending()">
+      Cancel
+    </button>
+    <button 
+      mat-raised-button 
+      color="primary"
+      (click)="sendEmail()"
+      [disabled]="!isValid || sending()">
+      <mat-icon>send</mat-icon>
+      Send Email
+    </button>
+  </mat-dialog-actions>
+</div>

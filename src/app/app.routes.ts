@@ -6,8 +6,8 @@ import { AuthGuard } from './guards/auth-guard';
 import { roleGuard } from './guards/role-guard';
 import { MsalGuard } from '@azure/msal-angular';
 import { MainLayoutComponent } from './main-layout/main-layout';
-import { ReadMe } from './read-me/read-me';
-import { API } from './apis/apis';
+import { ReadMe } from './components/read-me/read-me';
+import { API } from './components/apis/apis';
 import { MemberFormComponent } from './components/member-form/member-form';
 import { MemberEditComponent } from './components/member-edit/member-edit';
 import { MemberListComponent } from './components/member-list/member-list';
@@ -28,6 +28,7 @@ import { OrphanManagementComponent } from './components/orphan-management/orphan
 import { HcapListComponent } from './components/hcap-list/hcap-list';
 import { AuditReportComponent } from './components/audit-report/audit-report.component';
 import { ReportsComponent } from './components/reports/reports';
+import { EmailManagerComponent } from './components/email-manager/email-manager';
 
 export const routes: Routes = [
   // Public
@@ -145,6 +146,12 @@ export const routes: Routes = [
       {
         path: 'admin/audit-report',
         component: AuditReportComponent,
+        canActivate: [roleGuard],
+        data: { role: 'admin' },
+      },
+      {
+        path: 'email',
+        component: EmailManagerComponent,
         canActivate: [roleGuard],
         data: { role: 'admin' },
       },

@@ -7,6 +7,11 @@ import { UserPreferencesService } from '../../services/user-preferences.service'
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { EmailService } from '../../services/email.service';
+import { ConfigurationService } from '../../services/configuration.service';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('MemberListComponent', () => {
   let component: MemberListComponent;
@@ -17,6 +22,7 @@ describe('MemberListComponent', () => {
   let preferencesSpy: jasmine.SpyObj<UserPreferencesService>;
   let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
   let routerSpy: jasmine.SpyObj<Router>;
+  let configServiceSpy: jasmine.SpyObj<ConfigurationService>;
 
   const mockMembers = [
     {
@@ -45,14 +51,12 @@ describe('MemberListComponent', () => {
       'delete',
       'removeDuplicateEmails',
     ]);
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['hasRole', 'hasMinRole', 'getRoles', 'getAuthorName', 'getAuthorEmail', 'getAuthorObject'], { 
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['hasRole', 'hasMinRole', 'getRoles', 'getAuthorObject'], { 
       role: 'admin'
     });
     authServiceSpy.hasRole.and.returnValue(true);
     authServiceSpy.hasMinRole.and.returnValue(true);
     authServiceSpy.getRoles.and.returnValue(['admin']);
-    authServiceSpy.getAuthorName.and.returnValue('Test User');
-    authServiceSpy.getAuthorEmail.and.returnValue('test@example.com');
     authServiceSpy.getAuthorObject.and.returnValue({ id: '123', email: 'test@example.com', name: 'Test User' });
     confirmDialogSpy = jasmine.createSpyObj('ConfirmDialogService', [
       'confirmDelete',
@@ -65,12 +69,24 @@ describe('MemberListComponent', () => {
     ]);
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    configServiceSpy = jasmine.createSpyObj('ConfigurationService', ['displayConfig', 'paginationConfig', 'uiConfig'], {
+      config$: of({ ui: { theme: 'light' }, display: { memberListPageSize: 20 }, pagination: { pageSizeOptions: [10, 20, 50] } })
+    });
+    
+    // Set up spy return values
+    configServiceSpy.displayConfig.and.returnValue({ memberListPageSize: 20 });
+    configServiceSpy.paginationConfig.and.returnValue({ pageSizeOptions: [10, 20, 50, 100] });
+    configServiceSpy.uiConfig.and.returnValue({ theme: 'light' });
+provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: MemberService, useValue: memberServiceSpy },
+        { provide: AuthService, useValue: authServiceSpy },
+        { provide: ConfirmDialogService, useValue: confirmDialogSpy },
+        { provide: UserPreferencesService, useValue: preferencesSpy },
+        { provide: MatSnackBar, useValue: snackBarSpy },
+        { provide: Router, useValue: routerSpy },
 
-    preferencesSpy.getMemberListColumnPreferences.and.returnValue([]);
-    memberServiceSpy.getAll.and.returnValue(of(mockMembers));
-    confirmDialogSpy.confirmDelete.and.returnValue(of(true));
-    confirmDialogSpy.confirmAction.and.returnValue(of(true));
-    memberServiceSpy.delete.and.returnValue(of({}));
+        { provide: ConfigurationService, useValue: configService(of({}));
     memberServiceSpy.removeDuplicateEmails.and.returnValue(of({ deletedCount: 1 }));
 
     await TestBed.configureTestingModule({
