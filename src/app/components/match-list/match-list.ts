@@ -99,6 +99,18 @@ export class MatchListComponent implements OnInit, OnDestroy {
     // Setup basic observables
     this.totalMatches$ = this.matches$.pipe(map((matches) => matches.length));
     this.paginatedMatches$ = this.matches$; // Will be updated in ngOnInit
+
+    // Initialize defaults from configuration service
+    console.log('Before applying config, pageSize:', this.pageSize);
+    this.configService.config$.pipe(take(1)).subscribe((cfg) => {
+      console.log('Loaded config:', cfg.pagination);
+      this.pageSizeOptions = cfg?.pagination?.pageSizeOptions || [5, 10, 20, 50];
+      this.pageSize = cfg?.pagination?.defaultPageSize || this.pageSizeOptions[0];
+      console.log('After applying config, pageSize:', this.pageSize);
+
+      // Force pagination setup after initializing defaults
+      this.setupPagination();
+    });
   }
 
   get isAuthorized(): boolean {
@@ -117,8 +129,12 @@ export class MatchListComponent implements OnInit, OnDestroy {
       if (params['pageSize']) {
         this.pageSize = parseInt(params['pageSize'], 10);
       }
-      // Setup pagination after reading params
-      this.setupPagination();
+
+      // Only call setupPagination if query params explicitly update pagination
+      if (params['pageIndex'] || params['pageSize']) {
+        this.setupPagination();
+      }
+
       // Scroll to match list after navigation (restores scroll position)
       setTimeout(() => {
         const el = document.querySelector('.match-list');
@@ -132,11 +148,15 @@ export class MatchListComponent implements OnInit, OnDestroy {
   }
 
   private setupPagination(): void {
+    console.log('Setting up pagination with pageSize:', this.pageSize, 'and pageIndex:', this.pageIndex);
+
     // Setup paginated matches observable
     this.paginatedMatches$ = this.matches$.pipe(
       map((matches) => {
         const startIndex = this.pageIndex * this.pageSize;
-        return matches.slice(startIndex, startIndex + this.pageSize);
+        const paginated = matches.slice(startIndex, startIndex + this.pageSize);
+        console.log('Paginated matches:', paginated);
+        return paginated;
       }),
     );
 
@@ -145,12 +165,14 @@ export class MatchListComponent implements OnInit, OnDestroy {
       const newPageSizeOptions = cfg?.pagination?.pageSizeOptions;
       const newShowFirstLast = cfg?.pagination?.showFirstLastButtons;
       const newShowPageSizeOptions = cfg?.pagination?.showPageSizeOptions;
+
       if (
         Array.isArray(newPageSizeOptions) &&
         JSON.stringify(newPageSizeOptions) !== JSON.stringify(this.pageSizeOptions)
       ) {
         this.pageSizeOptions = newPageSizeOptions;
       }
+
       if (typeof newShowFirstLast === 'boolean') {
         this.showFirstLastButtons = newShowFirstLast;
       }
@@ -179,8 +201,10 @@ export class MatchListComponent implements OnInit, OnDestroy {
     });
   }
   onPageChange(event: PageEvent) {
+    console.log('Paginator event:', event);
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
+
     // Update query params to reflect new pagination state
     this.router.navigate([], {
       relativeTo: this.route,
@@ -190,6 +214,8 @@ export class MatchListComponent implements OnInit, OnDestroy {
       },
       queryParamsHandling: 'merge',
     });
+
+    // Reapply pagination
     this.setupPagination();
   }
 

@@ -24,7 +24,8 @@ export class ConfigurationService {
       enablePagination: true,
       showPageSizeOptions: true,
       pageSizeOptions: [5, 10, 20, 50],
-      showFirstLastButtons: true
+      showFirstLastButtons: true,
+      defaultPageSize: 3
     },
     scoring: {
       allowNegativeScores: false,
@@ -419,7 +420,6 @@ export class ConfigurationService {
     } catch (error) {
       console.warn('Error loading configuration, using defaults:', error);
     }
-    
     return { ...this.defaultConfig };
   }
 

@@ -111,7 +111,7 @@
                              [formControlName]="field.key"
                              [attr.aria-label]="field.label"
                              [attr.title]="field.label"
-                             [attr.placeholder]="field.label">
+                             [placeholder]="field.label">
                       <mat-error *ngIf="getFieldControl(section.key, field.key)?.hasError('required')">
                         This field is required
                       </mat-error>

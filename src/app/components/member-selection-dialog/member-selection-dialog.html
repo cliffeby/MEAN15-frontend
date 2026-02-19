@@ -32,7 +32,7 @@
             <div class="member-details" *ngIf="true">
               <span class="tee" *ngIf="getTeeForMember(member) as tee; else noTee">Tee: {{ tee }}</span>
               <ng-template #noTee><span class="tee-missing">Tee: (none found)</span></ng-template>
-              <span class="index" *ngIf="member.usgaIndex"> • Index: {{ member.usgaIndex | number:'1.1-1' }}</span>
+              <span class="index" *ngIf="member.handicap"> • Index: {{ member.handicap | number:'1.1-1' }}</span>
             </div>
           </div>
         </div>

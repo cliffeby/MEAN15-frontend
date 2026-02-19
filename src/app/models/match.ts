@@ -1,7 +1,15 @@
+export interface PopulatedScorecard {
+  _id: string;
+  course: string;
+  name?: string;
+  slope?: number;
+  rating?: number;
+}
+
 export interface Match {
   _id?: string;
   name: string;
-  scorecardId?: string;
+  scorecardId?: string | PopulatedScorecard;
   scGroupName?: string;
   players?: number;
   status: string;

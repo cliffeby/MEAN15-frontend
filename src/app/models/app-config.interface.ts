@@ -21,6 +21,7 @@ export interface PaginationConfig {
   showPageSizeOptions: boolean;
   pageSizeOptions: number[];
   showFirstLastButtons: boolean;
+  defaultPageSize: number;
 }
 
 export interface ScoringConfig {

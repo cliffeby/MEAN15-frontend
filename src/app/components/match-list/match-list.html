@@ -55,8 +55,9 @@
       </div>
       
       <p mat-line class="player-count-line">
-        <span>Course: TODO</span>
-        <span *ngIf="match.scGroupName">Course: {{ match.scGroupName }}</span>
+        <ng-container *ngIf="$any(match.scorecardId)?.course as course">
+          <span>Course: {{ course }}</span>
+        </ng-container>
         <span *ngIf="getPlayerCount(match) > 0"> | {{ getPlayerCount(match) }} Players</span>
       </p>
       <div class="chip-action-row">

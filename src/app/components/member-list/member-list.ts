@@ -112,6 +112,10 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.pageSize = displayConfig.memberListPageSize;
     this.pageSizeOptions = paginationConfig.pageSizeOptions;
 
+    // Debugging logs to trace configuration values
+    console.log('Loaded displayConfig:', displayConfig);
+    console.log('Loaded paginationConfig:', paginationConfig);
+
     this.sortField = 'lastName'; // Set initial sort field to lastName
     this.sortDirection = 'asc'; // Set initial sort direction to ascending
     this.initializeColumns();
@@ -127,6 +131,9 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.configSub = this.configService.config$.subscribe((cfg) => {
       this.applyTheme(cfg.ui.theme);
+      // Ensure dynamic updates for pagination
+      this.pageSize = cfg.display.memberListPageSize;
+      this.pageSizeOptions = cfg.pagination.pageSizeOptions;
     });
   }
 
@@ -205,7 +212,6 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loading = true;
     this.memberService.getAll().subscribe({
       next: (members) => {
-        console.log('Members loaded:', members);
         // Use the handicap value as provided by the backend (do not calculate or override)
         this.members = members || [];
         this.applyFilter();
@@ -222,8 +228,6 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
         }, 0);
       },
       error: () => {
-        // console.log('Error handler reached in loadMembers');
-        // console.log('SnackBar instance in component:', this.snackBar);
         this.snackBar.open('Error loading members', 'Close', { duration: 2000 });
         this.loading = false;
       },
