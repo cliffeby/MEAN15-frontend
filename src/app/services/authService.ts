@@ -149,17 +149,29 @@ export class AuthService {
 
   roles = signal<string[]>([]);
 
+  /** Role returned by the /provision endpoint — used as fallback when no Entra app role is assigned yet. */
+  readonly provisionedRole = signal<string | null>(null);
+
   getRoles(): string[] {
     const accounts = this.msalService.instance.getAllAccounts();
-    if (accounts.length === 0) return [];
 
-    const account = accounts[0];
-    // console.log('JWT ID Token:', account.idToken);
-    // console.log('JWT Token Claims:', account.idTokenClaims);
-    const idTokenClaims = account.idTokenClaims as any;
-    const roles = idTokenClaims?.roles || idTokenClaims?.extension_Roles || [];
-    // console.log('Extracted roles:', roles);
-    return roles;
+    // Local (non-Entra) login path
+    if (accounts.length === 0) {
+      const dbRole = this.provisionedRole();
+      return dbRole ? [dbRole] : [];
+    }
+
+    const idTokenClaims = accounts[0].idTokenClaims as any;
+    const entraRoles: string[] = idTokenClaims?.roles || idTokenClaims?.extension_Roles || [];
+
+    // Entra guest users have no app roles assigned until an admin grants one.
+    // Fall back to the DB role stored when provision() succeeded.
+    if (entraRoles.length === 0) {
+      const dbRole = this.provisionedRole();
+      return dbRole ? [dbRole] : [];
+    }
+
+    return entraRoles;
   }
 
   updateRoles(): void {
@@ -178,7 +190,16 @@ export class AuthService {
   provision(): Observable<{ success: boolean; provisioned: boolean; user: any }> {
     return this.http
       .post<{ success: boolean; provisioned: boolean; user: any }>(`${this.baseUrl}/provision`, {})
-      .pipe(catchError(() => throwError(() => new Error('Provision failed'))));
+      .pipe(
+        tap((res) => {
+          // Cache the DB role so getRoles() can use it as a fallback when
+          // the user has no Entra app role claim (e.g. newly invited guest).
+          if (res?.user?.role) {
+            this.provisionedRole.set(res.user.role);
+          }
+        }),
+        catchError(() => throwError(() => new Error('Provision failed')))
+      );
   }
 
   /**
