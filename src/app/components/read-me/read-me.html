@@ -1,433 +1,540 @@
 <mat-card class="readme-card">
-  <mat-card-header>
-    <mat-card-title>Rochester Golf Management System - Project Overview</mat-card-title>
-  </mat-card-header>
+    <mat-card-header>
+        <mat-card-title>Rochester Golf Management System - Project Overview</mat-card-title>
+    </mat-card-header>
 
     <mat-card-actions>
-    <button mat-button color="primary" (click)="setView('instructions')" [class.active]="view === 'instructions'">Instructions</button>
-    <button mat-button color="primary" (click)="setView('overview')" [class.active]="view === 'overview'">Overview</button>
-    <button mat-button color="primary" (click)="setView('api')" [class.active]="view === 'api'">API Details</button>
-    <button mat-button color="primary" (click)="setView('config')" [class.active]="view === 'config'">Configuration (TODO)</button>
-    <button mat-button color="primary" (click)="setView('initialSetup')" [class.active]="view === 'initialSetup'">Initial Setup (TODO)</button>
-  </mat-card-actions>
+        <button mat-button color="primary" (click)="setView('instructions')"
+            [class.active]="view === 'instructions'">Instructions</button>
+        <button mat-button color="primary" (click)="setView('overview')"
+            [class.active]="view === 'overview'">Overview</button>
+        <button mat-button color="primary" (click)="setView('api')" [class.active]="view === 'api'">API Details</button>
+        <button mat-button color="primary" (click)="setView('config')" [class.active]="view === 'config'">Configuration
+            (TODO)</button>
+        <button mat-button color="primary" (click)="setView('initialSetup')"
+            [class.active]="view === 'initialSetup'">Initial Setup (TODO)</button>
+    </mat-card-actions>
 
-  <mat-card-content>
-    <div *ngIf="view === 'instructions'">
-      <h3>Instructions</h3>
-      <mat-divider></mat-divider>
+    <mat-card-content>
+        <div *ngIf="view === 'instructions'">
+            <h3>Instructions</h3>
+            <mat-divider></mat-divider>
 
-      <h4>Create a Match</h4>
-      <ol>
-        <li>Open <strong>Matches</strong> from the sidebar.</li>
-        <li>Click <strong>New Match</strong> (plus button) to open the match form.</li>
-        <li>Enter or accept the default match name. (Default is configured in Admin → Default Match Name.)</li>
-        <li>Choose a <em>Scorecard</em> (course/tees). The selected scorecard drives pars and hole layout.</li>
-        <li>Set the match date/tee time and add players by opening the Member Selection dialog.</li>
-        <li>Optional: adjust lineups, foursomes, and match settings.</li>
-        <li>Save the match. The match appears in the list and is ready for scoring.</li>
-      </ol>
+            <h4>Create a Match</h4>
+            <ol>
+                <li>Open <strong>Matches</strong> from the sidebar.</li>
+                <li>Click <strong>New Match</strong> (plus button) to open the match form.</li>
+                <li>Enter or accept the default match name. (Default is configured in Admin → Default Match Name.)
+                    It is followed by the week number for the year.
+                    If you have multiple matches each week, follow it with an a, b, c,...</li>
+                <li>Choose a <em>Scorecard</em> (course/tees). The selected scorecard drives pars and hole handicap for
+                    the course.
+                    Tees are determined by defaults set in the members profile.</li>
+                <li>Set the match date.
+                <li>Add players by opening the Member Selection dialog.</li>
+                <li>Create pairings.</li>
+                <li>Save the match. The match appears in the list and is ready for scoring or editing.</li>
+            </ol>
+            <h4>Print Scorecards and Score a Match</h4>
+            <ol>
+                <li>From the Matches list, open the match and click <strong>Enter Scores</strong> or open the match's
+                    scorecard view.</li>
+                <li>Select a player (or open each player row) and enter hole-by-hole stroke counts.</li>
+                <li>The UI displays pars and applies handicaps; verify net scores and totals as you go.</li>
+                <li>Save individual player scores as you complete them, or use <strong>Save All</strong> if available.
+                </li>
+                <li>When all scores are entered, mark the match <strong>Completed</strong>. This finalizes results,
+                    triggers audit logging, and updates any downstream calculations (handicap updates if enabled).</li>
+                <li>To correct a score later: open the match → edit the player's entry → change hole values → save.
+                    Corrections are audited.</li>
+            </ol>
+            <h4>Add a Member</h4>
+            <ol>
+                <li>Open <strong>Members</strong> from the sidebar.</li>
+                <li>Click <strong>New Member</strong> to open the add form.</li>
+                <li>Fill required fields (First Name) and recommended fields (Email, GHIN/handicap).</li>
+                <li>Assign default scorecards if helpful (favorite courses) and save.</li>
+                <li>New members become selectable when creating or editing matches.</li>
+            </ol>
 
-      <h4>Add a Member</h4>
-      <ol>
-        <li>Open <strong>Members</strong> from the sidebar.</li>
-        <li>Click <strong>New Member</strong> to open the add form.</li>
-        <li>Fill required fields (First Name) and recommended fields (Email, GHIN/handicap).</li>
-        <li>Assign default scorecards if helpful (favorite courses) and save.</li>
-        <li>New members become selectable when creating or editing matches.</li>
-      </ol>
+            <h4>Scoring & Updating Records</h4>
+            <ol>
+                <li>From <strong>Matches</strong>, open the match and click <strong>Enter Scores</strong> or open the
+                    match's scorecard view.</li>
+                <li>Select a player (or open each player row) and enter hole-by-hole stroke counts.</li>
+                <li>The UI displays pars and applies handicaps; verify net scores and totals as you go.</li>
+                <li>Save individual player scores as you complete them, or use <strong>Save All</strong> if available.
+                </li>
+                <li>When all scores are entered, mark the match <strong>Completed</strong>. This finalizes results,
+                    triggers audit logging, and updates any downstream calculations (handicap updates if enabled).</li>
+                <li>To correct a score later: open the match → edit the player's entry → change hole values → save.
+                    Corrections are audited.</li>
+            </ol>
 
-      <h4>Scoring & Updating Records</h4>
-      <ol>
-        <li>From <strong>Matches</strong>, open the match and click <strong>Enter Scores</strong> or open the match's scorecard view.</li>
-        <li>Select a player (or open each player row) and enter hole-by-hole stroke counts.</li>
-        <li>The UI displays pars and applies handicaps; verify net scores and totals as you go.</li>
-        <li>Save individual player scores as you complete them, or use <strong>Save All</strong> if available.</li>
-        <li>When all scores are entered, mark the match <strong>Completed</strong>. This finalizes results, triggers audit logging, and updates any downstream calculations (handicap updates if enabled).</li>
-        <li>To correct a score later: open the match → edit the player's entry → change hole values → save. Corrections are audited.</li>
-      </ol>
+            <h4>Tips & Best Practices</h4>
+            <ul>
+                <li>Before mass emailing, check <strong>Email Manager → Bounced Emails</strong>—bounced addresses are
+                    excluded automatically.</li>
+                <li>Use Admin → Configuration to tune default page sizes and UI options (these are stored locally by
+                    default).</li>
+                <li>When importing or bulk-editing handicaps or scores, prefer backend scripts or admin-import tools in
+                    <code>backend/scripts</code>.</li>
+                <li>Keep an audit trail: prefer editing via the UI so changes are logged and attributable to a user.
+                </li>
+            </ul>
+        </div>
 
-      <h4>Tips & Best Practices</h4>
-      <ul>
-        <li>Before mass emailing, check <strong>Email Manager → Bounced Emails</strong>—bounced addresses are excluded automatically.</li>
-        <li>Use Admin → Configuration to tune default page sizes and UI options (these are stored locally by default).</li>
-        <li>When importing or bulk-editing handicaps or scores, prefer backend scripts or admin-import tools in <code>backend/scripts</code>.</li>
-        <li>Keep an audit trail: prefer editing via the UI so changes are logged and attributable to a user.</li>
-      </ul>
-    </div>
+        <div *ngIf="view === 'config'">
+            <h3>Configuration</h3>
+            <mat-divider></mat-divider>
+            <p><em>TODO: Document configuration options, environment variables, and deployment settings.</em></p>
+        </div>
 
-    <div *ngIf="view === 'config'">
-      <h3>Configuration</h3>
-      <mat-divider></mat-divider>
-      <p><em>TODO: Document configuration options, environment variables, and deployment settings.</em></p>
-    </div>
+        <div *ngIf="view === 'initialSetup'">
+            <h3>Initial Setup</h3>
+            <mat-divider></mat-divider>
+            <p><em>TODO: Add initial setup steps (DB migration, seeding, admin user creation, environment setup).</em>
+            </p>
+        </div>
 
-    <div *ngIf="view === 'initialSetup'">
-      <h3>Initial Setup</h3>
-      <mat-divider></mat-divider>
-      <p><em>TODO: Add initial setup steps (DB migration, seeding, admin user creation, environment setup).</em></p>
-    </div>
+        <div *ngIf="view === 'overview'">
+            <h3>Dashboard Feature</h3>
+            <mat-divider></mat-divider>
+            <h4>Overview</h4>
+            <p>
+                The Dashboard provides a consolidated, at-a-glance view of key metrics and recent activity: totals,
+                trends, and quick actions for matches, members, scorecards, and scores.
+            </p>
+            <h4>Frontend (Angular)</h4>
+            <ul>
+                <li><strong>Components:</strong> <code>src/app/components/dashboard/</code> — summary cards, charts, and
+                    activity feed.</li>
+                <li><strong>Service:</strong> <code>src/app/services/dashboardService.ts</code> — aggregates backend
+                    metrics and recent activity.</li>
+                <li><strong>Routes:</strong> <code>/dashboard</code> (default landing for authenticated users with
+                    appropriate roles).</li>
+                <li><strong>UI:</strong> Material cards, charts (Chart.js or ngx-charts), sparklines, and quick-action
+                    buttons (create match, add member, import scores).</li>
+            </ul>
+            <h4>State & Data</h4>
+            <ul>
+                <li>The Dashboard loads data via `DashboardDataService` and uses `DashboardStatsService` for derived
+                    metrics.</li>
+                <li>It relies on local component state and Angular Signals (computed values) rather than NgRx for widget
+                    state and aggregates.</li>
+                <li>Services make parallel API calls and normalize responses for the UI; caching/refresh logic lives in
+                    services or the component.</li>
+                <li>Note: other parts of the app use NgRx; the Dashboard intentionally uses lightweight services/signals
+                    for quick rendering.</li>
+            </ul>
+            <h4>Backend (Node.js/Express/Mongoose)</h4>
+            <ul>
+                <li><strong>Endpoints:</strong> <code>GET /api/dashboard/summary</code>,
+                    <code>GET /api/dashboard/trends</code>, <code>GET /api/dashboard/recent</code> — return aggregated
+                    counts, time-series, and recent activity.</li>
+                <li><strong>Implementation:</strong> Lightweight aggregation queries or precomputed metrics (cron jobs)
+                    for large datasets to keep response times low.</li>
+                <li><strong>Security:</strong> Role-based access control to restrict sensitive metrics to admins.</li>
+            </ul>
+            <h4>Interactive Widgets & UX</h4>
+            <ul>
+                <li>Summary cards for totals (members, matches, active scorecards) with drill-through links to lists.
+                </li>
+                <li>Time-series charts for trends (matches per month, scores submitted) with range selectors.</li>
+                <li>Recent activity feed with clickable items (recent matches created, imports, admin actions).</li>
+                <li>Quick actions: buttons to create a match, open member form, or start an import workflow.</li>
+            </ul>
+            <h4>Notifications & Performance</h4>
+            <ul>
+                <li>Live-refresh or manual refresh options; loading skeletons while widgets load.</li>
+                <li>Cached responses and incremental updates to avoid excessive backend load.</li>
+            </ul>
 
-    <div *ngIf="view === 'overview'">
-      <h3>Dashboard Feature</h3>
-      <mat-divider></mat-divider>
-      <h4>Overview</h4>
-      <p>
-        The Dashboard provides a consolidated, at-a-glance view of key metrics and recent activity: totals, trends, and quick actions for matches, members, scorecards, and scores.
-      </p>
-      <h4>Frontend (Angular)</h4>
-      <ul>
-        <li><strong>Components:</strong> <code>src/app/components/dashboard/</code> — summary cards, charts, and activity feed.</li>
-        <li><strong>Service:</strong> <code>src/app/services/dashboardService.ts</code> — aggregates backend metrics and recent activity.</li>
-        <li><strong>Routes:</strong> <code>/dashboard</code> (default landing for authenticated users with appropriate roles).</li>
-        <li><strong>UI:</strong> Material cards, charts (Chart.js or ngx-charts), sparklines, and quick-action buttons (create match, add member, import scores).</li>
-      </ul>
-      <h4>State & Data</h4>
-      <ul>
-        <li>The Dashboard loads data via `DashboardDataService` and uses `DashboardStatsService` for derived metrics.</li>
-        <li>It relies on local component state and Angular Signals (computed values) rather than NgRx for widget state and aggregates.</li>
-        <li>Services make parallel API calls and normalize responses for the UI; caching/refresh logic lives in services or the component.</li>
-        <li>Note: other parts of the app use NgRx; the Dashboard intentionally uses lightweight services/signals for quick rendering.</li>
-      </ul>
-      <h4>Backend (Node.js/Express/Mongoose)</h4>
-      <ul>
-        <li><strong>Endpoints:</strong> <code>GET /api/dashboard/summary</code>, <code>GET /api/dashboard/trends</code>, <code>GET /api/dashboard/recent</code> — return aggregated counts, time-series, and recent activity.</li>
-        <li><strong>Implementation:</strong> Lightweight aggregation queries or precomputed metrics (cron jobs) for large datasets to keep response times low.</li>
-        <li><strong>Security:</strong> Role-based access control to restrict sensitive metrics to admins.</li>
-      </ul>
-      <h4>Interactive Widgets & UX</h4>
-      <ul>
-        <li>Summary cards for totals (members, matches, active scorecards) with drill-through links to lists.</li>
-        <li>Time-series charts for trends (matches per month, scores submitted) with range selectors.</li>
-        <li>Recent activity feed with clickable items (recent matches created, imports, admin actions).</li>
-        <li>Quick actions: buttons to create a match, open member form, or start an import workflow.</li>
-      </ul>
-      <h4>Notifications & Performance</h4>
-      <ul>
-        <li>Live-refresh or manual refresh options; loading skeletons while widgets load.</li>
-        <li>Cached responses and incremental updates to avoid excessive backend load.</li>
-      </ul>
+            <h3>Scorecards Feature</h3>
+            <mat-divider></mat-divider>
+            <h4>Overview</h4>
+            <p>
+                The Scorecards feature defines and manages templates used to capture hole-by-hole score data for
+                matches. Scorecards map course holes, pars, yardages and provide the structure for score entry and
+                reporting.
+            </p>
+            <h4>Frontend (Angular)</h4>
+            <ul>
+                <li><strong>Components:</strong> <code>src/app/components/scorecard-list/</code>,
+                    <code>scorecard-form/</code>, <code>scorecard-edit/</code></li>
+                <li><strong>Service:</strong> <code>src/app/services/scorecardService.ts</code></li>
+                <li><strong>Model:</strong> <code>src/app/models/scorecard.ts</code></li>
+                <li><strong>Routes:</strong> <code>/scorecards</code>, <code>/scorecards/new</code>,
+                    <code>/scorecards/edit/:id</code></li>
+                <li><strong>UI:</strong> Material forms for creating/editing scorecards, preview mode for hole layout,
+                    and assignment controls to attach scorecards to matches.</li>
+            </ul>
+            <h4>NgRx Store Usage</h4>
+            <ul>
+                <li><strong>Actions:</strong> Load, create, update, delete scorecards</li>
+                <li><strong>Reducers:</strong> Manage scorecards collection and selected template state</li>
+                <li><strong>Selectors:</strong> Query available scorecards and templates for match assignment</li>
+                <li><strong>Effects:</strong> Handle API calls for scorecard CRUD and template imports/exports</li>
+            </ul>
+            <h4>Backend (Node.js/Express/Mongoose)</h4>
+            <ul>
+                <li><strong>Endpoints:</strong> <code>GET /api/scorecards</code>, <code>GET /api/scorecards/:id</code>,
+                    <code>POST /api/scorecards</code>, <code>PUT /api/scorecards/:id</code>,
+                    <code>DELETE /api/scorecards/:id</code></li>
+                <li><strong>Model:</strong> <code>backend/models/Scorecard.js</code> — stores holes array, par values,
+                    yardages, and metadata.</li>
+                <li><strong>Validation:</strong> Ensures required hole definitions and consistency for front-end
+                    rendering and score entry.</li>
+            </ul>
+            <h4>Form Handling & Validation</h4>
+            <ul>
+                <li>Reactive forms for scorecard templates with validation for hole count and par/yardage numeric
+                    ranges.</li>
+                <li>Preview and import features for common course templates (CSV/JSON import).</li>
+            </ul>
+            <h4>Interactive Tables & UI</h4>
+            <ul>
+                <li>Browse and search scorecard templates, preview hole layouts, and assign a template to a match when
+                    creating matches.</li>
+                <li>Export/import of scorecard templates for sharing between environments.</li>
+            </ul>
+            <h4>Notifications & Feedback</h4>
+            <ul>
+                <li>Confirmation for template deletion and snackbars for create/update operations.</li>
+                <li>Validation errors displayed inline in forms during template creation.</li>
+            </ul>
 
-      <h3>Scorecards Feature</h3>
-      <mat-divider></mat-divider>
-      <h4>Overview</h4>
-      <p>
-        The Scorecards feature defines and manages templates used to capture hole-by-hole score data for matches. Scorecards map course holes, pars, yardages and provide the structure for score entry and reporting.
-      </p>
-      <h4>Frontend (Angular)</h4>
-      <ul>
-        <li><strong>Components:</strong> <code>src/app/components/scorecard-list/</code>, <code>scorecard-form/</code>, <code>scorecard-edit/</code></li>
-        <li><strong>Service:</strong> <code>src/app/services/scorecardService.ts</code></li>
-        <li><strong>Model:</strong> <code>src/app/models/scorecard.ts</code></li>
-        <li><strong>Routes:</strong> <code>/scorecards</code>, <code>/scorecards/new</code>, <code>/scorecards/edit/:id</code></li>
-        <li><strong>UI:</strong> Material forms for creating/editing scorecards, preview mode for hole layout, and assignment controls to attach scorecards to matches.</li>
-      </ul>
-      <h4>NgRx Store Usage</h4>
-      <ul>
-        <li><strong>Actions:</strong> Load, create, update, delete scorecards</li>
-        <li><strong>Reducers:</strong> Manage scorecards collection and selected template state</li>
-        <li><strong>Selectors:</strong> Query available scorecards and templates for match assignment</li>
-        <li><strong>Effects:</strong> Handle API calls for scorecard CRUD and template imports/exports</li>
-      </ul>
-      <h4>Backend (Node.js/Express/Mongoose)</h4>
-      <ul>
-        <li><strong>Endpoints:</strong> <code>GET /api/scorecards</code>, <code>GET /api/scorecards/:id</code>, <code>POST /api/scorecards</code>, <code>PUT /api/scorecards/:id</code>, <code>DELETE /api/scorecards/:id</code></li>
-        <li><strong>Model:</strong> <code>backend/models/Scorecard.js</code> — stores holes array, par values, yardages, and metadata.</li>
-        <li><strong>Validation:</strong> Ensures required hole definitions and consistency for front-end rendering and score entry.</li>
-      </ul>
-      <h4>Form Handling & Validation</h4>
-      <ul>
-        <li>Reactive forms for scorecard templates with validation for hole count and par/yardage numeric ranges.</li>
-        <li>Preview and import features for common course templates (CSV/JSON import).</li>
-      </ul>
-      <h4>Interactive Tables & UI</h4>
-      <ul>
-        <li>Browse and search scorecard templates, preview hole layouts, and assign a template to a match when creating matches.</li>
-        <li>Export/import of scorecard templates for sharing between environments.</li>
-      </ul>
-      <h4>Notifications & Feedback</h4>
-      <ul>
-        <li>Confirmation for template deletion and snackbars for create/update operations.</li>
-        <li>Validation errors displayed inline in forms during template creation.</li>
-      </ul>
+            <h3>Members Feature</h3>
+            <mat-divider></mat-divider>
+            <h4>Overview</h4>
+            <p>
+                The Members feature manages member profiles (name, email, league, handicap, status) used across matches,
+                scorecards, and reporting. It supports listing, adding, editing, and deleting members with search and
+                filtering.
+            </p>
+            <h4>Frontend</h4>
+            <ul>
+                <li><strong>Components:</strong> <code>src/app/components/member-list/</code>,
+                    <code>member-form/</code>, <code>member-edit/</code></li>
+                <li><strong>Service:</strong> <code>src/app/services/memberService.ts</code></li>
+                <li><strong>Routes:</strong> <code>/members</code>, <code>/members/new</code>,
+                    <code>/members/edit/:id</code></li>
+            </ul>
+            <h4>Backend</h4>
+            <ul>
+                <li><strong>Model:</strong> <code>backend/models/Member.js</code></li>
+                <li><strong>Controller:</strong> <code>backend/controllers/memberController.js</code></li>
+                <li><strong>Routes:</strong> <code>GET /api/members</code>, <code>GET /api/members/:id</code>,
+                    <code>POST /api/members</code>, <code>PUT /api/members/:id</code>,
+                    <code>DELETE /api/members/:id</code></li>
+            </ul>
+            <h4>NgRx Store Usage</h4>
+            <ul>
+                <li><strong>Actions:</strong> Load, create, update, delete members</li>
+                <li><strong>Reducers:</strong> Manage members list, selected member, loading and error states</li>
+                <li><strong>Selectors:</strong> Query member lists, filters and selected member for components</li>
+                <li><strong>Effects:</strong> Handle API calls for member CRUD and search operations</li>
+            </ul>
+            <h4>Form Handling & Validation</h4>
+            <ul>
+                <li>Reactive forms for add/edit member with client-side validators (required fields, email format,
+                    handicap ranges).</li>
+                <li>Server-side validation in controllers to enforce data integrity and unique constraints (email).</li>
+            </ul>
+            <h4>Interactive Tables & UI</h4>
+            <ul>
+                <li>Material table with sorting, searching, pagination, and selectable rows for bulk actions.</li>
+                <li>Member selection dialog used by Matches and Scores features to pick participants.</li>
+                <li>Export options (CSV) for member lists and bulk operations (activate/deactivate, role assignment).
+                </li>
+            </ul>
+            <h4>Notifications & Feedback</h4>
+            <ul>
+                <li>Snackbars for success and error messages on create/update/delete operations.</li>
+                <li>Confirmation dialogs for destructive bulk actions and deletes.</li>
+            </ul>
+            <h4>Backend Details</h4>
+            <ul>
+                <li><strong>Model:</strong> <code>backend/models/Member.js</code> — fields include name, email, league,
+                    handicap, status, roles.</li>
+                <li><strong>Controller:</strong> <code>backend/controllers/memberController.js</code> — handles
+                    validation, business rules, and audit logging.</li>
+                <li><strong>Routes:</strong> <code>GET /api/members</code>, <code>GET /api/members/:id</code>,
+                    <code>POST /api/members</code>, <code>PUT /api/members/:id</code>,
+                    <code>DELETE /api/members/:id</code></li>
+            </ul>
 
-      <h3>Members Feature</h3>
-      <mat-divider></mat-divider>
-      <h4>Overview</h4>
-      <p>
-        The Members feature manages member profiles (name, email, league, handicap, status) used across matches, scorecards, and reporting. It supports listing, adding, editing, and deleting members with search and filtering.
-      </p>
-      <h4>Frontend</h4>
-      <ul>
-        <li><strong>Components:</strong> <code>src/app/components/member-list/</code>, <code>member-form/</code>, <code>member-edit/</code></li>
-        <li><strong>Service:</strong> <code>src/app/services/memberService.ts</code></li>
-        <li><strong>Routes:</strong> <code>/members</code>, <code>/members/new</code>, <code>/members/edit/:id</code></li>
-      </ul>
-      <h4>Backend</h4>
-      <ul>
-        <li><strong>Model:</strong> <code>backend/models/Member.js</code></li>
-        <li><strong>Controller:</strong> <code>backend/controllers/memberController.js</code></li>
-        <li><strong>Routes:</strong> <code>GET /api/members</code>, <code>GET /api/members/:id</code>, <code>POST /api/members</code>, <code>PUT /api/members/:id</code>, <code>DELETE /api/members/:id</code></li>
-      </ul>
-      <h4>NgRx Store Usage</h4>
-      <ul>
-        <li><strong>Actions:</strong> Load, create, update, delete members</li>
-        <li><strong>Reducers:</strong> Manage members list, selected member, loading and error states</li>
-        <li><strong>Selectors:</strong> Query member lists, filters and selected member for components</li>
-        <li><strong>Effects:</strong> Handle API calls for member CRUD and search operations</li>
-      </ul>
-      <h4>Form Handling & Validation</h4>
-      <ul>
-        <li>Reactive forms for add/edit member with client-side validators (required fields, email format, handicap ranges).</li>
-        <li>Server-side validation in controllers to enforce data integrity and unique constraints (email).</li>
-      </ul>
-      <h4>Interactive Tables & UI</h4>
-      <ul>
-        <li>Material table with sorting, searching, pagination, and selectable rows for bulk actions.</li>
-        <li>Member selection dialog used by Matches and Scores features to pick participants.</li>
-        <li>Export options (CSV) for member lists and bulk operations (activate/deactivate, role assignment).</li>
-      </ul>
-      <h4>Notifications & Feedback</h4>
-      <ul>
-        <li>Snackbars for success and error messages on create/update/delete operations.</li>
-        <li>Confirmation dialogs for destructive bulk actions and deletes.</li>
-      </ul>
-      <h4>Backend Details</h4>
-      <ul>
-        <li><strong>Model:</strong> <code>backend/models/Member.js</code> — fields include name, email, league, handicap, status, roles.</li>
-        <li><strong>Controller:</strong> <code>backend/controllers/memberController.js</code> — handles validation, business rules, and audit logging.</li>
-        <li><strong>Routes:</strong> <code>GET /api/members</code>, <code>GET /api/members/:id</code>, <code>POST /api/members</code>, <code>PUT /api/members/:id</code>, <code>DELETE /api/members/:id</code></li>
-      </ul>
+            <h3>Matches Feature</h3>
+            <mat-divider></mat-divider>
+            <h4>Overview</h4>
+            <p>
+                The Matches feature enables users to create, view, edit, and manage golf matches, including player
+                lineups, scorecards, and match status. It is tightly integrated with NgRx for state management in the
+                frontend.
+            </p>
+            <h4>Frontend (Angular)</h4>
+            <ul>
+                <li><strong>Location:</strong> Components: <code>src/app/components/match-list/</code>,
+                    <code>match-form/</code>, <code>match-edit/</code>, <code>match-selection-dialog/</code></li>
+                <li><strong>Service:</strong> <code>src/app/services/matchService.ts</code></li>
+                <li><strong>Model:</strong> <code>src/app/models/match.ts</code></li>
+                <li><strong>Store:</strong> <code>src/app/store/match/</code> (actions, reducers, selectors, effects)
+                </li>
+                <li><strong>Routes:</strong> <code>/matches</code>, <code>/matches/edit/:id</code>,
+                    <code>/matches/new</code></li>
+                <li>List, add, edit, delete, and view matches</li>
+                <li>Player lineups, scorecard assignment, match results</li>
+                <li>Match selection dialog for other features (e.g., score entry)</li>
+                <li>Access via sidebar: Click "Matches" to view the list</li>
+                <li>Data is managed via NgRx store and fetched from the backend via <code>MatchService</code></li>
+            </ul>
+            <h4>NgRx Store Usage</h4>
+            <ul>
+                <li><strong>Actions:</strong> Define match-related events (load, create, update, delete)</li>
+                <li><strong>Reducers:</strong> Manage match state (list, selected match, loading, error)</li>
+                <li><strong>Selectors:</strong> Query match state for components (get all matches, get selected match)
+                </li>
+                <li><strong>Effects:</strong> Handle side effects (API calls for matches)</li>
+                <li><strong>Benefits:</strong>
+                    <ul>
+                        <li>Centralized state management for matches</li>
+                        <li>Automatic UI updates when match data changes</li>
+                        <li>Simplified data flow and debugging</li>
+                        <li>Decouples API logic from UI components</li>
+                    </ul>
+                </li>
+            </ul>
+            <h4>Backend (Node.js/Express/Mongoose)</h4>
+            <ul>
+                <li><strong>Location:</strong> Model: <code>backend/models/Match.js</code>, Controller:
+                    <code>backend/controllers/matchController.js</code>, Routes:
+                    <code>backend/routes/matchRoutes.js</code></li>
+                <li><strong>API Endpoints:</strong>
+                    <ul>
+                        <li><code>GET /api/matches</code> — List all matches</li>
+                        <li><code>GET /api/matches/:id</code> — Get match by ID</li>
+                        <li><code>POST /api/matches</code> — Add new match</li>
+                        <li><code>PUT /api/matches/:id</code> — Update match</li>
+                        <li><code>DELETE /api/matches/:id</code> — Delete match</li>
+                    </ul>
+                </li>
+                <li><strong>Data Model:</strong> Fields: name, date, scorecardId, lineUps, status, results, etc.</li>
+                <li>Validation and business logic handled in controller/model</li>
+            </ul>
+            <h4>Golf Management (CRUD)</h4>
+            <ul>
+                <li>Manage matches, scorecards, and member profiles with full CRUD operations.</li>
+                <li>Create matches with player lineups, assign scorecards, and schedule dates.</li>
+                <li>Assign and manage scorecards used for score entry and reporting.</li>
+                <li>Edit match, scorecard, and member details with validation and audit logging.</li>
+                <li>View match and member histories in searchable, filterable, and paginated tables.</li>
+            </ul>
 
-      <h3>Matches Feature</h3>
-      <mat-divider></mat-divider>
-      <h4>Overview</h4>
-      <p>
-        The Matches feature enables users to create, view, edit, and manage golf matches, including player lineups, scorecards, and match status. It is tightly integrated with NgRx for state management in the frontend.
-      </p>
-      <h4>Frontend (Angular)</h4>
-      <ul>
-        <li><strong>Location:</strong> Components: <code>src/app/components/match-list/</code>, <code>match-form/</code>, <code>match-edit/</code>, <code>match-selection-dialog/</code></li>
-        <li><strong>Service:</strong> <code>src/app/services/matchService.ts</code></li>
-        <li><strong>Model:</strong> <code>src/app/models/match.ts</code></li>
-        <li><strong>Store:</strong> <code>src/app/store/match/</code> (actions, reducers, selectors, effects)</li>
-        <li><strong>Routes:</strong> <code>/matches</code>, <code>/matches/edit/:id</code>, <code>/matches/new</code></li>
-        <li>List, add, edit, delete, and view matches</li>
-        <li>Player lineups, scorecard assignment, match results</li>
-        <li>Match selection dialog for other features (e.g., score entry)</li>
-        <li>Access via sidebar: Click "Matches" to view the list</li>
-        <li>Data is managed via NgRx store and fetched from the backend via <code>MatchService</code></li>
-      </ul>
-      <h4>NgRx Store Usage</h4>
-      <ul>
-        <li><strong>Actions:</strong> Define match-related events (load, create, update, delete)</li>
-        <li><strong>Reducers:</strong> Manage match state (list, selected match, loading, error)</li>
-        <li><strong>Selectors:</strong> Query match state for components (get all matches, get selected match)</li>
-        <li><strong>Effects:</strong> Handle side effects (API calls for matches)</li>
-        <li><strong>Benefits:</strong>
-          <ul>
-            <li>Centralized state management for matches</li>
-            <li>Automatic UI updates when match data changes</li>
-            <li>Simplified data flow and debugging</li>
-            <li>Decouples API logic from UI components</li>
-          </ul>
-        </li>
-      </ul>
-      <h4>Backend (Node.js/Express/Mongoose)</h4>
-      <ul>
-        <li><strong>Location:</strong> Model: <code>backend/models/Match.js</code>, Controller: <code>backend/controllers/matchController.js</code>, Routes: <code>backend/routes/matchRoutes.js</code></li>
-        <li><strong>API Endpoints:</strong>
-          <ul>
-            <li><code>GET /api/matches</code> — List all matches</li>
-            <li><code>GET /api/matches/:id</code> — Get match by ID</li>
-            <li><code>POST /api/matches</code> — Add new match</li>
-            <li><code>PUT /api/matches/:id</code> — Update match</li>
-            <li><code>DELETE /api/matches/:id</code> — Delete match</li>
-          </ul>
-        </li>
-        <li><strong>Data Model:</strong> Fields: name, date, scorecardId, lineUps, status, results, etc.</li>
-        <li>Validation and business logic handled in controller/model</li>
-      </ul>
-      <h4>Golf Management (CRUD)</h4>
-      <ul>
-        <li>Manage matches, scorecards, and member profiles with full CRUD operations.</li>
-        <li>Create matches with player lineups, assign scorecards, and schedule dates.</li>
-        <li>Assign and manage scorecards used for score entry and reporting.</li>
-        <li>Edit match, scorecard, and member details with validation and audit logging.</li>
-        <li>View match and member histories in searchable, filterable, and paginated tables.</li>
-      </ul>
+            <h3>Scores Feature</h3>
+            <mat-divider></mat-divider>
+            <h4>Overview</h4>
+            <p>
+                The Scores feature manages individual score entries for matches and scorecards. It supports creating,
+                editing, listing, and deleting scores, with filters by match, member, and scorecard and bulk operations
+                for tournament reporting.
+            </p>
+            <h4>Frontend (Angular)</h4>
+            <ul>
+                <li><strong>Components:</strong> <code>src/app/components/score-list/</code>, <code>score-form/</code>,
+                    <code>score-edit/</code></li>
+                <li><strong>Service:</strong> <code>src/app/services/scoreService.ts</code></li>
+                <li><strong>Model:</strong> <code>src/app/models/score.ts</code></li>
+                <li><strong>Routes:</strong> <code>/scores</code>, <code>/scores/add</code>,
+                    <code>/scores/edit/:id</code></li>
+                <li><strong>UI:</strong> Material tables with inline editing, pagination, filtering by
+                    match/member/scorecard, and export (CSV/PDF) options.</li>
+            </ul>
+            <h4>NgRx Store Usage</h4>
+            <ul>
+                <li><strong>Actions:</strong> Load, create, update, delete scores</li>
+                <li><strong>Reducers:</strong> Manage scores list, selected score, loading and error states</li>
+                <li><strong>Selectors:</strong> Query scores, filters and aggregates for components</li>
+                <li><strong>Effects:</strong> Handle API calls for score CRUD and batch imports/exports</li>
+            </ul>
+            <h4>Backend (Node.js/Express/Mongoose)</h4>
+            <ul>
+                <li><strong>Endpoints:</strong> <code>GET /api/scores</code>, <code>GET /api/scores/:id</code>,
+                    <code>POST /api/scores</code>, <code>PUT /api/scores/:id</code>, <code>DELETE /api/scores/:id</code>
+                </li>
+                <li><strong>Model:</strong> <code>backend/models/Score.js</code> (stores member, match, scorecard,
+                    holes, and aggregate values)</li>
+                <li><strong>Validation:</strong> Server-side validation ensures required fields and referential
+                    integrity to members and matches.</li>
+            </ul>
+            <h4>Form Handling & Validation</h4>
+            <ul>
+                <li>Reactive forms for score entry with per-hole validation and aggregate calculations.</li>
+                <li>Server-side validation and error reporting for batch imports.</li>
+            </ul>
+            <h4>Interactive Tables & UI</h4>
+            <ul>
+                <li>Sorting, searching, filtering, and pagination for large score lists.</li>
+                <li>Inline edits and bulk actions (approve, export, delete).</li>
+                <li>Export to CSV/PDF for reporting and printing scorecards.</li>
+            </ul>
+            <h4>Notifications & Feedback</h4>
+            <ul>
+                <li>Snackbars for success/error messages and confirmations for destructive actions.</li>
+                <li>Progress indicators for batch imports/exports.</li>
+            </ul>
+            <p>See the detailed Scores documentation in <code>components/read-me/scores.md</code>.</p>
 
-      <h3>Scores Feature</h3>
-      <mat-divider></mat-divider>
-      <h4>Overview</h4>
-      <p>
-        The Scores feature manages individual score entries for matches and scorecards. It supports creating, editing, listing, and deleting scores, with filters by match, member, and scorecard and bulk operations for tournament reporting.
-      </p>
-      <h4>Frontend (Angular)</h4>
-      <ul>
-        <li><strong>Components:</strong> <code>src/app/components/score-list/</code>, <code>score-form/</code>, <code>score-edit/</code></li>
-        <li><strong>Service:</strong> <code>src/app/services/scoreService.ts</code></li>
-        <li><strong>Model:</strong> <code>src/app/models/score.ts</code></li>
-        <li><strong>Routes:</strong> <code>/scores</code>, <code>/scores/add</code>, <code>/scores/edit/:id</code></li>
-        <li><strong>UI:</strong> Material tables with inline editing, pagination, filtering by match/member/scorecard, and export (CSV/PDF) options.</li>
-      </ul>
-      <h4>NgRx Store Usage</h4>
-      <ul>
-        <li><strong>Actions:</strong> Load, create, update, delete scores</li>
-        <li><strong>Reducers:</strong> Manage scores list, selected score, loading and error states</li>
-        <li><strong>Selectors:</strong> Query scores, filters and aggregates for components</li>
-        <li><strong>Effects:</strong> Handle API calls for score CRUD and batch imports/exports</li>
-      </ul>
-      <h4>Backend (Node.js/Express/Mongoose)</h4>
-      <ul>
-        <li><strong>Endpoints:</strong> <code>GET /api/scores</code>, <code>GET /api/scores/:id</code>, <code>POST /api/scores</code>, <code>PUT /api/scores/:id</code>, <code>DELETE /api/scores/:id</code></li>
-        <li><strong>Model:</strong> <code>backend/models/Score.js</code> (stores member, match, scorecard, holes, and aggregate values)</li>
-        <li><strong>Validation:</strong> Server-side validation ensures required fields and referential integrity to members and matches.</li>
-      </ul>
-      <h4>Form Handling & Validation</h4>
-      <ul>
-        <li>Reactive forms for score entry with per-hole validation and aggregate calculations.</li>
-        <li>Server-side validation and error reporting for batch imports.</li>
-      </ul>
-      <h4>Interactive Tables & UI</h4>
-      <ul>
-        <li>Sorting, searching, filtering, and pagination for large score lists.</li>
-        <li>Inline edits and bulk actions (approve, export, delete).</li>
-        <li>Export to CSV/PDF for reporting and printing scorecards.</li>
-      </ul>
-      <h4>Notifications & Feedback</h4>
-      <ul>
-        <li>Snackbars for success/error messages and confirmations for destructive actions.</li>
-        <li>Progress indicators for batch imports/exports.</li>
-      </ul>
-      <p>See the detailed Scores documentation in <code>components/read-me/scores.md</code>.</p>
+            <h3>HCap Feature</h3>
+            <mat-divider></mat-divider>
+            <h4>Overview</h4>
+            <p>
+                The HCap (handicap) feature manages member handicaps, adjustments, and historical handicap records. It
+                supports importing/updating handicaps, applying handicap rules for matches, and tracking handicap
+                changes over time.
+            </p>
+            <h4>Frontend (Angular)</h4>
+            <ul>
+                <li><strong>Components:</strong> <code>src/app/components/hcap-list/</code>, <code>hcap-form/</code>,
+                    <code>hcap-history/</code></li>
+                <li><strong>Service:</strong> <code>src/app/services/hcapService.ts</code></li>
+                <li><strong>Model:</strong> <code>src/app/models/hcap.ts</code></li>
+                <li><strong>Routes:</strong> <code>/hcaps</code>, <code>/hcaps/upload</code>,
+                    <code>/hcaps/history/:memberId</code></li>
+                <li><strong>Actions:</strong> Load current hcaps, import/update handicaps, load history (invoked via
+                    <code>HCapService</code>, not NgRx)</li>
+                <li><strong>State:</strong> Managed by <code>HCapService</code> and component-local state (no NgRx
+                    feature)</li>
+                <li><strong>UI:</strong> Tables for current handicaps, per-member history view, upload/import UI for
+                    handicap files, and controls to recalculate handicaps.</li>
+            </ul>
+            <h4>NgRx Store Usage</h4>
+            <ul>
+                <li><strong>Actions:</strong> Load current hcaps, import/update handicaps, load history</li>
+                <li><strong>Reducers:</strong> Manage hcap state, loading indicators, and error states</li>
+                <li><strong>Selectors:</strong> Query current handicap values, historical traces, and pending import
+                    results</li>
+                <li><strong>Effects:</strong> Handle API calls for importing, recalculation, and historical data
+                    retrieval</li>
+            </ul>
+            <h4>Backend (Node.js/Express/Mongoose)</h4>
+            <ul>
+                <li><strong>Endpoints:</strong> <code>GET /api/hcaps</code>, <code>POST /api/hcaps/import</code>,
+                    <code>GET /api/hcaps/:memberId/history</code>, <code>PUT /api/hcaps/:memberId</code></li>
+                <li><strong>Model:</strong> <code>backend/models/HCap.js</code> — stores current handicap, history
+                    entries, and metadata about calculation rules.</li>
+                <li><strong>Validation:</strong> Ensures imported files match expected formats and values fall within
+                    acceptable ranges.</li>
+            </ul>
+            <h4>Form Handling & Validation</h4>
+            <ul>
+                <li>Upload form for handicap files with client-side format validation and preview of parsed records.
+                </li>
+                <li>Server-side checks to validate member references and numeric ranges before committing imports.</li>
+            </ul>
+            <h4>Interactive Tables & UI</h4>
+            <ul>
+                <li>Filterable list of members with current handicap, last update date, and source (manual/import).</li>
+                <li>Per-member history view showing previous handicap values, reasons, and timestamps.</li>
+                <li>Recalculation tools for administrators to apply new rules or backfill historical data.</li>
+            </ul>
+            <h4>Notifications & Feedback</h4>
+            <ul>
+                <li>Progress indicators for large imports and snackbars for import/validation results.</li>
+                <li>Detailed error reports for failed import rows with recommended remediation steps.</li>
+            </ul>
+            <h3>Project Overview</h3>
 
-      <h3>HCap Feature</h3>
-      <mat-divider></mat-divider>
-      <h4>Overview</h4>
-      <p>
-        The HCap (handicap) feature manages member handicaps, adjustments, and historical handicap records. It supports importing/updating handicaps, applying handicap rules for matches, and tracking handicap changes over time.
-      </p>
-      <h4>Frontend (Angular)</h4>
-      <ul>
-          <li><strong>Components:</strong> <code>src/app/components/hcap-list/</code>, <code>hcap-form/</code>, <code>hcap-history/</code></li>
-          <li><strong>Service:</strong> <code>src/app/services/hcapService.ts</code></li>
-          <li><strong>Model:</strong> <code>src/app/models/hcap.ts</code></li>
-          <li><strong>Routes:</strong> <code>/hcaps</code>, <code>/hcaps/upload</code>, <code>/hcaps/history/:memberId</code></li>
-          <li><strong>Actions:</strong> Load current hcaps, import/update handicaps, load history (invoked via <code>HCapService</code>, not NgRx)</li>
-          <li><strong>State:</strong> Managed by <code>HCapService</code> and component-local state (no NgRx feature)</li>
-          <li><strong>UI:</strong> Tables for current handicaps, per-member history view, upload/import UI for handicap files, and controls to recalculate handicaps.</li>
-      </ul>
-      <h4>NgRx Store Usage</h4>
-      <ul>
-        <li><strong>Actions:</strong> Load current hcaps, import/update handicaps, load history</li>
-        <li><strong>Reducers:</strong> Manage hcap state, loading indicators, and error states</li>
-        <li><strong>Selectors:</strong> Query current handicap values, historical traces, and pending import results</li>
-        <li><strong>Effects:</strong> Handle API calls for importing, recalculation, and historical data retrieval</li>
-      </ul>
-      <h4>Backend (Node.js/Express/Mongoose)</h4>
-      <ul>
-        <li><strong>Endpoints:</strong> <code>GET /api/hcaps</code>, <code>POST /api/hcaps/import</code>, <code>GET /api/hcaps/:memberId/history</code>, <code>PUT /api/hcaps/:memberId</code></li>
-        <li><strong>Model:</strong> <code>backend/models/HCap.js</code> — stores current handicap, history entries, and metadata about calculation rules.</li>
-        <li><strong>Validation:</strong> Ensures imported files match expected formats and values fall within acceptable ranges.</li>
-      </ul>
-      <h4>Form Handling & Validation</h4>
-      <ul>
-        <li>Upload form for handicap files with client-side format validation and preview of parsed records.</li>
-        <li>Server-side checks to validate member references and numeric ranges before committing imports.</li>
-      </ul>
-      <h4>Interactive Tables & UI</h4>
-      <ul>
-        <li>Filterable list of members with current handicap, last update date, and source (manual/import).</li>
-        <li>Per-member history view showing previous handicap values, reasons, and timestamps.</li>
-        <li>Recalculation tools for administrators to apply new rules or backfill historical data.</li>
-      </ul>
-      <h4>Notifications & Feedback</h4>
-      <ul>
-        <li>Progress indicators for large imports and snackbars for import/validation results.</li>
-        <li>Detailed error reports for failed import rows with recommended remediation steps.</li>
-      </ul>
-      <h3>Project Overview</h3>
+            <h3>Tech Stack & Backend Setup</h3>
+            <ul>
+                <li><strong>Frontend:</strong> Angular (see frontend/package.json for exact version)</li>
+                <li><strong>Backend:</strong> Node.js with Express.js</li>
+                <li><strong>Database:</strong> MongoDB using Mongoose ODM (optional Azure Cosmos DB deployments
+                    supported)</li>
+                <li><strong>Authentication:</strong> Microsoft Entra (MSAL) with JWT validation (JWKS)</li>
+                <li><strong>Password Security:</strong> bcrypt for password hashing where local credentials are used
+                </li>
+                <li><strong>Environment (example):</strong> Angular CLI: 20.3.14 · Node: 22.20.0 · npm: 11.9.0 · OS:
+                    win32 x64</li>
+                <li><strong>API Endpoints:</strong> RESTful endpoints for members, matches, scores, scorecards, users,
+                    hcaps, orphans, audit, email, auth, and config</li>
+                <li><strong>Middleware:</strong> Helmet for security headers, CORS, rate limiting, compression, and
+                    centralized error handling</li>
+                <li><strong>Logging:</strong> Morgan for request logging (development) and audit logs for admin actions
+                </li>
+                <li><strong>Deployment Ready:</strong> Modular route/controller structure, environment-based config, and
+                    production-ready error handling</li>
+            </ul>
 
-      <h3>Tech Stack & Backend Setup</h3>
-      <ul>
-        <li><strong>Frontend:</strong> Angular (see frontend/package.json for exact version)</li>
-        <li><strong>Backend:</strong> Node.js with Express.js</li>
-        <li><strong>Database:</strong> MongoDB using Mongoose ODM (optional Azure Cosmos DB deployments supported)</li>
-        <li><strong>Authentication:</strong> Microsoft Entra (MSAL) with JWT validation (JWKS)</li>
-        <li><strong>Password Security:</strong> bcrypt for password hashing where local credentials are used</li>
-        <li><strong>Environment (example):</strong> Angular CLI: 20.3.14 · Node: 22.20.0 · npm: 11.9.0 · OS: win32 x64</li>
-        <li><strong>API Endpoints:</strong> RESTful endpoints for members, matches, scores, scorecards, users, hcaps, orphans, audit, email, auth, and config</li>
-        <li><strong>Middleware:</strong> Helmet for security headers, CORS, rate limiting, compression, and centralized error handling</li>
-        <li><strong>Logging:</strong> Morgan for request logging (development) and audit logs for admin actions</li>
-        <li><strong>Deployment Ready:</strong> Modular route/controller structure, environment-based config, and production-ready error handling</li>
-      </ul>
+            <h3>Key Features (End-User Readable)</h3>
 
-      <h3>Key Features (End-User Readable)</h3>
+            <h4>Dashboard Overview</h4>
+            <ul>
+                <li>Real-time total stats for the year and past 12-months.</li>
+                <li>Quick overview of match statuses (Open, Started,and Completed).</li>
+            </ul>
 
-      <h4>Dashboard Overview</h4>
-      <ul>
-        <li>Real-time total stats for the year and past 12-months.</li>
-        <li>Quick overview of match statuses (Open, Started,and Completed).</li>
-      </ul>
+            <h4>Golf Management (CRUD)</h4>
+            <ul>
+                <li><strong>Create Golf Entry:</strong> Admins can add new golf entries with amount, term, interest
+                    rate, and status.</li>
+                <li><strong>Read/List Golf Entries:</strong> View all golf entries in searchable, sortable, paginated
+                    tables.</li>
+                <li><strong>Update Golf Entry:</strong> Edit golf entry details or status seamlessly.</li>
+                <li><strong>Delete Golf Entry:</strong> Remove golf entries with confirmation prompts.</li>
+                <li><strong>Golf Entry Detail Page:</strong> View all golf entry information including customer details.
+                </li>
+            </ul>
 
-      <h4>Golf Management (CRUD)</h4>
-      <ul>
-        <li><strong>Create Golf Entry:</strong> Admins can add new golf entries with amount, term, interest rate, and status.</li>
-        <li><strong>Read/List Golf Entries:</strong> View all golf entries in searchable, sortable, paginated tables.</li>
-        <li><strong>Update Golf Entry:</strong> Edit golf entry details or status seamlessly.</li>
-        <li><strong>Delete Golf Entry:</strong> Remove golf entries with confirmation prompts.</li>
-        <li><strong>Golf Entry Detail Page:</strong> View all golf entry information including customer details.</li>
-      </ul>
 
-      
 
-      <h4>Authentication & User Management</h4>
-      <ul>
-        <li>Secure login/logout for admins and customers.</li>
-        <li>Role-based access: Admins manage all loans and offers; customers view their own data.</li>
-        <li>JWT token-based authentication for API calls.</li>
-        <li>Password hashing with bcrypt for secure storage.</li>
-      </ul>
+            <h4>Authentication & User Management</h4>
+            <ul>
+                <li>Secure login/logout for admins and customers.</li>
+                <li>Role-based access: Admins manage all loans and offers; customers view their own data.</li>
+                <li>JWT token-based authentication for API calls.</li>
+                <li>Password hashing with bcrypt for secure storage.</li>
+            </ul>
 
-      <h4>Form Handling & Validation</h4>
-      <ul>
-        <li>Reactive forms for offers and loans with real-time validation and feedback.</li>
-        <li>Error messages and notifications for invalid input or failed actions.</li>
-      </ul>
+            <h4>Form Handling & Validation</h4>
+            <ul>
+                <li>Reactive forms for offers and loans with real-time validation and feedback.</li>
+                <li>Error messages and notifications for invalid input or failed actions.</li>
+            </ul>
 
-      <h4>Interactive Tables & UI</h4>
-      <ul>
-        <li>Sorting, searching, and pagination for loans and offers.</li>
-        <li>Material tables and cards with responsive layouts.</li>
-        <li>Dynamic filtering by multiple fields (status, amount, customer, offer type).</li>
-      </ul>
+            <h4>Interactive Tables & UI</h4>
+            <ul>
+                <li>Sorting, searching, and pagination for loans and offers.</li>
+                <li>Material tables and cards with responsive layouts.</li>
+                <li>Dynamic filtering by multiple fields (status, amount, customer, offer type).</li>
+            </ul>
 
-      <h4>Notifications & Feedback</h4>
-      <ul>
-        <li>Success and error notifications on loan and offer actions.</li>
-        <li>Confirmation prompts for critical actions like deletion.</li>
-      </ul>
+            <h4>Notifications & Feedback</h4>
+            <ul>
+                <li>Success and error notifications on loan and offer actions.</li>
+                <li>Confirmation prompts for critical actions like deletion.</li>
+            </ul>
 
-      <h4>User-Friendly Design</h4>
-      <ul>
-        <li>Clean, responsive UI using Angular Material components.</li>
-        <li>Toolbar with navigation and action buttons for better workflow.</li>
-        <li>Vertical and card-based forms for better readability.</li>
-      </ul>
+            <h4>User-Friendly Design</h4>
+            <ul>
+                <li>Clean, responsive UI using Angular Material components.</li>
+                <li>Toolbar with navigation and action buttons for better workflow.</li>
+                <li>Vertical and card-based forms for better readability.</li>
+            </ul>
 
-      <h4>Additional Notes</h4>
-      <ul>
-        <li>All components are responsive and enterprise-ready.</li>
-        <li>Supports scaling with additional modules like Reports, Analytics, and Notifications.</li>
-        <li>Seamless integration between CRUD operations and state management via NgRx.</li>
-        <li>Backend is production-ready with secure authentication, proper error handling, and modular design.</li>
-      </ul>
-    </div>
+            <h4>Additional Notes</h4>
+            <ul>
+                <li>All components are responsive and enterprise-ready.</li>
+                <li>Supports scaling with additional modules like Reports, Analytics, and Notifications.</li>
+                <li>Seamless integration between CRUD operations and state management via NgRx.</li>
+                <li>Backend is production-ready with secure authentication, proper error handling, and modular design.
+                </li>
+            </ul>
+        </div>
 
-    <div *ngIf="view === 'api'">
-      <h3>API Details</h3>
-      <mat-divider></mat-divider>
-      <app-resume-endpoints></app-resume-endpoints>
-    </div>
-  </mat-card-content>
+        <div *ngIf="view === 'api'">
+            <h3>API Details</h3>
+            <mat-divider></mat-divider>
+            <app-resume-endpoints></app-resume-endpoints>
+        </div>
+    </mat-card-content>
 </mat-card>
