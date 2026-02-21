@@ -60,7 +60,7 @@ export class UserListComponent implements OnInit {
 
   openInviteDialog(): void {
     this.dialog
-      .open(InviteUserDialogComponent, { width: '420px' })
+      .open(InviteUserDialogComponent, { width: '500px' })
       .afterClosed()
       .subscribe((sent) => {
         if (sent) this.loadUsers();

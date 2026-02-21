@@ -37,9 +37,17 @@
             </ol>
             <h4>Print Scorecards and Score a Match</h4>
             <ol>
-                <li>From the Matches list, open the match and click <strong>Enter Scores</strong> or open the match's
-                    scorecard view.</li>
-                <li>Select a player (or open each player row) and enter hole-by-hole stroke counts.</li>
+                <li>From the Matches list, open the match and click <strong>Print Scorecards.</strong>
+                    Scorecard should show the course, pairings, and strokes - both to par and off the low handicap
+                    player.
+                    The players hsndicap and tees should be listed next to the name.
+                </li>
+                <li>From the Matches list, open the match and click <strong>Enter Scores</strong>. Score entry will be
+                    either detailed hole by hole score or
+                    simple score. In the simple score mode, the score shuld be adjusted to reflect any adjustments.
+                    In the detailed score mode, adjustments are automatically handled based of the adjustment rules in
+                    the <strong> Configuration Tab</strong>
+                </li>
                 <li>The UI displays pars and applies handicaps; verify net scores and totals as you go.</li>
                 <li>Save individual player scores as you complete them, or use <strong>Save All</strong> if available.
                 </li>
@@ -78,7 +86,8 @@
                 <li>Use Admin → Configuration to tune default page sizes and UI options (these are stored locally by
                     default).</li>
                 <li>When importing or bulk-editing handicaps or scores, prefer backend scripts or admin-import tools in
-                    <code>backend/scripts</code>.</li>
+                    <code>backend/scripts</code>.
+                </li>
                 <li>Keep an audit trail: prefer editing via the UI so changes are logged and attributable to a user.
                 </li>
             </ul>
@@ -131,7 +140,8 @@
             <ul>
                 <li><strong>Endpoints:</strong> <code>GET /api/dashboard/summary</code>,
                     <code>GET /api/dashboard/trends</code>, <code>GET /api/dashboard/recent</code> — return aggregated
-                    counts, time-series, and recent activity.</li>
+                    counts, time-series, and recent activity.
+                </li>
                 <li><strong>Implementation:</strong> Lightweight aggregation queries or precomputed metrics (cron jobs)
                     for large datasets to keep response times low.</li>
                 <li><strong>Security:</strong> Role-based access control to restrict sensitive metrics to admins.</li>
@@ -161,11 +171,13 @@
             <h4>Frontend (Angular)</h4>
             <ul>
                 <li><strong>Components:</strong> <code>src/app/components/scorecard-list/</code>,
-                    <code>scorecard-form/</code>, <code>scorecard-edit/</code></li>
+                    <code>scorecard-form/</code>, <code>scorecard-edit/</code>
+                </li>
                 <li><strong>Service:</strong> <code>src/app/services/scorecardService.ts</code></li>
                 <li><strong>Model:</strong> <code>src/app/models/scorecard.ts</code></li>
                 <li><strong>Routes:</strong> <code>/scorecards</code>, <code>/scorecards/new</code>,
-                    <code>/scorecards/edit/:id</code></li>
+                    <code>/scorecards/edit/:id</code>
+                </li>
                 <li><strong>UI:</strong> Material forms for creating/editing scorecards, preview mode for hole layout,
                     and assignment controls to attach scorecards to matches.</li>
             </ul>
@@ -180,7 +192,8 @@
             <ul>
                 <li><strong>Endpoints:</strong> <code>GET /api/scorecards</code>, <code>GET /api/scorecards/:id</code>,
                     <code>POST /api/scorecards</code>, <code>PUT /api/scorecards/:id</code>,
-                    <code>DELETE /api/scorecards/:id</code></li>
+                    <code>DELETE /api/scorecards/:id</code>
+                </li>
                 <li><strong>Model:</strong> <code>backend/models/Scorecard.js</code> — stores holes array, par values,
                     yardages, and metadata.</li>
                 <li><strong>Validation:</strong> Ensures required hole definitions and consistency for front-end
@@ -215,10 +228,12 @@
             <h4>Frontend</h4>
             <ul>
                 <li><strong>Components:</strong> <code>src/app/components/member-list/</code>,
-                    <code>member-form/</code>, <code>member-edit/</code></li>
+                    <code>member-form/</code>, <code>member-edit/</code>
+                </li>
                 <li><strong>Service:</strong> <code>src/app/services/memberService.ts</code></li>
                 <li><strong>Routes:</strong> <code>/members</code>, <code>/members/new</code>,
-                    <code>/members/edit/:id</code></li>
+                    <code>/members/edit/:id</code>
+                </li>
             </ul>
             <h4>Backend</h4>
             <ul>
@@ -226,7 +241,8 @@
                 <li><strong>Controller:</strong> <code>backend/controllers/memberController.js</code></li>
                 <li><strong>Routes:</strong> <code>GET /api/members</code>, <code>GET /api/members/:id</code>,
                     <code>POST /api/members</code>, <code>PUT /api/members/:id</code>,
-                    <code>DELETE /api/members/:id</code></li>
+                    <code>DELETE /api/members/:id</code>
+                </li>
             </ul>
             <h4>NgRx Store Usage</h4>
             <ul>
@@ -261,7 +277,8 @@
                     validation, business rules, and audit logging.</li>
                 <li><strong>Routes:</strong> <code>GET /api/members</code>, <code>GET /api/members/:id</code>,
                     <code>POST /api/members</code>, <code>PUT /api/members/:id</code>,
-                    <code>DELETE /api/members/:id</code></li>
+                    <code>DELETE /api/members/:id</code>
+                </li>
             </ul>
 
             <h3>Matches Feature</h3>
@@ -275,13 +292,15 @@
             <h4>Frontend (Angular)</h4>
             <ul>
                 <li><strong>Location:</strong> Components: <code>src/app/components/match-list/</code>,
-                    <code>match-form/</code>, <code>match-edit/</code>, <code>match-selection-dialog/</code></li>
+                    <code>match-form/</code>, <code>match-edit/</code>, <code>match-selection-dialog/</code>
+                </li>
                 <li><strong>Service:</strong> <code>src/app/services/matchService.ts</code></li>
                 <li><strong>Model:</strong> <code>src/app/models/match.ts</code></li>
                 <li><strong>Store:</strong> <code>src/app/store/match/</code> (actions, reducers, selectors, effects)
                 </li>
                 <li><strong>Routes:</strong> <code>/matches</code>, <code>/matches/edit/:id</code>,
-                    <code>/matches/new</code></li>
+                    <code>/matches/new</code>
+                </li>
                 <li>List, add, edit, delete, and view matches</li>
                 <li>Player lineups, scorecard assignment, match results</li>
                 <li>Match selection dialog for other features (e.g., score entry)</li>
@@ -308,7 +327,8 @@
             <ul>
                 <li><strong>Location:</strong> Model: <code>backend/models/Match.js</code>, Controller:
                     <code>backend/controllers/matchController.js</code>, Routes:
-                    <code>backend/routes/matchRoutes.js</code></li>
+                    <code>backend/routes/matchRoutes.js</code>
+                </li>
                 <li><strong>API Endpoints:</strong>
                     <ul>
                         <li><code>GET /api/matches</code> — List all matches</li>
@@ -341,11 +361,13 @@
             <h4>Frontend (Angular)</h4>
             <ul>
                 <li><strong>Components:</strong> <code>src/app/components/score-list/</code>, <code>score-form/</code>,
-                    <code>score-edit/</code></li>
+                    <code>score-edit/</code>
+                </li>
                 <li><strong>Service:</strong> <code>src/app/services/scoreService.ts</code></li>
                 <li><strong>Model:</strong> <code>src/app/models/score.ts</code></li>
                 <li><strong>Routes:</strong> <code>/scores</code>, <code>/scores/add</code>,
-                    <code>/scores/edit/:id</code></li>
+                    <code>/scores/edit/:id</code>
+                </li>
                 <li><strong>UI:</strong> Material tables with inline editing, pagination, filtering by
                     match/member/scorecard, and export (CSV/PDF) options.</li>
             </ul>
@@ -395,13 +417,16 @@
             <h4>Frontend (Angular)</h4>
             <ul>
                 <li><strong>Components:</strong> <code>src/app/components/hcap-list/</code>, <code>hcap-form/</code>,
-                    <code>hcap-history/</code></li>
+                    <code>hcap-history/</code>
+                </li>
                 <li><strong>Service:</strong> <code>src/app/services/hcapService.ts</code></li>
                 <li><strong>Model:</strong> <code>src/app/models/hcap.ts</code></li>
                 <li><strong>Routes:</strong> <code>/hcaps</code>, <code>/hcaps/upload</code>,
-                    <code>/hcaps/history/:memberId</code></li>
+                    <code>/hcaps/history/:memberId</code>
+                </li>
                 <li><strong>Actions:</strong> Load current hcaps, import/update handicaps, load history (invoked via
-                    <code>HCapService</code>, not NgRx)</li>
+                    <code>HCapService</code>, not NgRx)
+                </li>
                 <li><strong>State:</strong> Managed by <code>HCapService</code> and component-local state (no NgRx
                     feature)</li>
                 <li><strong>UI:</strong> Tables for current handicaps, per-member history view, upload/import UI for
@@ -419,7 +444,8 @@
             <h4>Backend (Node.js/Express/Mongoose)</h4>
             <ul>
                 <li><strong>Endpoints:</strong> <code>GET /api/hcaps</code>, <code>POST /api/hcaps/import</code>,
-                    <code>GET /api/hcaps/:memberId/history</code>, <code>PUT /api/hcaps/:memberId</code></li>
+                    <code>GET /api/hcaps/:memberId/history</code>, <code>PUT /api/hcaps/:memberId</code>
+                </li>
                 <li><strong>Model:</strong> <code>backend/models/HCap.js</code> — stores current handicap, history
                     entries, and metadata about calculation rules.</li>
                 <li><strong>Validation:</strong> Ensures imported files match expected formats and values fall within

@@ -31,7 +31,7 @@ export class UserService {
     return this.http.patch(`${this.baseUrl}/${id}/league`, { defaultLeague }, this.getHeaders());
   }
 
-  inviteUser(email: string, displayName?: string): Observable<{ success: boolean; message: string }> {
+  inviteUser(email: string, displayName?: string): Observable<{ success: boolean; message: string; inviteRedeemUrl?: string }> {
     return this.http.post<any>(`${this.baseUrl}/invite`, { email, displayName }, this.getHeaders());
   }
 }
