@@ -14,7 +14,45 @@
   <mat-card-content>
     <div *ngIf="view === 'instructions'">
       <h3>Instructions</h3>
-      <p><em>TODO: Add detailed setup and usage instructions here.</em></p>
+      <mat-divider></mat-divider>
+
+      <h4>Create a Match</h4>
+      <ol>
+        <li>Open <strong>Matches</strong> from the sidebar.</li>
+        <li>Click <strong>New Match</strong> (plus button) to open the match form.</li>
+        <li>Enter or accept the default match name. (Default is configured in Admin → Default Match Name.)</li>
+        <li>Choose a <em>Scorecard</em> (course/tees). The selected scorecard drives pars and hole layout.</li>
+        <li>Set the match date/tee time and add players by opening the Member Selection dialog.</li>
+        <li>Optional: adjust lineups, foursomes, and match settings.</li>
+        <li>Save the match. The match appears in the list and is ready for scoring.</li>
+      </ol>
+
+      <h4>Add a Member</h4>
+      <ol>
+        <li>Open <strong>Members</strong> from the sidebar.</li>
+        <li>Click <strong>New Member</strong> to open the add form.</li>
+        <li>Fill required fields (First Name) and recommended fields (Email, GHIN/handicap).</li>
+        <li>Assign default scorecards if helpful (favorite courses) and save.</li>
+        <li>New members become selectable when creating or editing matches.</li>
+      </ol>
+
+      <h4>Scoring & Updating Records</h4>
+      <ol>
+        <li>From <strong>Matches</strong>, open the match and click <strong>Enter Scores</strong> or open the match's scorecard view.</li>
+        <li>Select a player (or open each player row) and enter hole-by-hole stroke counts.</li>
+        <li>The UI displays pars and applies handicaps; verify net scores and totals as you go.</li>
+        <li>Save individual player scores as you complete them, or use <strong>Save All</strong> if available.</li>
+        <li>When all scores are entered, mark the match <strong>Completed</strong>. This finalizes results, triggers audit logging, and updates any downstream calculations (handicap updates if enabled).</li>
+        <li>To correct a score later: open the match → edit the player's entry → change hole values → save. Corrections are audited.</li>
+      </ol>
+
+      <h4>Tips & Best Practices</h4>
+      <ul>
+        <li>Before mass emailing, check <strong>Email Manager → Bounced Emails</strong>—bounced addresses are excluded automatically.</li>
+        <li>Use Admin → Configuration to tune default page sizes and UI options (these are stored locally by default).</li>
+        <li>When importing or bulk-editing handicaps or scores, prefer backend scripts or admin-import tools in <code>backend/scripts</code>.</li>
+        <li>Keep an audit trail: prefer editing via the UI so changes are logged and attributable to a user.</li>
+      </ul>
     </div>
 
     <div *ngIf="view === 'config'">

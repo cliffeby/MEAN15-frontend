@@ -46,6 +46,13 @@ export class MemberService {
     return throwError(() => new Error(errorMsg));
   }
 
+  resetBounceStatus(id: string): Observable<Member> {
+    this.clearCache();
+    return this.http.patch<{ success: boolean; member: Member }>(
+      `${this.baseUrl}/${id}/reset-bounce`, {}, this.getHeaders()
+    ).pipe(map(r => r.member), catchError(this.handleError));
+  }
+
   create(member: Member): Observable<Member> {
     const author = this.auth.getAuthorObject();
     const memberWithAuthor = { ...member, author };

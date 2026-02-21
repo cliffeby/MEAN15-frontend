@@ -1,15 +1,13 @@
-
-// ...existing code removed...
 import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { Router } from '@angular/router';
+import { MatDividerModule } from '@angular/material/divider';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/authService';
 import { CommonModule } from '@angular/common';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 import { MsalBroadcastService } from '@azure/msal-angular';
 import { MsalModule } from '@azure/msal-angular';
@@ -19,9 +17,9 @@ import { take } from 'rxjs/operators';
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, 
-    MatFormFieldModule, MatInputModule, MatButtonModule, 
-    MatSnackBarModule, MatSelectModule, MatIconModule, MsalModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule,
+    MatFormFieldModule, MatInputModule, MatButtonModule,
+    MatSnackBarModule, MatIconModule, MatDividerModule, MsalModule],
   templateUrl: './register.html',
   styleUrls: ['./register.scss']
 })
@@ -32,18 +30,17 @@ export class Register {
   snackBar = inject(MatSnackBar);
   msalBroadcastService = inject(MsalBroadcastService);
 
-  registerForm: FormGroup;
+  // Registration only requires name and email.
+  // Role is always 'user'; a temporary password is assigned server-side.
+  registerForm: FormGroup = this.fb.group({
+    name: ['', Validators.required],
+    email: ['', [Validators.required, Validators.email]],
+  });
+
   msalInProgress = false;
+  submitting = false;
 
   constructor() {
-    this.registerForm = this.fb.group({
-      name: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      role: ['user', Validators.required]
-    });
-
-    // Subscribe to MSAL interaction status
     this.msalBroadcastService.inProgress$.subscribe(status => {
       this.msalInProgress = status !== InteractionStatus.None;
     });
@@ -51,14 +48,21 @@ export class Register {
 
   submit() {
     if (this.registerForm.invalid) return;
+    this.submitting = true;
 
     this.authService.register(this.registerForm.value).subscribe({
       next: () => {
-        this.snackBar.open('Registration successful!', 'Close', { duration: 2000 });
-        this.router.navigate(['/dashboard']);
+        this.submitting = false;
+        this.snackBar.open(
+          'Account created. Log in with the temporary password provided by your administrator.',
+          'Close',
+          { duration: 6000 }
+        );
+        this.router.navigate(['/']);
       },
       error: (err) => {
-        this.snackBar.open(err.error.message || 'Registration failed', 'Close', { duration: 3000 });
+        this.submitting = false;
+        this.snackBar.open(err.message || 'Registration failed', 'Close', { duration: 4000 });
       }
     });
   }
@@ -71,33 +75,6 @@ export class Register {
           this.authService.getMsalService().loginRedirect({
             scopes: ['openid', 'profile', 'email'],
             extraQueryParameters: { prompt: 'select_account' }
-          });
-        } else {
-          this.snackBar.open('Authentication is already in progress. Please wait.', 'Close', { duration: 2000 });
-        }
-      });
-  }
-    get currentAccount() {
-    const msalService = this.authService.getMsalService();
-    if (!msalService || !msalService.instance) {
-      return null;
-    }
-    const accounts = msalService.instance.getAllAccounts();
-    return accounts.length > 0 ? accounts[0] : null;
-  }
-
-  signUpWithGoogle() {
-    this.msalBroadcastService.inProgress$
-      .pipe(take(1))
-      .subscribe(status => {
-        if (status === InteractionStatus.None) {
-          // idp parameter for Google (Entra External ID)
-          this.authService.getMsalService().loginRedirect({
-            scopes: ['openid', 'profile', 'email'],
-            extraQueryParameters: {
-              idp: 'Google',
-              prompt: 'select_account'
-            }
           });
         } else {
           this.snackBar.open('Authentication is already in progress. Please wait.', 'Close', { duration: 2000 });

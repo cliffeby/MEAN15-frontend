@@ -1,28 +1,40 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { UserService } from '../../services/userService';
 import { AuthService } from '../../services/authService';
+import { InviteUserDialogComponent } from '../invite-user/invite-user-dialog';
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
   templateUrl: './user-list.html',
   styleUrls: ['./user-list.scss'],
-  imports: [CommonModule, MatListModule, MatButtonModule, MatSnackBarModule, MatProgressBarModule]
+  imports: [
+    CommonModule,
+    MatListModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTooltipModule,
+    MatDialogModule,
+    MatSnackBarModule,
+    MatProgressBarModule,
+  ]
 })
 export class UserListComponent implements OnInit {
   users: any[] = [];
   loading = false;
 
-  constructor(
-    private userService: UserService,
-    private snackBar: MatSnackBar,
-    private authService: AuthService
-  ) {}
+  private userService = inject(UserService);
+  private snackBar = inject(MatSnackBar);
+  private authService = inject(AuthService);
+  private dialog = inject(MatDialog);
 
   get isAdmin() {
     return this.authService.hasMinRole('admin');
@@ -44,6 +56,15 @@ export class UserListComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  openInviteDialog(): void {
+    this.dialog
+      .open(InviteUserDialogComponent, { width: '420px' })
+      .afterClosed()
+      .subscribe((sent) => {
+        if (sent) this.loadUsers();
+      });
   }
 
   deleteUser(id: string) {

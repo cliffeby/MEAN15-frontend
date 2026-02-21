@@ -13,7 +13,9 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTabsModule } from '@angular/material/tabs';
 import { SelectionModel } from '@angular/cdk/collections';
+import { forkJoin } from 'rxjs';
 import { MemberService } from '../../services/memberService';
 import { EmailService, EmailStatus } from '../../services/email.service';
 import { AuthService } from '../../services/authService';
@@ -38,7 +40,8 @@ import { ConfirmDialogService } from '../../services/confirm-dialog.service';
     MatChipsModule,
     MatTooltipModule,
     MatSnackBarModule,
-    MatDialogModule
+    MatDialogModule,
+    MatTabsModule
   ],
   templateUrl: './email-manager.html',
   styleUrls: ['./email-manager.scss']
@@ -61,6 +64,11 @@ export class EmailManagerComponent implements OnInit {
 
   // Table columns
   displayedColumns = ['select', 'name', 'email', 'actions'];
+  bouncedColumns = ['name', 'email', 'bounceStatus', 'reason', 'lastBounce', 'actions'];
+
+  get bouncedMembers(): Member[] {
+    return this.members().filter(m => m.emailBounceStatus && m.emailBounceStatus !== 'ok');
+  }
 
   get isAdmin(): boolean {
     return this.authService.hasMinRole('admin');
@@ -285,5 +293,74 @@ export class EmailManagerComponent implements OnInit {
 
   getMemberName(member: Member): string {
     return `${member.firstName} ${member.lastName || ''}`.trim();
+  }
+
+  resetBounce(member: Member): void {
+    this.confirmDialog.confirmAction(
+      'Reset Bounce Status',
+      `Reset bounce status for ${this.getMemberName(member)} (${member.Email})? This will allow emails to be sent to this address again.`,
+      'Reset',
+      'Cancel'
+    ).subscribe(confirmed => {
+      if (!confirmed || !member._id) return;
+      this.memberService.resetBounceStatus(member._id).subscribe({
+        next: (updated) => {
+          this.members.update(list =>
+            list.map(m => m._id === updated._id ? { ...m, ...updated } : m)
+          );
+          this.filterMembers();
+          this.snackBar.open(`Bounce status reset for ${this.getMemberName(member)}`, 'Close', { duration: 3000 });
+        },
+        error: () => this.snackBar.open('Failed to reset bounce status', 'Close', { duration: 3000 })
+      });
+    });
+  }
+
+  resetAllBounces(): void {
+    this.confirmDialog.confirmAction(
+      'Reset All Bounce Statuses',
+      `Reset bounce status for all ${this.bouncedMembers.length} bounced member(s)? This will allow emails to be sent to these addresses again.`,
+      'Reset All',
+      'Cancel'
+    ).subscribe(confirmed => {
+      if (!confirmed) return;
+      const resets = this.bouncedMembers
+        .filter(m => m._id)
+        .map(m => this.memberService.resetBounceStatus(m._id!));
+      forkJoin(resets).subscribe({
+          next: (updated) => {
+            this.members.update(list =>
+              list.map(m => {
+                const u = updated.find(u => u._id === m._id);
+                return u ? { ...m, ...u } : m;
+              })
+            );
+            this.filterMembers();
+            this.snackBar.open(`Reset ${updated.length} bounce status(es)`, 'Close', { duration: 3000 });
+          },
+          error: () => this.snackBar.open('Failed to reset some bounce statuses', 'Close', { duration: 3000 })
+        });
+    });
+  }
+
+  isBounced(member: Member): boolean {
+    return ['hard_bounce', 'suppressed', 'invalid'].includes(member.emailBounceStatus || '');
+  }
+
+  getBounceLabel(member: Member): string {
+    switch (member.emailBounceStatus) {
+      case 'hard_bounce': return 'Hard Bounce';
+      case 'soft_bounce': return 'Soft Bounce';
+      case 'suppressed': return 'Suppressed';
+      case 'invalid': return 'Invalid Email';
+      default: return '';
+    }
+  }
+
+  getBounceTooltip(member: Member): string {
+    const label = this.getBounceLabel(member);
+    const reason = member.emailLastBounceReason ? `: ${member.emailLastBounceReason}` : '';
+    const count = member.emailBounceCount ? ` (${member.emailBounceCount} bounce${member.emailBounceCount > 1 ? 's' : ''})` : '';
+    return `${label}${reason}${count}`;
   }
 }

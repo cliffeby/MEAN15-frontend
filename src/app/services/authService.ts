@@ -82,28 +82,17 @@ export class AuthService {
   }
   // ...existing code...
 
-  register(userData: any) {
-    return this.http.post<{ token: string }>(`${this.baseUrl}/register`, userData).pipe(
-      tap((res) => {
-        if (res && res.token) {
-          this._tokenSignal.set(res.token);
-        }
-      }),
+  register(userData: { name: string; email: string }) {
+    return this.http.post<{ success: boolean; message: string }>(`${this.baseUrl}/register`, userData).pipe(
       catchError((error) => {
         let errorMsg = 'An unknown error occurred. Please try again.';
-
         if (error.error?.message) {
-          errorMsg = error.error.message; // backend error message
+          errorMsg = error.error.message;
         } else if (error.status === 0) {
-          errorMsg =
-            'Unable to connect to the server. Please check your internet or backend service.';
-        } else if (error.status === 400) {
-          errorMsg = 'Invalid input. Please check your details and try again.';
+          errorMsg = 'Unable to connect to the server. Please check your internet or backend service.';
         } else if (error.status === 409) {
-          errorMsg = 'User already exists. Try logging in instead.';
+          errorMsg = 'An account with that email already exists.';
         }
-
-        console.error('Register error:', error); // For debugging
         return throwError(() => new Error(errorMsg));
       })
     );
@@ -179,6 +168,59 @@ export class AuthService {
 
   public getMsalService() {
     return this.msalService;
+  }
+
+  /**
+   * Calls POST /api/auth/provision to JIT-create a local User record on first login.
+   * Safe to call on every app load — the backend is idempotent (returns existing record
+   * if the user is already provisioned).
+   */
+  provision(): Observable<{ success: boolean; provisioned: boolean; user: any }> {
+    return this.http
+      .post<{ success: boolean; provisioned: boolean; user: any }>(`${this.baseUrl}/provision`, {})
+      .pipe(catchError(() => throwError(() => new Error('Provision failed'))));
+  }
+
+  /**
+   * Local email/password login (non-Entra).
+   * Returns a JWT and a mustChangePassword flag.
+   */
+  localLogin(email: string, password: string): Observable<{ success: boolean; token: string; mustChangePassword: boolean; user: any }> {
+    return this.http
+      .post<any>(`${this.baseUrl}/login`, { email, password })
+      .pipe(
+        tap((res) => {
+          if (res?.token) {
+            this._tokenSignal.set(res.token);
+            localStorage.setItem('authToken', res.token);
+          }
+        }),
+        catchError((err) => {
+          const msg = err.error?.message || 'Login failed. Check your email and password.';
+          return throwError(() => new Error(msg));
+        })
+      );
+  }
+
+  /**
+   * Changes the local password. Requires the current password for verification.
+   * On success the backend issues a fresh token with mustChangePassword=false.
+   */
+  changePassword(currentPassword: string, newPassword: string): Observable<{ success: boolean; token: string }> {
+    return this.http
+      .put<any>(`${this.baseUrl}/change-password`, { currentPassword, newPassword })
+      .pipe(
+        tap((res) => {
+          if (res?.token) {
+            this._tokenSignal.set(res.token);
+            localStorage.setItem('authToken', res.token);
+          }
+        }),
+        catchError((err) => {
+          const msg = err.error?.message || 'Password change failed.';
+          return throwError(() => new Error(msg));
+        })
+      );
   }
   /**
    * Returns the authenticated user's email address from the Entra/MSAL token.

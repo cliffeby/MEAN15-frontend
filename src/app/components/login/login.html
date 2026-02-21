@@ -1,30 +1,61 @@
 
 <div class="login-container">
   <h1>Welcome to Rochester</h1>
-  <p *ngIf="!isLoggedIn">Sign in with your Microsoft account to continue</p>
-  <p *ngIf="isLoggedIn">You are currently signed in</p>
-  
-  <div class="login-actions">
-    <button 
-      *ngIf="!isLoggedIn"
-      mat-raised-button 
-      color="primary" 
-      type="button"
-      (click)="loginWithMicrosoft()"
-      [disabled]="isLoading">
-      <span *ngIf="!isLoading">Sign in with Microsoft</span>
-      <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
-    </button>
-    
-    <button 
-      *ngIf="isLoggedIn"
-      mat-raised-button 
-      color="warn" 
-      type="button"
-      (click)="logoutWithMicrosoft()">
-      Sign out
-    </button>
-  </div>
-</div>
-  
+
+  @if (!isLoggedIn) {
+    <!-- Microsoft / Social login -->
+    <div class="login-actions">
+      <button
+        mat-raised-button
+        color="primary"
+        type="button"
+        (click)="loginWithMicrosoft()"
+        [disabled]="isLoading">
+        @if (!isLoading) { Sign in with Microsoft }
+        @else { <mat-spinner diameter="20"></mat-spinner> }
+      </button>
+    </div>
+
+    <mat-divider class="divider"></mat-divider>
+    <p class="divider-label">or sign in with a local account</p>
+
+    <!-- Local email / password login -->
+    <form [formGroup]="localLoginForm" (ngSubmit)="localLogin()" class="local-form">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email" type="email" autocomplete="email" />
+        <mat-error>Valid email required</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Password</mat-label>
+        <input matInput formControlName="password"
+               [type]="hidePassword ? 'password' : 'text'"
+               autocomplete="current-password" />
+        <button type="button" mat-icon-button matSuffix (click)="hidePassword = !hidePassword">
+          <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        <mat-error>Password required</mat-error>
+      </mat-form-field>
+
+      <button mat-raised-button color="accent" type="submit"
+              class="full-width" [disabled]="localLoginForm.invalid || isLocalLoading">
+        @if (!isLocalLoading) { Sign in }
+        @else { <mat-spinner diameter="20"></mat-spinner> }
+      </button>
+
+      <p class="register-link">
+        No account? <a routerLink="/register">Register here</a>
+      </p>
+    </form>
+  }
+
+  @if (isLoggedIn) {
+    <p>You are currently signed in.</p>
+    <div class="login-actions">
+      <button mat-raised-button color="warn" type="button" (click)="logoutWithMicrosoft()">
+        Sign out
+      </button>
+    </div>
+  }
   

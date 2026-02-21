@@ -2,6 +2,16 @@
   max-width: 600px;
   margin: 2rem auto;
 }
+
+.user-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+
+  h2 { margin: 0; }
+}
+
 .spacer {
   flex: 1 1 auto;
 }

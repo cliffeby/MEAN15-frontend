@@ -41,111 +41,213 @@
       <mat-card-subtitle>{{ membersWithEmail.length }} members available</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
-      <!-- Action Bar -->
-      <div class="action-bar">
-        <mat-form-field appearance="outline" class="search-field">
-          <mat-label>Search members</mat-label>
-          <input matInput [(ngModel)]="searchTerm" (ngModelChange)="filterMembers()" placeholder="Name or email">
-          <mat-icon matSuffix>search</mat-icon>
-        </mat-form-field>
+      <mat-tab-group dynamicHeight>
 
-        <div class="action-buttons">
-          <button mat-raised-button color="accent" (click)="emailAll()" [disabled]="!emailStatus()?.configured || membersWithEmail.length === 0">
-            <mat-icon>mail_outline</mat-icon>
-            Email All ({{ membersWithEmail.length }})
-          </button>
-          
-          @if (hasSelection) {
-            <button mat-raised-button color="primary" (click)="emailSelected()" [disabled]="!emailStatus()?.configured">
-              <mat-icon>email</mat-icon>
-              Email Selected ({{ selectedCount }})
-            </button>
-            <button mat-button (click)="clearSelection()">
-              <mat-icon>clear</mat-icon>
-              Clear Selection
-            </button>
-          }
-        </div>
-      </div>
+        <!-- ── Tab 1: All Members ── -->
+        <mat-tab label="All Members">
+          <!-- Action Bar -->
+          <div class="action-bar">
+            <mat-form-field appearance="outline" class="search-field">
+              <mat-label>Search members</mat-label>
+              <input matInput [(ngModel)]="searchTerm" (ngModelChange)="filterMembers()" placeholder="Name or email">
+              <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
 
-      <!-- Loading Spinner -->
-      @if (loading()) {
-        <div class="loading-container">
-          <mat-spinner diameter="50"></mat-spinner>
-          <p>Loading members...</p>
-        </div>
-      }
-
-      <!-- Members Table -->
-      @if (!loading() && filteredMembers().length > 0) {
-        <div class="table-container">
-          <table mat-table [dataSource]="filteredMembers()" class="members-table">
-            
-            <!-- Select Column -->
-            <ng-container matColumnDef="select">
-              <th mat-header-cell *matHeaderCellDef>
-                <mat-checkbox
-                  (change)="$event ? toggleAllRows() : null"
-                  [checked]="selection.hasValue() && isAllSelected()"
-                  [indeterminate]="selection.hasValue() && !isAllSelected()"
-                  color="primary">
-                </mat-checkbox>
-              </th>
-              <td mat-cell *matCellDef="let member">
-                <mat-checkbox
-                  (click)="$event.stopPropagation()"
-                  (change)="$event ? selection.toggle(member) : null"
-                  [checked]="selection.isSelected(member)"
-                  color="primary">
-                </mat-checkbox>
-              </td>
-            </ng-container>
-
-            <!-- Name Column -->
-            <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef>Name</th>
-              <td mat-cell *matCellDef="let member">
-                {{ getMemberName(member) }}
-              </td>
-            </ng-container>
-
-            <!-- Email Column -->
-            <ng-container matColumnDef="email">
-              <th mat-header-cell *matHeaderCellDef>Email</th>
-              <td mat-cell *matCellDef="let member">
-                <span class="email-address">{{ member.Email }}</span>
-              </td>
-            </ng-container>
-
-            <!-- Actions Column -->
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef>Actions</th>
-              <td mat-cell *matCellDef="let member">
-                <button mat-icon-button color="primary" 
-                        (click)="selection.select(member); emailSelected()"
-                        [disabled]="!emailStatus()?.configured"
-                        matTooltip="Send email to this member">
+            <div class="action-buttons">
+              <button mat-raised-button color="accent" (click)="emailAll()" [disabled]="!emailStatus()?.configured || membersWithEmail.length === 0">
+                <mat-icon>mail_outline</mat-icon>
+                Email All ({{ membersWithEmail.length }})
+              </button>
+              
+              @if (hasSelection) {
+                <button mat-raised-button color="primary" (click)="emailSelected()" [disabled]="!emailStatus()?.configured">
                   <mat-icon>email</mat-icon>
+                  Email Selected ({{ selectedCount }})
                 </button>
-              </td>
-            </ng-container>
+                <button mat-button (click)="clearSelection()">
+                  <mat-icon>clear</mat-icon>
+                  Clear Selection
+                </button>
+              }
+            </div>
+          </div>
 
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-          </table>
-        </div>
-      }
-
-      <!-- No Members Message -->
-      @if (!loading() && filteredMembers().length === 0) {
-        <div class="no-data">
-          <mat-icon>person_off</mat-icon>
-          <p>{{ searchTerm() ? 'No members match your search' : 'No members with email addresses found' }}</p>
-          @if (searchTerm()) {
-            <button mat-button (click)="searchTerm.set(''); filterMembers()">Clear Search</button>
+          <!-- Loading Spinner -->
+          @if (loading()) {
+            <div class="loading-container">
+              <mat-spinner diameter="50"></mat-spinner>
+              <p>Loading members...</p>
+            </div>
           }
-        </div>
-      }
+
+          <!-- Members Table -->
+          @if (!loading() && filteredMembers().length > 0) {
+            <div class="table-container">
+              <table mat-table [dataSource]="filteredMembers()" class="members-table">
+                
+                <!-- Select Column -->
+                <ng-container matColumnDef="select">
+                  <th mat-header-cell *matHeaderCellDef>
+                    <mat-checkbox
+                      (change)="$event ? toggleAllRows() : null"
+                      [checked]="selection.hasValue() && isAllSelected()"
+                      [indeterminate]="selection.hasValue() && !isAllSelected()"
+                      color="primary">
+                    </mat-checkbox>
+                  </th>
+                  <td mat-cell *matCellDef="let member">
+                    <mat-checkbox
+                      (click)="$event.stopPropagation()"
+                      (change)="$event ? selection.toggle(member) : null"
+                      [checked]="selection.isSelected(member)"
+                      [disabled]="isBounced(member)"
+                      [matTooltip]="isBounced(member) ? 'Cannot send: ' + getBounceLabel(member) : ''"
+                      color="primary">
+                    </mat-checkbox>
+                  </td>
+                </ng-container>
+
+                <!-- Name Column -->
+                <ng-container matColumnDef="name">
+                  <th mat-header-cell *matHeaderCellDef>Name</th>
+                  <td mat-cell *matCellDef="let member">{{ getMemberName(member) }}</td>
+                </ng-container>
+
+                <!-- Email Column -->
+                <ng-container matColumnDef="email">
+                  <th mat-header-cell *matHeaderCellDef>Email</th>
+                  <td mat-cell *matCellDef="let member">
+                    <span class="email-address" [class.bounced-email]="isBounced(member)">{{ member.Email }}</span>
+                    @if (member.emailBounceStatus && member.emailBounceStatus !== 'ok') {
+                      <mat-chip 
+                        [class]="'bounce-chip bounce-' + member.emailBounceStatus"
+                        [matTooltip]="getBounceTooltip(member)">
+                        <mat-icon>warning</mat-icon>
+                        {{ getBounceLabel(member) }}
+                      </mat-chip>
+                    }
+                  </td>
+                </ng-container>
+
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>Actions</th>
+                  <td mat-cell *matCellDef="let member">
+                    <button mat-icon-button color="primary" 
+                            (click)="selection.select(member); emailSelected()"
+                            [disabled]="!emailStatus()?.configured || isBounced(member)"
+                            [matTooltip]="isBounced(member) ? 'Cannot send: ' + getBounceLabel(member) : 'Send email to this member'">
+                      <mat-icon>email</mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              </table>
+            </div>
+          }
+
+          <!-- No Members Message -->
+          @if (!loading() && filteredMembers().length === 0) {
+            <div class="no-data">
+              <mat-icon>person_off</mat-icon>
+              <p>{{ searchTerm() ? 'No members match your search' : 'No members with email addresses found' }}</p>
+              @if (searchTerm()) {
+                <button mat-button (click)="searchTerm.set(''); filterMembers()">Clear Search</button>
+              }
+            </div>
+          }
+        </mat-tab>
+
+        <!-- ── Tab 2: Bounced Emails ── -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon class="bounce-tab-icon">warning</mat-icon>
+            Bounced Emails
+            @if (bouncedMembers.length > 0) {
+              <span class="bounce-badge">{{ bouncedMembers.length }}</span>
+            }
+          </ng-template>
+
+          <div class="bounce-tab-content">
+            @if (bouncedMembers.length === 0) {
+              <div class="no-data">
+                <mat-icon>check_circle</mat-icon>
+                <p>No bounced email addresses — all clear!</p>
+              </div>
+            } @else {
+              <div class="bounce-actions">
+                <p class="bounce-summary">
+                  <strong>{{ bouncedMembers.length }}</strong> member(s) have delivery issues and will be skipped when sending emails.
+                </p>
+                <button mat-stroked-button color="warn" (click)="resetAllBounces()">
+                  <mat-icon>refresh</mat-icon>
+                  Reset All
+                </button>
+              </div>
+
+              <div class="table-container">
+                <table mat-table [dataSource]="bouncedMembers" class="members-table">
+
+                  <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef>Name</th>
+                    <td mat-cell *matCellDef="let member">{{ getMemberName(member) }}</td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="email">
+                    <th mat-header-cell *matHeaderCellDef>Email</th>
+                    <td mat-cell *matCellDef="let member">
+                      <span class="email-address bounced-email">{{ member.Email }}</span>
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="bounceStatus">
+                    <th mat-header-cell *matHeaderCellDef>Status</th>
+                    <td mat-cell *matCellDef="let member">
+                      <mat-chip [class]="'bounce-chip bounce-' + member.emailBounceStatus">
+                        <mat-icon>warning</mat-icon>
+                        {{ getBounceLabel(member) }}
+                      </mat-chip>
+                      @if (member.emailBounceCount) {
+                        <span class="bounce-count">({{ member.emailBounceCount }}x)</span>
+                      }
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="reason">
+                    <th mat-header-cell *matHeaderCellDef>Reason</th>
+                    <td mat-cell *matCellDef="let member" class="reason-cell">
+                      {{ member.emailLastBounceReason || '—' }}
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="lastBounce">
+                    <th mat-header-cell *matHeaderCellDef>Last Bounced</th>
+                    <td mat-cell *matCellDef="let member">
+                      {{ member.emailLastBounceAt ? (member.emailLastBounceAt | date:'short') : '—' }}
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef>Actions</th>
+                    <td mat-cell *matCellDef="let member">
+                      <button mat-icon-button color="primary" (click)="resetBounce(member)"
+                              matTooltip="Reset bounce status (allow emails again)">
+                        <mat-icon>refresh</mat-icon>
+                      </button>
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="bouncedColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: bouncedColumns;"></tr>
+                </table>
+              </div>
+            }
+          </div>
+        </mat-tab>
+
+      </mat-tab-group>
     </mat-card-content>
   </mat-card>
 </div>

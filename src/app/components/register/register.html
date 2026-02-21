@@ -1,78 +1,43 @@
-<div *ngIf="currentAccount" class="registration-insight">
-  <mat-icon>person</mat-icon>
-  <span>Currently registering as: <b>{{ currentAccount.username }}</b></span>
-  <span *ngIf="currentAccount.name">({{ currentAccount.name }})</span>
-</div>
-<div class = "center">
-  <h1>Welcome to Rochester - Register</h1>
+<div class="register-container">
+  <h1>Create an Account</h1>
+
   <div class="universal-auth-options">
     <button mat-raised-button color="primary" class="ms-signup-btn" (click)="signUpWithMicrosoft()" [disabled]="msalInProgress">
       <mat-icon>account_circle</mat-icon> Sign up with Microsoft
     </button>
-    <button mat-raised-button color="accent" style="margin: 0 0.5em;" (click)="signUpWithGoogle()" [disabled]="msalInProgress">
-      <mat-icon svgIcon="google"></mat-icon> Sign up with Google
-    </button>
-    <!-- Add more social providers as needed -->
   </div>
-  <div class="local-account-warning">
-    <p>Or create a <b>RochesterSPA Local Account</b> below.</p> 
-    <p>Not Implemented.</p>
-  </div>
-</div>
 
-<div class="register-container">
-    <form [formGroup]="registerForm" (ngSubmit)="submit()">
-  
-      <!-- Name -->
-      <mat-form-field appearance="fill" class="full-width">
-        <mat-label>Name</mat-label>
-        <input matInput formControlName="name" placeholder="Enter your name" title="Name" />
-        <mat-error *ngIf="registerForm.get('name')?.hasError('required')">
-          Name is required
-        </mat-error>
-      </mat-form-field>
-  
-      <!-- Email -->
-      <mat-form-field appearance="fill" class="full-width">
-        <mat-label>Email</mat-label>
-        <input matInput formControlName="email" type="email" placeholder="Enter your email" title="Email" />
-        <mat-error *ngIf="registerForm.get('email')?.hasError('required')">
-          Email is required
-        </mat-error>
-        <mat-error *ngIf="registerForm.get('email')?.hasError('email')">
-          Invalid email
-        </mat-error>
-      </mat-form-field>
-  
-      <!-- Password -->
-      <mat-form-field appearance="fill" class="full-width">
-        <mat-label>Password</mat-label>
-        <input matInput formControlName="password" type="password" placeholder="Enter your password" title="Password" />
-        <mat-error *ngIf="registerForm.get('password')?.hasError('required')">
-          Password is required
-        </mat-error>
-        <mat-error *ngIf="registerForm.get('password')?.hasError('minlength')">
-          Minimum 6 characters
-        </mat-error>
-      </mat-form-field>
-  
-      <!-- Role Dropdown -->
-      <mat-form-field appearance="fill" class="full-width">
-        <mat-label>Role</mat-label>
-        <mat-select formControlName="role">
-          <mat-option value="user">User</mat-option>
-          <mat-option value="admin">Admin</mat-option>
-          <mat-option value="fieldhand">Fieldhand</mat-option>
-          <mat-option value="developer">Developer</mat-option>
-        </mat-select>
-        <mat-error *ngIf="registerForm.get('role')?.hasError('required')">
-          Role is required
-        </mat-error>
-      </mat-form-field>
-  
-      <!-- Submit Button -->
-      <button mat-raised-button color="primary" type="submit" [disabled]="registerForm.invalid">
-        Register
-      </button>
-    </form>
+  <mat-divider class="divider"></mat-divider>
+  <p class="divider-label">or create a local account</p>
+
+  <div class="temp-password-notice">
+    <mat-icon>info</mat-icon>
+    <span>
+      All new accounts are assigned the <strong>User</strong> role and a temporary password
+      provided by your administrator. You will be required to change it on first login.
+    </span>
   </div>
+
+  <form [formGroup]="registerForm" (ngSubmit)="submit()">
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Full Name</mat-label>
+      <input matInput formControlName="name" autocomplete="name" />
+      <mat-error *ngIf="registerForm.get('name')?.hasError('required')">Name is required</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Email</mat-label>
+      <input matInput formControlName="email" type="email" autocomplete="email" />
+      <mat-error *ngIf="registerForm.get('email')?.hasError('required')">Email is required</mat-error>
+      <mat-error *ngIf="registerForm.get('email')?.hasError('email')">Invalid email</mat-error>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" type="submit"
+            class="full-width" [disabled]="registerForm.invalid || submitting">
+      {{ submitting ? 'Creating account…' : 'Create Account' }}
+    </button>
+  </form>
+
+  <p class="login-link">Already have an account? <a routerLink="/">Sign in</a></p>
+</div>
