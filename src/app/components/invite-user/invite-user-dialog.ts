@@ -8,7 +8,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Clipboard, ClipboardModule } from '@angular/cdk/clipboard';
 import { UserService } from '../../services/userService';
 
 @Component({
@@ -24,7 +23,6 @@ import { UserService } from '../../services/userService';
     MatIconModule,
     MatSnackBarModule,
     MatTooltipModule,
-    ClipboardModule,
   ],
   template: `
     <h2 mat-dialog-title>Invite User</h2>
@@ -34,23 +32,15 @@ import { UserService } from '../../services/userService';
       @if (redeemUrl) {
         <p class="success-msg">
           <mat-icon class="success-icon">check_circle</mat-icon>
-          Invitation sent to <strong>{{ sentEmail }}</strong>.
+          Account created and welcome email sent to <strong>{{ sentEmail }}</strong>.
         </p>
-        <p class="hint">The invitation email may land in spam. Share this direct link as a backup:</p>
-        <div class="url-box">
-          <span class="url-text">{{ redeemUrl }}</span>
-          <button mat-icon-button [cdkCopyToClipboard]="redeemUrl"
-                  matTooltip="Copy link" (cdkCopyToClipboardCopied)="onCopied($event)">
-            <mat-icon>{{ copied ? 'check' : 'content_copy' }}</mat-icon>
-          </button>
-        </div>
       }
 
       <!-- Form state -->
       @if (!redeemUrl) {
         <p class="hint">
-          An invitation email will be sent via Microsoft Entra. The recipient clicks the link to
-          accept and can then sign in with their existing email provider (Gmail, AOL, Yahoo, etc.).
+          A local account will be created with a temporary password and a welcome email will be
+          sent to the address below. The user must change their password on first login.
         </p>
         <form [formGroup]="form" (ngSubmit)="submit()" id="inviteForm">
           <mat-form-field appearance="outline" class="full-width">
@@ -108,7 +98,6 @@ export class InviteUserDialogComponent {
   private userService = inject(UserService);
   private snackBar = inject(MatSnackBar);
   private dialogRef = inject(MatDialogRef<InviteUserDialogComponent>);
-  private clipboard = inject(Clipboard);
 
   sending = false;
   redeemUrl: string | null = null;
@@ -143,10 +132,8 @@ export class InviteUserDialogComponent {
     });
   }
 
-  onCopied(success: boolean): void {
-    if (success) {
-      this.copied = true;
-      setTimeout(() => (this.copied = false), 2000);
-    }
+  onCopied(_success: boolean): void {
+    this.copied = true;
+    setTimeout(() => (this.copied = false), 2000);
   }
 }

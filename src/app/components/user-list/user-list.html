@@ -7,14 +7,46 @@
     </button>
   </div>
 
-  <mat-list *ngIf="users.length">
-    <mat-list-item *ngFor="let user of users">
-      <div mat-line>{{ user.name }} ({{ user.email }})</div>
-      <div mat-line>{{ user.role }}</div>
-      <span class="spacer"></span>
-      <button *ngIf="isAdmin" mat-button color="warn" matListItemMeta (click)="deleteUser(user._id)">Delete</button>
-    </mat-list-item>
-  </mat-list>
+  <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+
+  <table mat-table [dataSource]="users" class="user-table" *ngIf="users.length">
+
+    <!-- Name column -->
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Name</th>
+      <td mat-cell *matCellDef="let user">{{ user.name }}</td>
+    </ng-container>
+
+    <!-- Email column -->
+    <ng-container matColumnDef="email">
+      <th mat-header-cell *matHeaderCellDef>Email</th>
+      <td mat-cell *matCellDef="let user">{{ user.email }}</td>
+    </ng-container>
+
+    <!-- Role column -->
+    <ng-container matColumnDef="role">
+      <th mat-header-cell *matHeaderCellDef>Role</th>
+      <td mat-cell *matCellDef="let user">
+        <mat-form-field *ngIf="canChangeRole" appearance="outline" class="role-select">
+          <mat-select [value]="user.role" (selectionChange)="updateRole(user, $event.value)">
+            <mat-option *ngFor="let r of roles" [value]="r">{{ r }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <span *ngIf="!canChangeRole">{{ user.role }}</span>
+      </td>
+    </ng-container>
+
+    <!-- Actions column -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let user">
+        <button *ngIf="isAdmin" mat-button color="warn" (click)="deleteUser(user._id)">Delete</button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+
   <div *ngIf="!users.length && !loading">No users found.</div>
 </div>
-<mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
