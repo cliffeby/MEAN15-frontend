@@ -38,17 +38,6 @@
         </button>
       </mat-toolbar>
   
-      <!-- Pending approval banner — shown when user is authenticated but has no roles yet -->
-      @if (pendingApproval()) {
-        <div class="pending-approval-banner">
-          <mat-icon>hourglass_top</mat-icon>
-          <span>
-            Your account is pending administrator approval. You have signed in successfully, but
-            access requires a role assignment. Please contact your administrator.
-          </span>
-        </div>
-      }
-
       <!-- Routed components render here -->
       <div class="main-content">
         <router-outlet></router-outlet>

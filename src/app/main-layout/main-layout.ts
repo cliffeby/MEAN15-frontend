@@ -1,5 +1,5 @@
 // src/app/layouts/main-layout/main-layout.component.ts
-import { Component, inject, signal, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -12,7 +12,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatBadgeModule } from '@angular/material/badge';
 import { AuthService } from '../services/authService';
 import { MatSidenav } from '@angular/material/sidenav';
-import { MsalService } from '@azure/msal-angular';
 
 @Component({
   selector: 'app-main-layout',
@@ -36,37 +35,12 @@ import { MsalService } from '@azure/msal-angular';
 export class MainLayoutComponent implements OnInit {
   auth = inject(AuthService);
   router = inject(Router);
-  private msalService = inject(MsalService);
 
   @ViewChild('drawer') drawer!: MatSidenav;
 
   isSidebarCollapsed = false;
-  someCondition = true;
 
-  /** True when the user is authenticated but has no App Roles assigned yet. */
-  readonly pendingApproval = signal(false);
-
-  ngOnInit(): void {
-    // JIT provisioning — fires once per browser session to create/verify the local
-    // User record. Guarded by sessionStorage so it only runs once per tab session.
-    if (!sessionStorage.getItem('provisioned') && this.auth.isLoggedIn()) {
-      this.auth.provision().subscribe({
-        next: () => {
-          sessionStorage.setItem('provisioned', '1');
-          // Surface a banner if the user has no assigned roles yet
-          const roles = this.auth.getRoles();
-          this.pendingApproval.set(!roles || roles.length === 0);
-        },
-        error: (err) => {
-          console.warn('Provision call failed (non-fatal):', err);
-        },
-      });
-    } else {
-      // Already provisioned this session — just check role state
-      const roles = this.auth.getRoles();
-      this.pendingApproval.set(!!this.auth.isLoggedIn() && (!roles || roles.length === 0));
-    }
-  }
+  ngOnInit(): void {}
 
   get sidebarLinks() {
     const links = [
@@ -96,10 +70,8 @@ export class MainLayoutComponent implements OnInit {
   }
 
   logout() {
-    sessionStorage.removeItem('provisioned');
-    this.msalService.logoutRedirect({
-      postLogoutRedirectUri: 'https://brave-tree-00ac3970f.1.azurestaticapps.net//login'
-    });
+    this.auth.logout();
+    this.router.navigate(['/']);
   }
 
   toggleSidebar() {

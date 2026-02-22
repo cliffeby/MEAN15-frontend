@@ -2,24 +2,7 @@
 <div class="login-container">
   <h1>Welcome to Rochester</h1>
 
-  @if (!isLoggedIn) {
-    <!-- Microsoft / Social login -->
-    <div class="login-actions">
-      <button
-        mat-raised-button
-        color="primary"
-        type="button"
-        (click)="loginWithMicrosoft()"
-        [disabled]="isLoading">
-        @if (!isLoading) { Sign in with Microsoft }
-        @else { <mat-spinner diameter="20"></mat-spinner> }
-      </button>
-    </div>
-
-    <mat-divider class="divider"></mat-divider>
-    <p class="divider-label">or sign in with a local account</p>
-
-    <!-- Local email / password login -->
+  <!-- Local email / password login -->
     <form [formGroup]="localLoginForm" (ngSubmit)="localLogin()" class="local-form">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Email</mat-label>
@@ -48,14 +31,6 @@
         No account? <a routerLink="/register">Register here</a>
       </p>
     </form>
-  }
+</div>
 
-  @if (isLoggedIn) {
-    <p>You are currently signed in.</p>
-    <div class="login-actions">
-      <button mat-raised-button color="warn" type="button" (click)="logoutWithMicrosoft()">
-        Sign out
-      </button>
-    </div>
-  }
   

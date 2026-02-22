@@ -1,282 +1,120 @@
-import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import jwt_decode from 'jwt-decode';
 import { environment } from '../../environments/environment';
-import { MsalService } from '@azure/msal-angular';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
-  private _tokenSignal = signal<string | null>(null);
-
-  /**
-   * Returns the current access token from MSAL if available, otherwise from localStorage.
-   */
-  public token(): string | null {
-    // Try to get access token from MSAL
-    const accounts = this.msalService.instance.getAllAccounts();
-    if (accounts.length > 0) {
-      // Try to get access token silently
-      // NOTE: This is async, but for header use, we need a sync value. So, use idToken as fallback.
-      const idToken = accounts[0].idToken;
-      if (idToken) {
-        return idToken;
-      }
-    }
-    // Fallback to signal/localStorage
-    return this._tokenSignal();
-  }
   private baseUrl = `${environment.apiUrl}/auth`;
-  private msalService = inject(MsalService);
 
-  constructor(private http: HttpClient) {
-    const savedToken = localStorage.getItem('authToken');
-    if (savedToken) {
-      this._tokenSignal.set(savedToken);
-    }
-  }
-  // Role hierarchy: admin > editor > user
   private readonly ROLE_LEVELS: Record<string, number> = {
-    user: 1,
-    fieldhand: 2,
-    admin: 3,
-    developer: 4,
+    user: 1, fieldhand: 2, admin: 3, developer: 4,
   };
+
+  constructor(private http: HttpClient) {}
+
+  // ---- Token helpers ----
+
+  token(): string | null {
+    return localStorage.getItem('authToken');
+  }
+
+  isLoggedIn(): boolean {
+    const t = this.token();
+    if (!t) return false;
+    try {
+      const p = JSON.parse(atob(t.split('.')[1]));
+      return !p.exp || p.exp * 1000 > Date.now();
+    } catch { return false; }
+  }
+
+  payload(): any {
+    const t = this.token();
+    if (!t) return null;
+    try { return JSON.parse(atob(t.split('.')[1])); } catch { return null; }
+  }
+
+  // ---- Role helpers ----
+
+  getRoles(): string[] {
+    const p = this.payload();
+    if (!p) return [];
+    if (p.role) return [p.role];
+    if (Array.isArray(p.roles)) return p.roles;
+    return [];
+  }
 
   private getRoleLevel(role: string): number {
     return this.ROLE_LEVELS[role] || 0;
   }
 
-  /**
-   * Returns the highest role of the current user based on hierarchy.
-   */
   getHighestRole(): string | null {
     const roles = this.getRoles();
-    if (!roles || roles.length === 0) return null;
-    return roles.reduce((highest: string, role: string) => {
-      return this.getRoleLevel(role) > this.getRoleLevel(highest) ? role : highest;
-    }, roles[0]);
+    if (!roles.length) return null;
+    return roles.reduce((h, r) => this.getRoleLevel(r) > this.getRoleLevel(h) ? r : h, roles[0]);
   }
 
-  /**
-   * Checks if the current user has at least the given minimum role (hierarchy-aware).
-   * @param minRole The minimum role required (e.g., 'editor', 'admin')
-   */
   hasMinRole(minRole: string): boolean {
-    const roles = this.getRoles();
-    if (!roles || roles.length === 0) return false;
-    const minLevel = this.getRoleLevel(minRole);
-    return roles.some((role: string) => this.getRoleLevel(role) >= minLevel);
+    return this.getRoles().some(r => this.getRoleLevel(r) >= this.getRoleLevel(minRole));
   }
 
-  /**
-   * Checks if the current user has a specific role (no hierarchy).
-   * @param role The role to check for (e.g., 'admin')
-   */
   hasRole(role: string): boolean {
-    const roles = this.getRoles();
-    return roles.includes(role);
+    return this.getRoles().includes(role);
   }
-  // ...existing code...
 
-  register(userData: { name: string; email: string }) {
-    return this.http.post<{ success: boolean; message: string }>(`${this.baseUrl}/register`, userData).pipe(
-      catchError((error) => {
-        let errorMsg = 'An unknown error occurred. Please try again.';
-        if (error.error?.message) {
-          errorMsg = error.error.message;
-        } else if (error.status === 0) {
-          errorMsg = 'Unable to connect to the server. Please check your internet or backend service.';
-        } else if (error.status === 409) {
-          errorMsg = 'An account with that email already exists.';
-        }
-        return throwError(() => new Error(errorMsg));
+  /** No-op – roles are always read fresh from the JWT payload */
+  updateRoles(): void {}
+
+  getAuthorEmail(): string | null {
+    const p = this.payload();
+    return p?.email || null;
+  }
+
+  getAuthorName(): string | null {
+    const p = this.payload();
+    return p?.name || p?.email || null;
+  }
+
+  getAuthorObject(): { id: string; email: string; name: string } {
+    const p = this.payload();
+    return {
+      id: p?.id || '',
+      email: p?.email || '',
+      name: p?.name || p?.email || '',
+    };
+  }
+
+  // ---- Auth API calls ----
+
+  register(userData: { name: string; email: string }): Observable<{ success: boolean; message: string }> {
+    return this.http.post<any>(`${this.baseUrl}/register`, userData).pipe(
+      catchError((err) => {
+        const msg = err.error?.message || (err.status === 409 ? 'Email already exists.' : 'Registration failed.');
+        return throwError(() => new Error(msg));
       })
     );
   }
 
-  logout() {
-    this._tokenSignal.set(null);
-    localStorage.removeItem('authToken');
-    try {
-      // Ensure MSAL session is cleared as well
-      if (this.msalService && this.msalService.instance.getAllAccounts().length > 0) {
-        // Use logoutRedirect to clear session and return to app's root
-        this.msalService.logoutRedirect();
-      }
-    } catch (e) {
-      console.warn('MSAL logout failed (ignored):', e);
-    }
-  }
-
-  isLoggedIn() {
-    return !!this.token();
-  }
-
-  // Decode JWT payload
-  payload(): any {
-    if (!this.token()) return null;
-    try {
-      return jwt_decode(this.token()!);
-    } catch {
-      return null;
-    }
-  }
-
-  // get user(): any {
-  //   const payload = this.payload();
-  //   if (!payload) return null;
-  //   // If defaultLeague is present in JWT, expose it
-  //   return {
-  //     ...payload,
-  //     defaultLeague: payload.defaultLeague || undefined,
-  //   };
-  // }
-
-  get role(): string | null {
-    const accounts = this.msalService.instance.getAllAccounts();
-    if (accounts.length === 0) return null;
-
-    const idTokenClaims = accounts[0].idTokenClaims as any;
-    const roles = idTokenClaims?.roles || idTokenClaims?.extension_Roles || [];
-
-    // Return first role if available
-    return roles.length > 0 ? roles[0] : null;
-  }
-
-  roles = signal<string[]>([]);
-
-  /** Role returned by the /provision endpoint — used as fallback when no Entra app role is assigned yet. */
-  readonly provisionedRole = signal<string | null>(null);
-
-  getRoles(): string[] {
-    const accounts = this.msalService.instance.getAllAccounts();
-
-    // Local (non-Entra) login path
-    if (accounts.length === 0) {
-      const dbRole = this.provisionedRole();
-      return dbRole ? [dbRole] : [];
-    }
-
-    const idTokenClaims = accounts[0].idTokenClaims as any;
-    const entraRoles: string[] = idTokenClaims?.roles || idTokenClaims?.extension_Roles || [];
-
-    // Entra guest users have no app roles assigned until an admin grants one.
-    // Fall back to the DB role stored when provision() succeeded.
-    if (entraRoles.length === 0) {
-      const dbRole = this.provisionedRole();
-      return dbRole ? [dbRole] : [];
-    }
-
-    return entraRoles;
-  }
-
-  updateRoles(): void {
-    this.getRoles();
-  }
-
-  public getMsalService() {
-    return this.msalService;
-  }
-
-  /**
-   * Calls POST /api/auth/provision to JIT-create a local User record on first login.
-   * Safe to call on every app load — the backend is idempotent (returns existing record
-   * if the user is already provisioned).
-   */
-  provision(): Observable<{ success: boolean; provisioned: boolean; user: any }> {
-    return this.http
-      .post<{ success: boolean; provisioned: boolean; user: any }>(`${this.baseUrl}/provision`, {})
-      .pipe(
-        tap((res) => {
-          // Cache the DB role so getRoles() can use it as a fallback when
-          // the user has no Entra app role claim (e.g. newly invited guest).
-          if (res?.user?.role) {
-            this.provisionedRole.set(res.user.role);
-          }
-        }),
-        catchError(() => throwError(() => new Error('Provision failed')))
-      );
-  }
-
-  /**
-   * Local email/password login (non-Entra).
-   * Returns a JWT and a mustChangePassword flag.
-   */
   localLogin(email: string, password: string): Observable<{ success: boolean; token: string; mustChangePassword: boolean; user: any }> {
-    return this.http
-      .post<any>(`${this.baseUrl}/login`, { email, password })
-      .pipe(
-        tap((res) => {
-          if (res?.token) {
-            this._tokenSignal.set(res.token);
-            localStorage.setItem('authToken', res.token);
-          }
-        }),
-        catchError((err) => {
-          const msg = err.error?.message || 'Login failed. Check your email and password.';
-          return throwError(() => new Error(msg));
-        })
-      );
+    return this.http.post<any>(`${this.baseUrl}/login`, { email, password }).pipe(
+      tap((res) => {
+        if (res?.token) localStorage.setItem('authToken', res.token);
+      }),
+      catchError((err) => throwError(() => new Error(err.error?.message || 'Login failed.')))
+    );
   }
 
-  /**
-   * Changes the local password. Requires the current password for verification.
-   * On success the backend issues a fresh token with mustChangePassword=false.
-   */
   changePassword(currentPassword: string, newPassword: string): Observable<{ success: boolean; token: string }> {
-    return this.http
-      .put<any>(`${this.baseUrl}/change-password`, { currentPassword, newPassword })
-      .pipe(
-        tap((res) => {
-          if (res?.token) {
-            this._tokenSignal.set(res.token);
-            localStorage.setItem('authToken', res.token);
-          }
-        }),
-        catchError((err) => {
-          const msg = err.error?.message || 'Password change failed.';
-          return throwError(() => new Error(msg));
-        })
-      );
-  }
-  /**
-   * Returns the authenticated user's email address from the Entra/MSAL token.
-   */
-  getAuthorEmail(): string | null {
-    const accounts = this.msalService.instance.getAllAccounts();
-    if (accounts.length === 0) return null;
-    const idTokenClaims = accounts[0].idTokenClaims as any;
-    return idTokenClaims?.email || idTokenClaims?.preferred_username || null;
+    return this.http.put<any>(`${this.baseUrl}/change-password`, { currentPassword, newPassword }).pipe(
+      tap((res) => {
+        if (res?.token) localStorage.setItem('authToken', res.token);
+      }),
+      catchError((err) => throwError(() => new Error(err.error?.message || 'Password change failed.')))
+    );
   }
 
-  /**
-   * Returns the authenticated user's display name from the Entra/MSAL token.
-   */
-  getAuthorName(): string | null {
-    const accounts = this.msalService.instance.getAllAccounts();
-    if (accounts.length === 0) return null;
-    const idTokenClaims = accounts[0].idTokenClaims as any;
-    // Prefer display name, fallback to preferred_username, then email
-    return idTokenClaims?.name || idTokenClaims?.preferred_username || idTokenClaims?.email || null;
-  }
-
-  /**
-   * Returns the complete author object for the authenticated user from Entra/MSAL token.
-   * This should be used when creating or updating records that require author information.
-   */
-  getAuthorObject(): { id: string; email: string; name: string } {
-    const email = this.getAuthorEmail() || '';
-    const name = this.getAuthorName() || '';
-    const id = this.getHighestRole() || email; // Fallback to email if no explicit id
-
-    return {
-      id,
-      email,
-      name,
-    };
+  logout(): void {
+    localStorage.removeItem('authToken');
   }
 }
