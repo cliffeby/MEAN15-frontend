@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { MainLayoutComponent } from './main-layout';
 import { AuthService } from '../services/authService';
-import { MsalService } from '@azure/msal-angular';
 import { of } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { Router } from '@angular/router';
@@ -37,25 +36,16 @@ describe('MainLayout', () => {
       navigateByUrl: () => Promise.resolve(true)
     };
 
-    const mockMsalService = {
-      logoutRedirect: jasmine.createSpy('logoutRedirect'),
-      instance: {
-        getAllAccounts: () => [],
-        handleRedirectPromise: jasmine.createSpy('handleRedirectPromise').and.returnValue(Promise.resolve(null))
-      }
-    };
-
     await TestBed.configureTestingModule({
       imports: [
         MainLayoutComponent       
       ],
       providers: [
-        {provide: Router, useValue: mockRouter }, // Override the Router provider here
+        {provide: Router, useValue: mockRouter },
         { provide: AuthService, useValue: mockAuth },
         { provide: ActivatedRoute, useValue: robustActivatedRoute },
         { provide: 'MatIconRegistry', useValue: {} },
         { provide: 'Overlay', useValue: {} },
-        { provide: MsalService, useValue: mockMsalService }
       ]
     }).compileComponents();
 

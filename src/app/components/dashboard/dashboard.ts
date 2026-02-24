@@ -10,7 +10,6 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 
 import { AuthService } from '../../services/authService';
-import { MsalModule } from '@azure/msal-angular';
 import { Member } from '../../models/member';
 import { Score } from '../../models/score';
 import { Match } from '../../models/match';
@@ -29,7 +28,6 @@ import { ScoreWithMember, FrequentPlayer } from './dashboard.types';
     MatCardModule, 
     MatSnackBarModule,
     MatIconModule,
-    MsalModule
   ],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.scss']

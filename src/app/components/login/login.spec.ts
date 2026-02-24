@@ -1,12 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of, Subject } from 'rxjs';
+import { of } from 'rxjs';
 import { Router } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from '../../services/authService';
 
 import { Login } from './login';
-import { MsalService, MsalBroadcastService } from '@azure/msal-angular';
-import { InteractionStatus } from '@azure/msal-browser';
 import { ActivatedRoute } from '@angular/router';
 import { RouterLink } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -15,22 +13,9 @@ describe('Login', () => {
   let component: Login;
   let fixture: ComponentFixture<Login>;
 
-  let mockAuthService: any; // Moved to higher scope
+  let mockAuthService: any;
 
   beforeEach(async () => {
-    const mockMsalService = {
-      instance: {
-        getAllAccounts: () => [],
-        loginRedirect: jasmine.createSpy('loginRedirect'),
-        handleRedirectPromise: jasmine.createSpy('handleRedirectPromise').and.returnValue(Promise.resolve(null))
-      } as any
-    } as any;
-
-    const mockMsalBroadcastService = {
-      msalSubject$: new Subject(),
-      inProgress$: of(InteractionStatus.None)
-    } as Partial<MsalBroadcastService> as MsalBroadcastService;
-
     const mockRouter = {
       navigate: jasmine.createSpy('navigate'),
       createUrlTree: jasmine.createSpy('createUrlTree').and.returnValue({}),
@@ -48,19 +33,16 @@ describe('Login', () => {
     };
 
     mockAuthService = {
-      localLogin: jasmine.createSpy('localLogin').and.returnValue(of({ mustChangePassword: false })) // Mock localLogin
+      localLogin: jasmine.createSpy('localLogin').and.returnValue(of({ mustChangePassword: false }))
     };
 
     await TestBed.configureTestingModule({
       imports: [Login, HttpClientModule, RouterTestingModule],
       providers: [
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
-        { provide: MsalService, useValue: mockMsalService },
-        { provide: MsalBroadcastService, useValue: mockMsalBroadcastService },
         { provide: Router, useValue: mockRouter },
-        { provide: RouterLink, useValue: mockRouterLink }, // Mock RouterLink
+        { provide: RouterLink, useValue: mockRouterLink },
         { provide: AuthService, useValue: mockAuthService }
-      
       ]
     })
     .compileComponents();

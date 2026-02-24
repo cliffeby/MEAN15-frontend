@@ -1,6 +1,7 @@
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { AuthService } from './authService';
+import { UserService } from './userService';
 
 export interface ColumnPreference {
   key: string;
@@ -24,7 +25,12 @@ export class UserPreferencesService {
     { key: 'lastDatePlayed', visible: true }
   ];
 
-  constructor(private authService: AuthService) {}
+  private readonly userService = inject(UserService);
+
+  constructor(private authService: AuthService) {
+    // Hydrate localStorage from backend on startup (non-blocking)
+    this.loadFromBackend();
+  }
 
   /**
    * Save custom column preferences for a given key (e.g. hcapListColumns)
@@ -99,14 +105,37 @@ export class UserPreferencesService {
   }
 
   /**
-   * Save user preferences to localStorage
+   * Save user preferences to localStorage and persist to backend
    */
   private saveUserPreferences(preferences: UserPreferences): void {
     try {
       localStorage.setItem(this.getUserStorageKey(), JSON.stringify(preferences));
     } catch (error) {
-      console.error('Error saving user preferences:', error);
+      console.error('Error saving user preferences to localStorage:', error);
     }
+    // Persist to backend (fire-and-forget)
+    try {
+      this.userService.saveMyPreferences({ columns: preferences }).subscribe({
+        error: (err) => console.warn('Failed to persist preferences to backend:', err)
+      });
+    } catch { /* not logged in */ }
+  }
+
+  /**
+   * Load preferences from the backend and hydrate localStorage cache.
+   * Call this once after login.
+   */
+  loadFromBackend(): void {
+    try {
+      this.userService.getMyPreferences().subscribe({
+        next: (res) => {
+          if (res?.preferences?.columns) {
+            localStorage.setItem(this.getUserStorageKey(), JSON.stringify(res.preferences.columns));
+          }
+        },
+        error: () => { /* silently fall back to localStorage cache */ }
+      });
+    } catch { /* not logged in yet */ }
   }
 
   /**

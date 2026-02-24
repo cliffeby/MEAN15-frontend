@@ -8,7 +8,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { MemberService } from '../../services/memberService';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MsalService } from '@azure/msal-angular';
 import { ScorecardService } from '../../services/scorecardService';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -37,8 +36,6 @@ const mockMember = {
 const memberServiceSpy = jasmine.createSpyObj('MemberService', ['getById', 'update']);
 memberServiceSpy.getById.and.returnValue(of(mockMember));
 memberServiceSpy.update.and.returnValue(of({}));
-const msalServiceSpy = jasmine.createSpyObj('MsalService', ['getAccount', 'getAllAccounts']);
-msalServiceSpy.getAllAccounts.and.returnValue([]);
 const scorecardServiceSpy = jasmine.createSpyObj('ScorecardService', ['getAll', 'getById', 'update']);
 scorecardServiceSpy.getAll.and.returnValue(of([{ _id: 'sc1', courseTeeName: 'Course 1' }]));
 scorecardServiceSpy.update.and.returnValue(of({}));
@@ -73,7 +70,6 @@ describe('MemberEditComponent', () => {
         { provide: Router, useValue: routerSpy },
         { provide: ActivatedRoute, useValue: activatedRouteStub },
         { provide: MemberService, useValue: memberServiceSpy },
-        { provide: MsalService, useValue: msalServiceSpy },
         { provide: ScorecardService, useValue: scorecardServiceSpy },
         { provide: AuthService, useValue: authServiceSpy },
         FormBuilder

@@ -24,6 +24,8 @@ import { MatInputModule } from '@angular/material/input';
   styleUrls: ['./audit-report.component.scss'],
 })
 export class AuditReportComponent implements OnInit {
+  private static readonly PAGE_SIZE_KEY = 'audit_pageSize';
+
   displayedColumns: string[] = ['date', 'method', 'route', 'name', 'author'];
   dataSource = new MatTableDataSource<any>([]);
   filterValue = '';
@@ -31,10 +33,9 @@ export class AuditReportComponent implements OnInit {
   error = '';
   total = 0;
   page = 1;
-  pageSize = 10;
+  pageSize = parseInt(localStorage.getItem(AuditReportComponent.PAGE_SIZE_KEY) || '25', 10);
 
   private _sort!: MatSort;
-  private _paginator!: any;
 
   @ViewChild(MatSort)
   set sort(sort: MatSort) {
@@ -49,9 +50,8 @@ export class AuditReportComponent implements OnInit {
   }
 
   @ViewChild('paginator')
-  set paginator(paginator: any) {
-    this._paginator = paginator;
-    this.dataSource.paginator = paginator;
+  set paginator(_paginator: any) {
+    // Do not assign to dataSource.paginator — server-side pagination is handled by onPageChange
   }
 
   constructor(private auditService: AuditService) {}
@@ -105,6 +105,7 @@ export class AuditReportComponent implements OnInit {
   onPageChange(event: PageEvent) {
     this.page = event.pageIndex + 1;
     this.pageSize = event.pageSize;
+    localStorage.setItem(AuditReportComponent.PAGE_SIZE_KEY, String(this.pageSize));
     this.fetchLogs();
   }
 

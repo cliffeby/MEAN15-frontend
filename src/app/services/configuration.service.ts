@@ -1,13 +1,15 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { AppConfig, ConfigField, ConfigSection } from '../models/app-config.interface';
+import { UserService } from './userService';
 import { S } from '@angular/cdk/scrolling-module.d-3Rw5UxLk';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ConfigurationService {
-  private readonly CONFIG_STORAGE_KEY = 'mean15_app_config';
+  private readonly userService = inject(UserService);
+  private readonly CONFIG_LS_PREFIX = 'rgs_cfg_';
   
   // Default configuration
   private readonly defaultConfig: AppConfig = {
@@ -56,6 +58,20 @@ export class ConfigurationService {
   // Reactive configuration state
   private configSubject = new BehaviorSubject<AppConfig>(this.loadConfig());
   public config$ = this.configSubject.asObservable();
+
+  // ---- helpers ----
+  private getUserId(): string {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) return 'anonymous';
+      const p = JSON.parse(atob(token.split('.')[1]));
+      return p?.oid || p?.sub || p?.id || 'anonymous';
+    } catch { return 'anonymous'; }
+  }
+
+  private get lsKey(): string {
+    return `${this.CONFIG_LS_PREFIX}${this.getUserId()}`;
+  }
   
   // Signals for reactive access
   private _configSignal = signal<AppConfig>(this.configSubject.value);
@@ -328,11 +344,30 @@ export class ConfigurationService {
   constructor() {
     // Initialize signal with current config
     this.configSignal.set(this.configSubject.value);
-    
+
     // Subscribe to config changes and update signal
     this.config$.subscribe(config => {
       this.configSignal.set(config);
     });
+
+    // Hydrate from backend (non-blocking – updates signal/subject when response arrives)
+    this.loadFromBackend();
+  }
+
+  /** Load preferences from the backend and merge into the current config */
+  loadFromBackend(): void {
+    try {
+      this.userService.getMyPreferences().subscribe({
+        next: (res) => {
+          if (res?.preferences?.appConfig) {
+            const merged = this.mergeConfig(this.defaultConfig, res.preferences.appConfig);
+            localStorage.setItem(this.lsKey, JSON.stringify(merged));
+            this.configSubject.next(merged);
+          }
+        },
+        error: () => { /* silently fall back to localStorage cache */ }
+      });
+    } catch { /* not logged in yet */ }
   }
 
   /**
@@ -408,11 +443,11 @@ export class ConfigurationService {
   }
 
   /**
-   * Load configuration from localStorage
+   * Load configuration from localStorage (user-scoped)
    */
   private loadConfig(): AppConfig {
     try {
-      const saved = localStorage.getItem(this.CONFIG_STORAGE_KEY);
+      const saved = localStorage.getItem(this.lsKey);
       if (saved) {
         const parsedConfig = JSON.parse(saved);
         return this.mergeConfig(this.defaultConfig, parsedConfig);
@@ -424,14 +459,20 @@ export class ConfigurationService {
   }
 
   /**
-   * Save configuration to localStorage
+   * Save configuration to user-scoped localStorage and persist to backend
    */
   private saveConfig(config: AppConfig): void {
     try {
-      localStorage.setItem(this.CONFIG_STORAGE_KEY, JSON.stringify(config));
+      localStorage.setItem(this.lsKey, JSON.stringify(config));
     } catch (error) {
-      console.error('Error saving configuration:', error);
+      console.error('Error saving configuration to localStorage:', error);
     }
+    // Persist to backend (fire-and-forget)
+    try {
+      this.userService.saveMyPreferences({ appConfig: config }).subscribe({
+        error: (err) => console.warn('Failed to persist config to backend:', err)
+      });
+    } catch { /* not logged in */ }
   }
 
   /**

@@ -38,4 +38,14 @@ export class UserService {
   inviteUser(email: string, displayName?: string): Observable<{ success: boolean; message: string; inviteRedeemUrl?: string }> {
     return this.http.post<any>(`${this.baseUrl}/invite`, { email, displayName }, this.getHeaders());
   }
+
+  /** Load the current user's preferences from the DB */
+  getMyPreferences(): Observable<{ success: boolean; preferences: any }> {
+    return this.http.get<any>(`${this.baseUrl}/preferences/me`, this.getHeaders());
+  }
+
+  /** Persist the current user's preferences to the DB */
+  saveMyPreferences(preferences: any): Observable<{ success: boolean; preferences: any }> {
+    return this.http.put<any>(`${this.baseUrl}/preferences/me`, preferences, this.getHeaders());
+  }
 }

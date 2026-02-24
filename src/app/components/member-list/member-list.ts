@@ -52,7 +52,16 @@ import { Subscription } from 'rxjs';
   ],
 })
 export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatPaginator)
+  set paginator(p: MatPaginator) {
+    if (!p) return;
+    this._paginator = p;
+    this._paginator.page.subscribe(() => this.updatePagedMembers());
+    // Defer past the current CD cycle to avoid NG0100
+    Promise.resolve().then(() => this.updatePagedMembers());
+  }
+  get paginator(): MatPaginator { return this._paginator; }
+  private _paginator!: MatPaginator;
 
   members: Member[] = [];
   filteredMembers: Member[] = [];
@@ -216,16 +225,6 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
         this.members = members || [];
         this.applyFilter();
         this.loading = false;
-        // Set up paginator after view renders
-        setTimeout(() => {
-          if (this.paginator) {
-            this.paginator.page.subscribe(() => {
-              console.log('Paginator page event fired');
-              this.updatePagedMembers();
-            });
-            this.updatePagedMembers();
-          }
-        }, 0);
       },
       error: () => {
         this.snackBar.open('Error loading members', 'Close', { duration: 2000 });

@@ -38,8 +38,6 @@
     "@angular/material": "^20.1.6",
     "@angular/platform-browser": "^20.1.0",
     "@angular/router": "^20.1.0",
-    "@azure/msal-angular": "^3.1.0",
-    "@azure/msal-browser": "^3.30.0",
     "@ngrx/effects": "^20.0.0",
     "@ngrx/entity": "^20.0.0",
     "@ngrx/store": "^20.0.0",

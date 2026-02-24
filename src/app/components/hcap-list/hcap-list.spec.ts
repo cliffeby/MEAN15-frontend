@@ -6,7 +6,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { of, throwError } from 'rxjs';
 import { HCap } from '../../models/hcap';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MsalService } from '@azure/msal-angular';
 import { ScoreService } from '../../services/scoreService';
 import { Score } from '../../models/score';
 
@@ -119,7 +118,6 @@ describe('HcapListComponent', () => {
     hcapServiceSpy = jasmine.createSpyObj('HCapService', ['getAll']);
     scoreServiceSpy = jasmine.createSpyObj('ScoreService', ['getAll']);
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
-    const msalServiceStub = {};
     const authServiceStub = {
       getAllAccounts: () => [{ username: 'test@example.com' }],
       getAuthorObject: () => ({ id: 'u1', email: 'test@example.com', name: 'Test User' }),
@@ -134,7 +132,6 @@ describe('HcapListComponent', () => {
       providers: [
         { provide: HCapService, useValue: hcapServiceSpy },
         { provide: ScoreService, useValue: scoreServiceSpy },
-        { provide: MsalService, useValue: msalServiceStub },
         { provide: AuthService, useValue: authServiceStub },
       ],
     })
