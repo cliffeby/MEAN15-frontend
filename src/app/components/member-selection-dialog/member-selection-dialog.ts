@@ -63,47 +63,20 @@ export class MemberSelectionDialogComponent implements OnInit {
     console.log('Dialog opened with current lineup:', this.selectedMemberIds);
     console.log('Available members:', this.allMembers.length);
     console.log('Current course for tee lookup:', this.course);
+    console.log('Scorecards available for tee lookup:', this.scorecards.length);
   }
 
   getTeeForMember(member: Member): string | undefined {
-    if (!this.course || !this.scorecards) {
-      return undefined;
+    if (!this.course || !this.scorecards?.length) return undefined;
+
+    // For each scorecardId entry on the member, look up the scorecard by _id
+    // and return the tees from the one whose course matches this.course.
+    // Entries can be plain strings (the scorecardId itself) or objects with a scorecardId property.
+    for (const entry of ((member as any).scorecardsId || [])) {
+      const id = typeof entry === 'string' ? entry : entry.scorecardId;
+      const sc = this.scorecards.find(s => s._id === id && s.course === this.course);
+      if (sc) return sc.tees;
     }
-    // Gather all scorecards for this member
-    let memberScorecards: any[] = [];
-    // Try to handle both array of objects and array of strings for scorecardId/scorecardsId
-    if (Array.isArray((member as any).scorecardsId)) {
-      // scorecardsId could be array of strings or array of objects
-      if (typeof (member as any).scorecardsId[0] === 'object') {
-        memberScorecards = (member as any).scorecardsId
-          .map((obj: any) => this.scorecards.find(s => s._id === (obj.scorecardId || obj._id)))
-          .filter(Boolean);
-      } else {
-        memberScorecards = (member as any).scorecardsId
-          .map((id: string) => this.scorecards.find(s => s._id === id))
-          .filter(Boolean);
-      }
-    } else if (Array.isArray((member as any).scorecardId)) {
-      memberScorecards = (member as any).scorecardId
-        .map((obj: any) => this.scorecards.find(s => s._id === (obj.scorecardId || obj._id)))
-        .filter(Boolean);
-    } else if (typeof (member as any).scorecardId === 'string') {
-      const sc = this.scorecards.find(s => s._id === (member as any).scorecardId);
-      if (sc) memberScorecards = [sc];
-    }
-    // Debug: log what we're matching
-    console.log('getTeeForMember', {
-      member,
-      course: this.course,
-      memberScorecards,
-      allScorecards: this.scorecards
-    });
-    // Only match if the member has a scorecard for this course
-    const match = memberScorecards.find(sc => sc.course === this.course);
-    if (match) {
-      return match.tees;
-    }
-    // Do not fallback to any scorecard for the course (strict match only)
     return undefined;
   }
 

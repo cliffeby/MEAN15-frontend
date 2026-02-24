@@ -149,15 +149,14 @@ export class MemberEditComponent implements OnInit {
       memberData.scorecardsId = [memberData.scorecardsId];
     }
     if (Array.isArray(memberData.scorecardsId)) {
-      memberData.scorecardsId = memberData.scorecardsId.map((item: any) => {
-        if (typeof item === 'string') {
-          return { scorecardId: item };
-        } else if (item && typeof item === 'object') {
-          // Prefer scorecardId, then _id, then id
-          return { scorecardId: item.scorecardId || item._id || item.id };
-        }
-        return { scorecardId: '' };
-      });
+      // scorecardsId is an array of plain ObjectIds in the schema — send only the ID string
+      memberData.scorecardsId = memberData.scorecardsId
+        .map((item: any) => {
+          if (typeof item === 'string') return item;
+          if (item && typeof item === 'object') return item._id || item.id || item.scorecardId || '';
+          return '';
+        })
+        .filter((id: string) => !!id);
     }
 
     this.memberService.update(this.memberId, memberData).subscribe({

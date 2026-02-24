@@ -90,7 +90,8 @@ describe('MemberListComponent', () => {
       pageSizeOptions: [10, 20, 50, 100],
       enablePagination: true,
       showPageSizeOptions: true,
-      showFirstLastButtons: true
+      showFirstLastButtons: true,
+      defaultPageSize: 10 // Added to satisfy PaginationConfig interface
     });
     configServiceSpy.uiConfig.and.returnValue({ 
       theme: 'light',

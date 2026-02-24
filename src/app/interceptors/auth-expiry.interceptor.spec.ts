@@ -12,9 +12,9 @@ describe('AuthExpiryInterceptor', () => {
   let routerSpy: jasmine.SpyObj<Router>;
 
   beforeEach(() => {
-    authSpy = jasmine.createSpyObj('AuthService', ['logout']);
+    authSpy = jasmine.createSpyObj('AuthService', ['logout']); // Mock AuthService
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    interceptor = new AuthExpiryInterceptor(authSpy as any, routerSpy as any);
+    interceptor = new AuthExpiryInterceptor(routerSpy as any, authSpy as any); // Inject AuthService
   });
 
   function handlerWithStatus(status: number): HttpHandler {

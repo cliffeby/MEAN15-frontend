@@ -65,6 +65,16 @@ export class MatchFormComponent implements OnInit, OnDestroy {
   membersLoading = false;
   selectedMemberId = '';
   scorecards: Scorecard[] = [];
+
+  get uniqueScorecards(): Scorecard[] {
+    const seen = new Set<string>();
+    return this.scorecards.filter(sc => {
+      const key = sc.course || '';
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
   private unsubscribe$ = new Subject<void>();
 
   statusOptions = MATCH_STATUS_OPTIONS;
@@ -116,15 +126,8 @@ export class MatchFormComponent implements OnInit, OnDestroy {
     this.scorecards$.pipe(takeUntil(this.unsubscribe$)).subscribe({
       next: (scorecards) => {
         if (Array.isArray(scorecards)) {
-          // Only show one scorecard per course (the first one found)
-          const seenCourses = new Set<string>();
-          this.scorecards = scorecards.filter(sc => {
-            if (sc.course && !seenCourses.has(sc.course)) {
-              seenCourses.add(sc.course);
-              return true;
-            }
-            return false;
-          });
+          // Keep all scorecards so member tee lookups by scorecardId work correctly
+          this.scorecards = scorecards;
         } else {
           this.scorecards = [];
         }
@@ -247,6 +250,8 @@ export class MatchFormComponent implements OnInit, OnDestroy {
         maxHeight: '80vh',
         data: {
           members: members,
+          scorecards: this.scorecards,
+          course: this.matchForm.get('course')?.value || '',
           currentLineup: this.lineUpsArray.value,
         },
       });

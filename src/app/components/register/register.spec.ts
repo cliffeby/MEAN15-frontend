@@ -1,4 +1,3 @@
-
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
@@ -6,6 +5,7 @@ import { MsalService, MsalBroadcastService, MSAL_INSTANCE } from '@azure/msal-an
 import { InteractionStatus } from '@azure/msal-browser';
 import { of, Subject } from 'rxjs';
 import { Register } from './register';
+import { ActivatedRoute } from '@angular/router';
 
 describe('Register', () => {
   let component: Register;
@@ -40,11 +40,17 @@ describe('Register', () => {
       getActiveAccount: jasmine.createSpy('getActiveAccount').and.returnValue(null)
     };
 
+    const mockActivatedRoute = {
+      snapshot: { params: {} },
+      queryParams: of({})
+    };
+
     await TestBed.configureTestingModule({
       imports: [Register],
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
+        { provide: ActivatedRoute, useValue: mockActivatedRoute }, // Mock ActivatedRoute
         { provide: MsalService, useValue: mockMsalService },
         { provide: MsalBroadcastService, useValue: mockMsalBroadcastService },
         { provide: MSAL_INSTANCE, useValue: mockMsalInstance }

@@ -441,8 +441,8 @@ export class MatchListComponent implements OnInit, OnDestroy {
     const scores = resp?.scores || resp || [];
     // const currentUserEmail = await this.getCurrentUserEmail();
     const currentUser = this.authService.getAuthorObject();
-    // const currentUserId = currentUser?.name || currentUser?.id || currentUser?.email || null;
-    // console.log('Current user for HCap creation:', currentUserId, currentUserEmail);
+    const currentUserId = currentUser?.name || currentUser?.id || currentUser?.email || null;
+    console.log('Current user for HCap creation:', currentUserId, currentUser);
     // Filter players with postedScore > 50 (or score if postedScore missing)
     const eligible = scores.filter((s: any) => {
       const posted = s.postedScore ?? s.score ?? 0;

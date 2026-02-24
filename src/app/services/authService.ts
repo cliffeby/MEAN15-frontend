@@ -78,6 +78,7 @@ export class AuthService {
 
   getAuthorObject(): { id: string; email: string; name: string } {
     const p = this.payload();
+    console.log('getAuthorObject - payload:', p); // Debug log
     return {
       id: p?.id || '',
       email: p?.email || '',
