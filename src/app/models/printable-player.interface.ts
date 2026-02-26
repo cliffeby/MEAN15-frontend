@@ -5,4 +5,5 @@ export interface PrintablePlayer {
     lastName: string;
   };
   handicap: number;
+  teeAbreviation: string;
 }

@@ -35,9 +35,13 @@ export function getMemberScorecard(
     console.log('getMemberScorecard: matchCourse is empty');
     return null;
   }
-  // memberScorecardIds is an array of objects; extract scorecardId from each
+  // memberScorecardIds may be an array of strings or legacy objects with a scorecardId property
   const scorecardIdStrings: string[] = memberScorecardIds
-    .map((obj: any) => typeof obj === 'object' && obj !== null && 'scorecardId' in obj ? obj.scorecardId : null)
+    .map((obj: any) => {
+      if (typeof obj === 'string') return obj;
+      if (typeof obj === 'object' && obj !== null && 'scorecardId' in obj) return obj.scorecardId;
+      return null;
+    })
     .filter((id: any) => typeof id === 'string');
   const memberScorecards: Scorecard[] = scorecardList.filter((sc) => scorecardIdStrings.includes(sc._id));
   console.log('Member scorecards for course lookup:', memberScorecards, scorecardIdStrings, "MC",matchCourse);

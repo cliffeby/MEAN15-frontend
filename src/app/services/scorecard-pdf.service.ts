@@ -5,6 +5,7 @@ import { ScorecardData, MatchData, PdfGenerationOptions } from '../models/scorec
 import { HandicapCalculationService } from './handicap-calculation.service';
 import { PrintPreviewService } from './print-preview.service';
 import { ScorecardFormatterService } from './scorecard-formatter.service';
+import { getMatchCourseName } from '../utils/score-entry-utils';
 
 @Injectable({
   providedIn: 'root'

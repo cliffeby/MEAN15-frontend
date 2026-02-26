@@ -11,11 +11,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { FormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { HCapService } from '../../services/hcapService';
-import { HandicapService } from '../../services/handicapService';
-import { ScoreService } from '../../services/scoreService';
-import { MemberService } from '../../services/memberService';
 import { HCap } from '../../models/hcap';
-import { Score } from '../../models/score';
 import { UserPreferencesService, ColumnPreference } from '../../services/user-preferences.service';
 
 @Component({
@@ -102,9 +98,6 @@ export class HcapListComponent implements OnInit {
 
   constructor(
     private hcapService: HCapService,
-    private handicapService: HandicapService,
-    private scoreService: ScoreService,
-    private memberService: MemberService,
     private snackBar: MatSnackBar,
     private userPreferences: UserPreferencesService
   ) {}
@@ -119,148 +112,27 @@ export class HcapListComponent implements OnInit {
     this.hcapService.getAll().subscribe({
       next: (res) => {
         this.hcaps = res.hcaps || res || [];
-        // Fetch all scores
-        this.scoreService.getAll().subscribe({
-          next: (scoreRes) => {
-            const scores: Score[] = scoreRes.scores || scoreRes || [];
-            // Group by memberId
-            const grouped: { [memberId: string]: HCap[] } = {};
-            this.hcaps.forEach(h => {
-              let memberKey: string | undefined;
-              if (typeof h.memberId === 'string') {
-                memberKey = h.memberId;
-              } else if (h.memberId && typeof h.memberId === 'object' && '_id' in h.memberId && typeof (h.memberId as any)._id === 'string') {
-                memberKey = (h.memberId as any)._id;
-              }
-              if (!memberKey) return;
-              if (!grouped[memberKey]) grouped[memberKey] = [];
-              grouped[memberKey].push(h);
-            });
-            // Compute and assign newHCap for each group
-            Object.keys(grouped).forEach(memberId => {
-              const records = grouped[memberId];
-              // Sort records by datePlayed ascending (oldest first)
-              const sortedRecords = [...records].sort((a, b) => {
-                const dA = a.datePlayed ? new Date(a.datePlayed).getTime() : 0;
-                const dB = b.datePlayed ? new Date(b.datePlayed).getTime() : 0;
-                return dA - dB;
-              });
-              // For each record, compute rolling handicap as of that date
-              sortedRecords.forEach((r, idx) => {
-                // For each record, build a list of all previous and current records (by date) for the current member
-                const currentDate = r.datePlayed ? new Date(r.datePlayed).getTime() : 0;
-                const recordsUpToNow = sortedRecords
-                  .filter(rec => {
-                    // Normalize memberId for rec
-                    let recMemberId: string | undefined;
-                    if (typeof rec.memberId === 'string') {
-                      recMemberId = rec.memberId;
-                    } else if (rec.memberId && typeof rec.memberId === 'object' && '_id' in rec.memberId && typeof (rec.memberId as any)._id === 'string') {
-                      recMemberId = (rec.memberId as any)._id;
-                    }
-                    // Only include records for this member and up to current date
-                    const recDate = rec.datePlayed ? new Date(rec.datePlayed).getTime() : 0;
-                    return recMemberId === memberId && recDate <= currentDate;
-                  })
-                  .map(rec => {
-                    // Debug: log all relevant values for scoreDifferential calculation
-                    const debugInfo: any = { scoreId: rec.scoreId };
-                    const scoreObj = scores.find(s => s._id === rec.scoreId);
-                    debugInfo.scoreObj = scoreObj;
-                    const score = rec.postedScore;
-                    debugInfo.score = score;
-                    const rating = scoreObj?.scRating;
-                    debugInfo.rating = rating;
-                    const slope = scoreObj?.scSlope;
-                    debugInfo.slope = slope;
-                    let scoreDifferential: number = 0;
-                    if (
-                      typeof score === 'number' &&
-                      typeof rating === 'number' &&
-                      typeof slope === 'number' &&
-                      slope > 0
-                    ) {
-                      scoreDifferential = parseFloat((((score - rating) * 113) / slope).toFixed(1));
-                    }
-                    debugInfo.scoreDifferential = scoreDifferential;
-                    console.log('HCap rolling debug:', debugInfo);
-                    return {
-                      ...rec,
-                      scoreDifferential,
-                      date: rec.datePlayed ? new Date(rec.datePlayed).toISOString() : undefined
-                    };
-                  });
-                // Debug: confirm all recordsUpToNow are for the current member
-                console.log('recordsUpToNow for memberId', memberId, ':', recordsUpToNow.map(r => r.memberId));
-                const hcapAsOfThis = this.handicapService.computeHandicap(recordsUpToNow);
-                // If member has no scores, use currentHCap and mark for red
-                if (recordsUpToNow.length === 1 && !recordsUpToNow[0].scoreId) {
-                  r.newHCap = recordsUpToNow[0].currentHCap?.toString() || '';
-                  r.noScores = true;
-                } else {
-                  r.newHCap = hcapAsOfThis;
-                  r.noScores = false;
-                }
-
-                // If newHCap is different from currentHCap, update member record
-                if (
-                  r.memberId &&
-                  r.newHCap &&
-                  r.currentHCap !== undefined &&
-                  r.newHCap !== '' &&
-                  parseFloat(r.newHCap) !== Number(r.currentHCap)
-                ) {
-                  // Always extract string ID
-                  let memberIdStr: string | undefined = undefined;
-                  if (typeof r.memberId === 'string') {
-                    memberIdStr = r.memberId;
-                  } else if (r.memberId && typeof r.memberId === 'object' && '_id' in r.memberId && typeof (r.memberId as any)._id === 'string') {
-                    memberIdStr = (r.memberId as any)._id;
-                  }
-                  if (memberIdStr) {
-                    this.memberService.update(memberIdStr, { handicap: parseFloat(r.newHCap) } as any).subscribe({
-                      next: () => {
-                        // r.currentHCap = parseFloat(r.newHCap);
-                        console.log(`Updated member ${memberIdStr} currentHCap to ${r.newHCap}`);
-                      },
-                      error: (err) => {
-                        console.error(`Failed to update member ${memberIdStr}:`, err);
-                      }
-                    });
-                  } else {
-                    console.error('Could not extract memberId string for update', r.memberId);
-                  }
-                }
-              });
-            });
-            this.applyFilter();
-            this.loading = false;
-            setTimeout(() => {
-              if (this.paginator) {
-                this.paginator.page.subscribe((_) => this.updatePaged());
-                this.updatePaged();
-              }
-              if (this.sort) {
-                this.sort.sortChange.subscribe((sort: Sort) => {
-                  this.activeSort = sort;
-                  this.applySort();
-                  this.updatePaged();
-                });
-              }
-            }, 0);
-          },
-          error: (_err) => {
-            this.snackBar.open('Error loading Score data', 'Close', { duration: 3000 });
-            this.loading = false;
+        this.applyFilter();
+        this.loading = false;
+        setTimeout(() => {
+          if (this.paginator) {
+            this.paginator.page.subscribe((_) => this.updatePaged());
+            this.updatePaged();
           }
-        });
+          if (this.sort) {
+            this.sort.sortChange.subscribe((sort: Sort) => {
+              this.activeSort = sort;
+              this.applySort();
+              this.updatePaged();
+            });
+          }
+        }, 0);
       },
       error: (_err) => {
         this.snackBar.open('Error loading HCap data', 'Close', { duration: 3000 });
         this.loading = false;
       }
     });
-    
   }
 
   applyFilter() {

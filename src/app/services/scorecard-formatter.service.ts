@@ -15,11 +15,13 @@ export class ScorecardFormatterService {
     const firstName = player.member.firstName || '';
     const lastName = player.member.lastName || '';
     const handicap = player.handicap;
+    const teeAbreviation = player.teeAbreviation || '';
+    
     
     const firstInitial = firstName.charAt(0).toUpperCase();
     const lastNameTruncated = lastName.length > 8 ? lastName.substring(0, 8) : lastName;
     
-    return `${firstInitial}. ${lastNameTruncated} (${handicap})`;
+    return `${firstInitial}. ${lastNameTruncated} (${handicap}) ${teeAbreviation}`;
   }
 
   /**

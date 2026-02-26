@@ -22,12 +22,14 @@ import { MatchService } from '../../services/matchService';
 import { MemberService } from '../../services/memberService';
 import { ScorecardPdfService } from '../../services/scorecard-pdf.service';
 import { HandicapCalculationService } from '../../services/handicap-calculation.service';
+import { HandicapService } from '../../services/handicapService';
 import { PrintablePlayer } from '../../models/printable-player.interface';
 import { MatchData, ScorecardData } from '../../models/scorecard.interface';
 import { ScorecardService } from '../../services/scorecardService';
 import { Scorecard } from '../../models/scorecard.interface';
 import * as MatchActions from '../../store/actions/match.actions';
 import { parseStringData } from '../../utils/string-utils';
+import { getMemberScorecard } from '../../utils/score-entry-utils';
 
 import {
   selectAllMatches,
@@ -80,6 +82,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
   private scorecardService = inject(ScorecardService);
   private pdfService = inject(ScorecardPdfService);
   private handicapService = inject(HandicapCalculationService);
+  private hcapComputeService = inject(HandicapService);
   private configService = inject(ConfigurationService);
   private scoreService = inject(ScoreService);
   private hcapService = inject(HCapService);
@@ -268,11 +271,12 @@ export class MatchListComponent implements OnInit, OnDestroy {
         typeof scorecardId === 'string' ? scorecardId.trim() : scorecardId._id;
 
       // Load scorecard and members in parallel
-      const { scorecard, members } =
+      const { scorecard, members, allScorecards } =
         (await lastValueFrom(
           forkJoin({
             scorecard: this.scorecardService.getById(finalScorecardId),
             members: this.memberService.getAll(),
+            allScorecards: this.scorecardService.getAll(),
           }),
         )) || {};
 
@@ -286,18 +290,22 @@ export class MatchListComponent implements OnInit, OnDestroy {
       // Parse string data if needed
       parseStringData(finalScorecard);
 
+      const scorecardList = allScorecards?.scorecards || allScorecards || [];
+
       // Create printable players
       const players: PrintablePlayer[] =
         match.lineUps
           ?.map((memberId: any) => {
             const member = members ? members.find((m: any) => m._id === memberId) : null;
             if (member) {
+              const memberScorecard = getMemberScorecard(finalScorecard.course, member.scorecardsId || [], scorecardList);
               return {
                 member,
                 handicap: this.handicapService.calculateCourseHandicap(
                   member.usgaIndex || 0,
                   finalScorecard?.slope,
                 ),
+                teeAbreviation: memberScorecard?.teeAbreviation || '',
               };
             }
             return null;
@@ -313,7 +321,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
       const matchData: MatchData = {
         _id: match._id!,
         description: match.name || 'Golf Match',
-        course: scorecard.course || 'Golf Course',
+        course: finalScorecard.course,
         teeTime: match.datePlayed || new Date().toISOString(),
         members: players.map((p) => p.member._id!),
       };
@@ -436,57 +444,43 @@ export class MatchListComponent implements OnInit, OnDestroy {
   }
 
   private async createHcapRecordsForMatch(matchId: string): Promise<any> {
-    // Fetch scores for the match
+    // Fetch scores for this match
     const resp: any = await lastValueFrom(this.scoreService.getScoresByMatch(matchId));
-    const scores = resp?.scores || resp || [];
-    // const currentUserEmail = await this.getCurrentUserEmail();
+    const matchScores: any[] = resp?.scores || resp || [];
+
     const currentUser = this.authService.getAuthorObject();
-    const currentUserId = currentUser?.name || currentUser?.id || currentUser?.email || null;
-    console.log('Current user for HCap creation:', currentUserId, currentUser);
-    // Filter players with postedScore > 50 (or score if postedScore missing)
-    const eligible = scores.filter((s: any) => {
+
+    // Only process players with a valid posted score
+    const eligible = matchScores.filter((s: any) => {
       const posted = s.postedScore ?? s.score ?? 0;
       return typeof posted === 'number' && posted > 50;
     });
 
-    // Deduplicate by memberId (or score id when no memberId). If multiple scores exist for same member,
-    // prefer the one with higher postedScore or more recent datePlayed.
+    // Deduplicate by memberId — prefer higher posted score, then most recent date
     const uniqueMap = new Map<string, any>();
     for (const s of eligible) {
       const key = typeof s.memberId === 'string' ? s.memberId : s.memberId?._id || s._id;
-      if (!key) {
-        // fallback to score id when memberId missing
-        const scoreKey = s._id || JSON.stringify(s);
-        if (!uniqueMap.has(scoreKey)) uniqueMap.set(scoreKey, s);
-        continue;
-      }
+      if (!key) { uniqueMap.set(s._id || JSON.stringify(s), s); continue; }
       if (!uniqueMap.has(key)) {
         uniqueMap.set(key, s);
       } else {
-        const existing = uniqueMap.get(key);
-        const existingPosted = existing.postedScore ?? existing.score ?? 0;
-        const currentPosted = s.postedScore ?? s.score ?? 0;
-        const existingDate = new Date(existing.datePlayed || 0).getTime();
-        const currentDate = new Date(s.datePlayed || 0).getTime();
-        // Prefer higher posted score, then more recent date
-        if (currentPosted > existingPosted || currentDate > existingDate) {
+        const ex = uniqueMap.get(key);
+        const exPosted = ex.postedScore ?? ex.score ?? 0;
+        const curPosted = s.postedScore ?? s.score ?? 0;
+        if (curPosted > exPosted || new Date(s.datePlayed || 0) > new Date(ex.datePlayed || 0)) {
           uniqueMap.set(key, s);
         }
       }
     }
 
-    const uniqueEligible = Array.from(uniqueMap.values());
-
-    // Load existing HCap records once so we can update instead of creating duplicates
+    // Load existing HCap records once for upsert logic
     let existingHcaps: any[] = [];
     try {
       const respAll: any = await lastValueFrom(this.hcapService.getAll());
       existingHcaps = respAll?.hcaps || respAll || [];
     } catch (e) {
-      console.warn('Failed to load existing HCap records for dedupe/update:', e);
-      existingHcaps = [];
+      console.warn('Failed to load existing HCap records:', e);
     }
-
     const existingMap = new Map<string, any>();
     for (const h of existingHcaps) {
       const mId = typeof h.memberId === 'string' ? h.memberId : h.memberId?._id || null;
@@ -494,74 +488,105 @@ export class MatchListComponent implements OnInit, OnDestroy {
       if (mId && maId) existingMap.set(`${mId}:${maId}`, h);
     }
 
-    const createPromises = uniqueEligible.map(async (score: any) => {
+    const createPromises = Array.from(uniqueMap.values()).map(async (currentScore: any) => {
       try {
         const memberId =
-          typeof score.memberId === 'string' ? score.memberId : score.memberId?._id || null;
+          typeof currentScore.memberId === 'string'
+            ? currentScore.memberId
+            : currentScore.memberId?._id || null;
+
+        // Load member for name / current handicap
         let member: any = null;
         if (memberId) {
+          try { member = await lastValueFrom(this.memberService.getById(memberId)); } catch {}
+        }
+
+        // Fetch up to 19 most recent prior scores for this member (excluding this match)
+        let priorScores: any[] = [];
+        if (memberId) {
           try {
-            member = await lastValueFrom(this.memberService.getById(memberId));
+            const priorResp: any = await lastValueFrom(this.scoreService.getScoresByMember(memberId));
+            const allMemberScores: any[] = priorResp?.scores || priorResp || [];
+            priorScores = allMemberScores
+              .filter((s: any) => {
+                const sMatchId = typeof s.matchId === 'string' ? s.matchId : s.matchId?._id;
+                return sMatchId !== matchId && s._id !== currentScore._id;
+              })
+              .sort((a: any, b: any) =>
+                new Date(b.datePlayed || 0).getTime() - new Date(a.datePlayed || 0).getTime()
+              )
+              .slice(0, 19);
           } catch (e) {
-            console.warn('Failed to load member for HCap creation:', memberId, e);
+            console.warn('Failed to fetch prior scores for member', memberId, e);
           }
         }
 
+        // Compute new handicap from current score + up to 19 prior scores
+        const scoresToUse = [currentScore, ...priorScores];
+        const newHCapStr = this.hcapComputeService.computeHandicapFromScores(scoresToUse);
+        const newHCap = newHCapStr ? parseFloat(newHCapStr) : null;
+
+        console.log(
+          `HCap for member ${memberId}: current score ${currentScore.postedScore}, ` +
+          `prior scores used: ${priorScores.length}, newHCap: ${newHCapStr}`
+        );
+
         const hcapRecord: any = {
-          name: score.name || (member ? `${member.firstName} ${member.lastName || ''}`.trim() : ''),
-          postedScore: score.postedScore ?? score.score ?? null,
+          name: currentScore.name || (member ? `${member.firstName} ${member.lastName || ''}`.trim() : ''),
+          postedScore: currentScore.postedScore ?? currentScore.score ?? null,
           currentHCap: member?.handicap ?? member?.usgaIndex ?? null,
-          newHCap: null,
-          rochDifferentialToday:score.rochDifferentialToday ?? null,
-          usgaDifferentialToday: score.usgaDifferentialToday ?? null,
-          datePlayed: score.datePlayed || new Date().toISOString(),
-          usgaIndexForTodaysScore: score.usgaIndexForTodaysScore ?? score.usgaIndex ?? null,
+          newHCap,
+          rochDifferentialToday: currentScore.rochDifferentialToday ?? null,
+          usgaDifferentialToday: currentScore.usgaDifferentialToday ?? null,
+          datePlayed: currentScore.datePlayed || new Date().toISOString(),
+          usgaIndexForTodaysScore: currentScore.usgaIndexForTodaysScore ?? currentScore.usgaIndex ?? null,
           handicap: member?.handicap ?? null,
-          scoreId: score._id || null,
+          scoreId: currentScore._id || null,
           scorecardId:
-            (score.scorecardId &&
-              (typeof score.scorecardId === 'string'
-                ? score.scorecardId
-                : score.scorecardId._id)) ||
-            null,
-          scCourse: score.scCourse || '',
-          scTees: score.scTees || '',
-          scRating: score.scRating || null,
-          scSlope: score.scSlope || null,
-          scPar: score.scPar || null,
+            (currentScore.scorecardId &&
+              (typeof currentScore.scorecardId === 'string'
+                ? currentScore.scorecardId
+                : currentScore.scorecardId._id)) || null,
+          scCourse: currentScore.scCourse || '',
+          scTees: currentScore.scTees || '',
+          scRating: currentScore.scRating || null,
+          scSlope: currentScore.scSlope || null,
+          scPar: currentScore.scPar || null,
           matchId:
-            (score.matchId &&
-              (typeof score.matchId === 'string' ? score.matchId : score.matchId._id)) ||
-            matchId,
-          memberId: memberId,
+            (currentScore.matchId &&
+              (typeof currentScore.matchId === 'string'
+                ? currentScore.matchId
+                : currentScore.matchId._id)) || matchId,
+          memberId,
           author: currentUser,
         };
-        console.log('Preparing to create/update HCap record:', hcapRecord);
-        // If existing HCap exists for the same member+match, update it instead of creating
-        const key = memberId && matchId ? `${memberId}:${matchId}` : null;
+
+        // Upsert: update existing HCap record for same member+match, or create new
+        const key = memberId ? `${memberId}:${matchId}` : null;
         if (key && existingMap.has(key)) {
-          const existing = existingMap.get(key);
           try {
-            return await lastValueFrom(this.hcapService.update(existing._id, hcapRecord));
+            return await lastValueFrom(this.hcapService.update(existingMap.get(key)._id, hcapRecord));
           } catch (e) {
-            console.warn('Failed to update existing HCap, will try create as fallback:', e);
+            console.warn('Failed to update HCap, falling back to create:', e);
           }
         }
-const memRecord: any = {
-          handicap: score.newHCap || null,
-          datePlayed: score.datePlayed || new Date().toISOString(),
-}
-        if (memberId) {
-          // Update member's handicap as well
-          try {this.memberService.update(memberId, memRecord);} catch (e) {
-            console.warn('Failed to update member date played and handicap:', e);
-          }
+
+        // Also update member's handicap field if newHCap changed
+        if (memberId && newHCap !== null) {
+          try {
+            this.memberService.update(memberId, {
+              handicap: newHCap,
+              datePlayed: currentScore.datePlayed || new Date().toISOString(),
+            } as any).subscribe({
+              next: () => console.log(`Updated member ${memberId} handicap to ${newHCap}`),
+              error: (e) => console.warn('Failed to update member handicap:', e),
+            });
+          } catch {}
         }
-        // Call HCap service to create record
+
         return await lastValueFrom(this.hcapService.create(hcapRecord));
       } catch (err) {
-        console.error('Failed to create HCap for score:', score, err);
-        // continue without failing all
+        console.error('Failed to create HCap for score:', currentScore, err);
         return null;
       }
     });
@@ -620,7 +645,7 @@ const memRecord: any = {
     scorecard: Scorecard,
     players: PrintablePlayer[],
   ): void {
-    const course = scorecard?.course || 'Golf Course';
+    const course = scorecard?.course;
     const matchName = match?.name || 'Match';
     const matchDate = match?.datePlayed
       ? new Date(match.datePlayed).toLocaleDateString()

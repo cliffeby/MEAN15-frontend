@@ -46,6 +46,7 @@ export class HandicapService {
     const numToUse = this.numDifferentialsToUseUSGA(n);
     const used = [...differentials].sort((a, b) => a - b).slice(0, numToUse);
     const avg = used.reduce((sum, d) => sum + d, 0) / used.length;
+    console.log('USGA Handicap Calculation: n=', n, 'numToUse=', numToUse, 'used differentials=', used, 'diff', differentials);
     let handicap = Math.round(avg * 0.96 * 10) / 10;
     // Clamp to max 54.0
     if (handicap > 54) handicap = 54.0;
@@ -69,6 +70,7 @@ export class HandicapService {
     // USGA: number of differentials to use
     const numToUse = this.numDifferentialsToUseROCH(n);
     const used = [...differentials].sort((a, b) => a - b).slice(0, numToUse);
+    console.log('Roch Handicap Calculation: n=', n, 'numToUse=', numToUse, 'used differentials=', used, 'diff', differentials);
     const avg = used.reduce((sum, d) => sum + d, 0) / used.length;
     let handicap = Math.round(avg * 10) / 10;
     // Clamp to max 54.0
@@ -106,6 +108,75 @@ export class HandicapService {
     if (n === 6) return 4;
     if (n >= 7) return 5;
     return 1;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Score-record-based computation (raw Score documents with scRating/scSlope)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Compute score differential from a raw Score document.
+   * Returns 0 if rating/slope are missing or invalid.
+   */
+  scoreDifferentialFromScore(score: any): number {
+    const posted = score.postedScore ?? score.score ?? 0;
+    const rating = score.scRating;
+    const slope = score.scSlope;
+    if (
+      typeof posted === 'number' && posted > 0 &&
+      typeof rating === 'number' &&
+      typeof slope === 'number' && slope > 0
+    ) {
+      return parseFloat((((posted - rating) * 113) / slope).toFixed(1));
+    }
+    return 0;
+  }
+
+  /**
+   * Compute handicap from raw Score documents using the configured method.
+   * Pass up to 20 records; method limits internally.
+   */
+  computeHandicapFromScores(scores: any[]): string {
+    const method = this.configService.configSignal().scoring.handicapCalculationMethod as 'usga' | 'roch' | 'ega' | 'custom';
+    if (method === 'roch') {
+      return this.computeRochFromScores(scores);
+    }
+    return this.computeUSGAFromScores(scores);
+  }
+
+  /**
+   * USGA method from raw Score documents.
+   * Sorts by datePlayed descending, takes up to 20, converts to HCapRecords and delegates to computeUSGA.
+   */
+  computeUSGAFromScores(scores: any[]): string {
+    if (!scores || scores.length === 0) return '';
+    const records = scores
+      .map(s => ({
+        scoreDifferential: this.scoreDifferentialFromScore(s),
+        date: s.datePlayed || s.createdAt || '',
+      }))
+      .filter(r => r.scoreDifferential !== 0)
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, 20);
+    console.log('USGA Handicap Calculation from Scores: records=', records);
+    return this.computeUSGA(records);
+  }
+
+  /**
+   * Roch method from raw Score documents.
+   * Sorts by datePlayed descending, takes up to 8, converts to HCapRecords and delegates to computeRoch.
+   */
+  computeRochFromScores(scores: any[]): string {
+    if (!scores || scores.length === 0) return '';
+    const records = scores
+      .map(s => ({
+        scoreDifferential: this.scoreDifferentialFromScore(s),
+        date: s.datePlayed || s.createdAt || '',
+      }))
+      .filter(r => r.scoreDifferential !== 0)
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, 8);
+    return this.computeRoch(records);
   }
 
 }

@@ -18,6 +18,7 @@ import { Match } from '../../models/match';
 import { Member } from '../../models/member';
 import { PrintablePlayer } from '../../models/printable-player.interface';
 import { MatchData, ScorecardData } from '../../models/scorecard.interface';
+import { getMemberScorecard } from '../../utils/score-entry-utils';
 
 @Component({
   selector: 'app-printable-scorecard',
@@ -99,7 +100,8 @@ export class PrintableScorecardComponent implements OnInit {
         // Load both scorecard and members data
         forkJoin({
           scorecard: this.scorecardService.getById(finalScorecardId),
-          members: this.memberService.getAll()
+          members: this.memberService.getAll(),
+          allScorecards: this.scorecardService.getAll()
         }).subscribe({
           next: (data) => {
             console.log('Forkjoin response:', data);
@@ -115,6 +117,7 @@ export class PrintableScorecardComponent implements OnInit {
               this.scorecard = finalScorecard;
               
               const members = data.members || [];
+              const scorecardList: Scorecard[] = data.allScorecards?.scorecards || data.allScorecards || [];
               console.log('Members loaded:', members?.length || 0, 'members');
               
               // Build players array
@@ -122,9 +125,11 @@ export class PrintableScorecardComponent implements OnInit {
                 this.players = match.members.map((memberId: string) => {
                   const member = members.find((m: any) => m._id === memberId);
                   if (member) {
+                    const memberScorecard = getMemberScorecard(finalScorecard.course, member.scorecardsId || [], scorecardList);
                     return {
                       member,
-                      handicap: this.handicapService.calculateCourseHandicap(member.usgaIndex || 0)
+                      handicap: this.handicapService.calculateCourseHandicap(member.usgaIndex || 0),
+                      teeAbreviation: memberScorecard?.teeAbreviation || '',
                     };
                   }
                   return null;
@@ -219,7 +224,7 @@ export class PrintableScorecardComponent implements OnInit {
       const matchData: MatchData = {
         _id: this.match._id!,
         description: this.match.name || 'Golf Match',
-        course:  this.scorecard.course || 'Golf Course' ,
+        course: this.scorecard.course,
         teeTime: this.match.datePlayed || new Date().toISOString(),
         members: this.players.map(p => p.member._id!)
       };
