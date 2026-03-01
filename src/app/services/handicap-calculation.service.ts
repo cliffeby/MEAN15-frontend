@@ -10,11 +10,11 @@ export class HandicapCalculationService {
   constructor() { }
 
   /**
-   * Get the lowest handicap in a group of players
+   * Get the lowest rochIndex in a group of players
    */
   getLowestHandicapInGroup(players: PrintablePlayer[]): number {
     if (players.length === 0) return 0;
-    return Math.min(...players.map(p => p.handicap));
+    return Math.min(...players.map(p => p.rochIndex));
   }
 
   /**
@@ -38,20 +38,20 @@ export class HandicapCalculationService {
   }
 
   /**
-   * Calculate team stroke for a player based on group's lowest handicap
-   * Player gets team stroke if (their handicap - lowest handicap) >= hole handicap
+   * Calculate team stroke for a player based on group's lowest rochIndex
+   * Player gets team stroke if (their rochIndex - lowest rochIndex) >= hole rochIndex
    */
   playerGetsTeamStroke(
     player: PrintablePlayer, 
     lowestHandicap: number, 
     holeHandicap: number
   ): boolean {
-    const handicapDifference = player.handicap - lowestHandicap;
+    const handicapDifference = player.rochIndex - lowestHandicap;
     return handicapDifference > 0 && handicapDifference >= holeHandicap;
   }
 
   /**
-   * Get hole handicap from scorecard data
+   * Get hole rochIndex from scorecard data
    */
   getHoleHandicap(scorecard: ScorecardData, holeIndex: number): number {
     if (!scorecard?.hCaps || holeIndex < 0 || holeIndex >= scorecard.hCaps.length) {
@@ -61,13 +61,16 @@ export class HandicapCalculationService {
   }
 
   /**
-   * Calculate course handicap from USGA index
+   * Calculate course rochIndex from USGA index
    */
-  calculateCourseHandicap(usgaIndex: number, slope: number = 113): number {
+  calculateCourseHandicap(anyIndex: number, slope: number): number {
     if (!slope) return 0;
-    return Math.round((usgaIndex * slope) / 113);
+    return Math.min(26, Math.round((anyIndex * slope) / 113));
   }
-
+  calculateCourseHandicapFromIndex(Index: number, slope: number, rating: number, par: number): number {
+    if (!slope) return 0;
+    return Math.min(26, Math.floor(((Index * slope) / 113) + rating - par));
+  }
   /**
    * Calculate front nine par total
    */

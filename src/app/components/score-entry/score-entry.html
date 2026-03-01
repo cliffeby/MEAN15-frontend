@@ -68,13 +68,13 @@
 
         <mat-divider></mat-divider>
 
-        <!-- Combined score table with par/handicap and player scores -->
+        <!-- Combined score table with par/rochIndex and player scores -->
         <div class="score-table-container" *ngIf="scorecard?.pars">
           <table class="score-table">
             <thead>
               <tr>
                 <th class="player-column">Player</th>
-                <th class="handicap-column">HCP</th>
+                <th class="rochIndex-column">HCP</th>
                 <!-- Holes 1-9 -->
                 <th *ngFor="let i of [0,1,2,3,4,5,6,7,8]" class="hole-column">
                   {{ i + 1 }}
@@ -93,7 +93,7 @@
               <!-- Par row -->
               <tr class="par-row-data">
                 <td class="player-column"><strong>Par</strong></td>
-                <td class="handicap-column">{{ getCoursePar() }}</td>
+                <td class="rochIndex-column">{{ getCoursePar() }}</td>
                 <!-- Holes 1-9 pars -->
                 <td *ngFor="let i of [0,1,2,3,4,5,6,7,8]" class="hole-column">
                   {{ getParForHole(i) }}
@@ -109,9 +109,9 @@
               </tr>
               
               <!-- Handicap row -->
-              <tr class="handicap-row-data" *ngIf="scorecard?.hCaps">
+              <tr class="rochIndex-row-data" *ngIf="scorecard?.hCaps">
                 <td class="player-column"><strong>HCP</strong></td>
-                <td class="handicap-column">-</td>
+                <td class="rochIndex-column">-</td>
                 <!-- Holes 1-9 handicaps -->
                 <td *ngFor="let i of [0,1,2,3,4,5,6,7,8]" class="hole-column">
                   {{ getHoleHandicapFromScorecard(i) }}
@@ -129,7 +129,7 @@
               <!-- Player scores -->
               <ng-container formArrayName="players">
                 <tr *ngFor="let player of playerScores; let playerIndex = index" [formGroupName]="playerIndex">
-                  <!-- Player name and handicap -->
+                  <!-- Player name and rochIndex -->
                   <td class="player-column">
                     <div class="player-info">
                       <strong>{{ player.member.firstName }} {{ player.member.lastName }} - {{player.teeAbreviation}}</strong>
@@ -140,7 +140,7 @@
                       </div>
                     </div>
                   </td>
-                  <td class="handicap-column">
+                  <td class="rochIndex-column">
                     {{ getHoleHandicap(playerIndex) }}
                   </td>
 

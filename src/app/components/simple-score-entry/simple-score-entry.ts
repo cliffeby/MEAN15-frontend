@@ -25,8 +25,9 @@ import { Match } from '../../models/match';
 import { Member } from '../../models/member';
 import { Score } from '../../models/score';
 import { getMemberScorecard, getMatchScorecard } from '../../utils/score-entry-utils';
-import { calculateUSGADifferentialToday } from '../../utils/score-utils';
+import { calculateDifferential } from '../../utils/score-utils';
 import { buildScoreData } from '../../utils/score-data-builder';
+import { HandicapCalculationService } from '../../services/handicap-calculation.service';
 
 @Component({
   selector: 'app-simple-score-entry',
@@ -59,6 +60,7 @@ export class SimpleScoreEntryComponent implements OnInit {
   private scoreService = inject(ScoreService);
   private scorecardService = inject(ScorecardService);
   private authService = inject(AuthService);
+  private handicapCalculationService = inject(HandicapCalculationService);
 
   matchId!: string;
   match: Match | null = null;
@@ -71,7 +73,7 @@ export class SimpleScoreEntryComponent implements OnInit {
   isMatchCompleted = false;
   entryMode: 'totalScore' | 'differential' = 'totalScore';
   hasScoresRecordedByHole = false;
-  displayedColumns: string[] = ['player', 'handicap', 'totalScore', 'netScore', 'winnerStatus'];
+  displayedColumns: string[] = ['player', 'rochIndex', 'totalScore', 'netScore', 'winnerStatus'];
 
   ngOnInit(): void {
     this.matchId = this.route.snapshot.params['id'];
@@ -187,19 +189,22 @@ export class SimpleScoreEntryComponent implements OnInit {
           differential: null,
           usgaDifferentialToday: 0,
           rochDifferentialToday: 0,
+          rochCapToday: this.handicapCalculationService.calculateCourseHandicap(member.rochIndex || 0, memberScorecard?.slope || 113),
+          usgaCapToday: this.handicapCalculationService.calculateCourseHandicap(member.usgaIndex || 0, memberScorecard?.slope || 113),
           othersDifferentialToday: 0,
-          handicap: (member as Member).usgaIndex || 0,
+          rochIndex: (member as Member).rochIndex || 0,
+          usgaIndex: (member as Member).usgaIndex || 0,
           netScore: 0,
           wonIndo: false,
           wonOneBall: false,
           wonTwoBall: false,
           // Attach member's scorecard info for use in template or calculations
           scorecardId: memberScorecard?._id,
-          tees: memberScorecard?.tees,
+          scTees: memberScorecard?.tees,
           teeAbreviation: memberScorecard?.teeAbreviation,
-          rating: memberScorecard?.rating,
-          slope: memberScorecard?.slope,
-          par: memberScorecard?.par
+          scRating: memberScorecard?.rating,
+          scSlope: memberScorecard?.slope,
+          scPar: memberScorecard?.par
         }));
         console.log('Player Scores after setup:', this.playerScores);
 
@@ -283,13 +288,13 @@ export class SimpleScoreEntryComponent implements OnInit {
 
             // Calculate differential from total score (reverse calculation)
             const coursePar = this.scorecard?.par || 72;
-            const courseRating = this.playerScores[playerIndex].rating || coursePar;
-            const courseSlope = this.playerScores[playerIndex].slope || 113;
-            this.playerScores[playerIndex].differential = totalScore - courseRating;
+            const scRating = this.playerScores[playerIndex].scRating || coursePar;
+            const scSlope = this.playerScores[playerIndex].scSlope || 113;
+            this.playerScores[playerIndex].differential = totalScore - scRating;
             this.playerScores[playerIndex].usgaDifferentialToday = 
-             calculateUSGADifferentialToday(totalScore,courseSlope,courseRating) ;
+             calculateDifferential(totalScore,scSlope,scRating) ;
              this.playerScores[playerIndex].rochDifferentialToday = 
-             calculateUSGADifferentialToday(totalScore,courseSlope,courseRating) ;
+             calculateDifferential(totalScore,scSlope,scRating) ;
 
             const playerFormGroup = this.getPlayerFormGroup(playerIndex);
             playerFormGroup.get('totalScore')?.setValue(totalScore);
@@ -336,12 +341,12 @@ export class SimpleScoreEntryComponent implements OnInit {
       score = parseInt(inputValue);
     }
     this.playerScores[playerIndex].totalScore = score;
-    this.playerScores[playerIndex].usgaDifferentialToday = calculateUSGADifferentialToday(score || 0, this.playerScores[playerIndex].slope || 113, this.playerScores[playerIndex].rating || 72) || 0;
-    this.playerScores[playerIndex].rochDifferentialToday = calculateUSGADifferentialToday(score || 0, this.playerScores[playerIndex].slope || 113, this.playerScores[playerIndex].rating || 72) || 0;
+    this.playerScores[playerIndex].usgaDifferentialToday = calculateDifferential(score || 0, this.playerScores[playerIndex].scSlope || 113, this.playerScores[playerIndex].scRating || 72) || 0;
+    this.playerScores[playerIndex].rochDifferentialToday = calculateDifferential(score || 0, this.playerScores[playerIndex].scSlope || 113, this.playerScores[playerIndex].scRating || 72) || 0;
     // Update differential based on total score
     if (score !== null) {
       // const courseRating = this.scorecard?.rating || this.scorecard?.par || 72;
-      this.playerScores[playerIndex].differential = score - this.playerScores[playerIndex].rating!;
+      this.playerScores[playerIndex].differential = score - this.playerScores[playerIndex].scRating!;
       const playerFormGroup = this.getPlayerFormGroup(playerIndex);
       playerFormGroup
         .get('differential')
@@ -370,8 +375,8 @@ export class SimpleScoreEntryComponent implements OnInit {
 
     // Calculate total score from differential
     if (differential !== null) {
-      const courseRating = this.scorecard?.rating || this.scorecard?.par || 72;
-      this.playerScores[playerIndex].totalScore = Math.round(differential + courseRating);
+      const scRating = this.scorecard?.rating || this.scorecard?.par || 72;
+      this.playerScores[playerIndex].totalScore = Math.round(differential + scRating);
       const playerFormGroup = this.getPlayerFormGroup(playerIndex);
       playerFormGroup
         .get('totalScore')
@@ -389,7 +394,7 @@ export class SimpleScoreEntryComponent implements OnInit {
   private calculateNetScore(playerIndex: number): void {
     const player = this.playerScores[playerIndex];
     if (player.totalScore !== null) {
-      player.netScore = player.totalScore - player.handicap;
+      player.netScore = player.totalScore - player.rochIndex;
     } else {
       player.netScore = 0;
     }
@@ -419,6 +424,7 @@ export class SimpleScoreEntryComponent implements OnInit {
   }
 
   private async savePlayerScore(playerScore: SimplePlayerScore): Promise<void> {
+    console.log('Saving score data for player:', playerScore.rochCapToday, playerScore.usgaCapToday);
     const scoreData = buildScoreData(
       playerScore,
       this.match!,

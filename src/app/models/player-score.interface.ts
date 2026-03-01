@@ -8,7 +8,7 @@ export interface PlayerScore {
   total: number;
   totalScore: number | null;
   differential: number | null;
-  handicap: number;
+  rochIndex: number;
   netScore: number;
   wonIndo: boolean;
   wonOneBall: boolean;

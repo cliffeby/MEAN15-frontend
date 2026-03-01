@@ -78,7 +78,7 @@ export class DashboardDataService {
       if (scores.scores.length > 0) {
         console.log('Sample score structure:', {
           score: scores.scores[0].score,
-          handicap: scores.scores[0].handicap,
+          rochIndex: scores.scores[0].rochIndex,
           memberId: scores.scores[0].memberId,
           memberIdType: typeof scores.scores[0].memberId
         });

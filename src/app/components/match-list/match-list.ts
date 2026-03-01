@@ -81,8 +81,8 @@ export class MatchListComponent implements OnInit, OnDestroy {
   private memberService = inject(MemberService);
   private scorecardService = inject(ScorecardService);
   private pdfService = inject(ScorecardPdfService);
-  private handicapService = inject(HandicapCalculationService);
-  private hcapComputeService = inject(HandicapService);
+  private handicapService = inject(HandicapService);
+  private hcapCalculationService = inject(HandicapCalculationService);
   private configService = inject(ConfigurationService);
   private scoreService = inject(ScoreService);
   private hcapService = inject(HCapService);
@@ -301,7 +301,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
               const memberScorecard = getMemberScorecard(finalScorecard.course, member.scorecardsId || [], scorecardList);
               return {
                 member,
-                handicap: this.handicapService.calculateCourseHandicap(
+                rochIndex: this.hcapCalculationService.calculateCourseHandicap(
                   member.usgaIndex || 0,
                   finalScorecard?.slope,
                 ),
@@ -411,14 +411,14 @@ export class MatchListComponent implements OnInit, OnDestroy {
           this.confirmDialog
             .confirmAction(
               'Complete Match',
-              'Completing this match will create/update handicap records for players with posted score > 50. Do you want to continue?',
+              'Completing this match will create/update rochIndex records for players with posted score > 50. Do you want to continue?',
               'Complete',
               'Cancel',
             )
             .subscribe(async (confirmed) => {
               if (!confirmed) return;
               try {
-                await this.createHcapRecordsForMatch(id);
+                await this.createHcapRecordsForMatch2(id);
                 this.store.dispatch(MatchActions.updateMatchStatus({ id, status, name, author }));
                 this.snackBar.open(
                   'Match completed — handicaps updated (where applicable).',
@@ -430,7 +430,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
               } catch (err) {
                 console.error('Error creating HCap records:', err);
                 this.snackBar.open(
-                  'Error creating handicap records. Match status not changed.',
+                  'Error creating rochIndex records. Match status not changed.',
                   'Close',
                   { duration: 6000 },
                 );
@@ -443,35 +443,18 @@ export class MatchListComponent implements OnInit, OnDestroy {
       });
   }
 
-  private async createHcapRecordsForMatch(matchId: string): Promise<any> {
+  private async createHcapRecordsForMatch2(matchId: string): Promise<any> {
+    const author = this.authService.getAuthorObject();
+
     // Fetch scores for this match
     const resp: any = await lastValueFrom(this.scoreService.getScoresByMatch(matchId));
     const matchScores: any[] = resp?.scores || resp || [];
-
-    const currentUser = this.authService.getAuthorObject();
 
     // Only process players with a valid posted score
     const eligible = matchScores.filter((s: any) => {
       const posted = s.postedScore ?? s.score ?? 0;
       return typeof posted === 'number' && posted > 50;
     });
-
-    // Deduplicate by memberId — prefer higher posted score, then most recent date
-    const uniqueMap = new Map<string, any>();
-    for (const s of eligible) {
-      const key = typeof s.memberId === 'string' ? s.memberId : s.memberId?._id || s._id;
-      if (!key) { uniqueMap.set(s._id || JSON.stringify(s), s); continue; }
-      if (!uniqueMap.has(key)) {
-        uniqueMap.set(key, s);
-      } else {
-        const ex = uniqueMap.get(key);
-        const exPosted = ex.postedScore ?? ex.score ?? 0;
-        const curPosted = s.postedScore ?? s.score ?? 0;
-        if (curPosted > exPosted || new Date(s.datePlayed || 0) > new Date(ex.datePlayed || 0)) {
-          uniqueMap.set(key, s);
-        }
-      }
-    }
 
     // Load existing HCap records once for upsert logic
     let existingHcaps: any[] = [];
@@ -488,20 +471,11 @@ export class MatchListComponent implements OnInit, OnDestroy {
       if (mId && maId) existingMap.set(`${mId}:${maId}`, h);
     }
 
-    const createPromises = Array.from(uniqueMap.values()).map(async (currentScore: any) => {
+    const createPromises = eligible.map(async (score: any) => {
       try {
-        const memberId =
-          typeof currentScore.memberId === 'string'
-            ? currentScore.memberId
-            : currentScore.memberId?._id || null;
+        const memberId = typeof score.memberId === 'string' ? score.memberId : score.memberId?._id || null;
 
-        // Load member for name / current handicap
-        let member: any = null;
-        if (memberId) {
-          try { member = await lastValueFrom(this.memberService.getById(memberId)); } catch {}
-        }
-
-        // Fetch up to 19 most recent prior scores for this member (excluding this match)
+        // Fetch up to 19 prior scores for this member (excluding this match) for handicap computation
         let priorScores: any[] = [];
         if (memberId) {
           try {
@@ -510,7 +484,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
             priorScores = allMemberScores
               .filter((s: any) => {
                 const sMatchId = typeof s.matchId === 'string' ? s.matchId : s.matchId?._id;
-                return sMatchId !== matchId && s._id !== currentScore._id;
+                return sMatchId !== matchId && s._id !== score._id;
               })
               .sort((a: any, b: any) =>
                 new Date(b.datePlayed || 0).getTime() - new Date(a.datePlayed || 0).getTime()
@@ -521,44 +495,40 @@ export class MatchListComponent implements OnInit, OnDestroy {
           }
         }
 
-        // Compute new handicap from current score + up to 19 prior scores
-        const scoresToUse = [currentScore, ...priorScores];
-        const newHCapStr = this.hcapComputeService.computeHandicapFromScores(scoresToUse);
-        const newHCap = newHCapStr ? parseFloat(newHCapStr) : null;
+        // const newHCapStr = this.handicapService.computeHandicapFromScores([score, ...priorScores]);
+        // const newHCapIndex = newHCapStr ? parseFloat(newHCapStr) : null;
 
-        console.log(
-          `HCap for member ${memberId}: current score ${currentScore.postedScore}, ` +
-          `prior scores used: ${priorScores.length}, newHCap: ${newHCapStr}`
-        );
+        const rochNewCapStr = this.handicapService.computeRochFromScores([score, ...priorScores]);
+        const usgaNewCapStr = this.handicapService.computeUSGAFromScores([score, ...priorScores]);
+        const rochNewCap = rochNewCapStr ? parseFloat(rochNewCapStr) : null;
+        const usgaNewCap = usgaNewCapStr ? parseFloat(usgaNewCapStr) : null;
+        const rochCapForThisRound = this.hcapCalculationService.calculateCourseHandicapFromIndex(score.rochIndex ?? 0, score.scSlope ?? 113, score.scRating ?? 72, score.scPar ?? 72);
+        const usgaCapForThisRound = this.hcapCalculationService.calculateCourseHandicapFromIndex(score.usgaIndex ?? 0, score.scSlope ?? 113, score.scRating ?? 72, score.scPar ?? 72);
 
         const hcapRecord: any = {
-          name: currentScore.name || (member ? `${member.firstName} ${member.lastName || ''}`.trim() : ''),
-          postedScore: currentScore.postedScore ?? currentScore.score ?? null,
-          currentHCap: member?.handicap ?? member?.usgaIndex ?? null,
-          newHCap,
-          rochDifferentialToday: currentScore.rochDifferentialToday ?? null,
-          usgaDifferentialToday: currentScore.usgaDifferentialToday ?? null,
-          datePlayed: currentScore.datePlayed || new Date().toISOString(),
-          usgaIndexForTodaysScore: currentScore.usgaIndexForTodaysScore ?? currentScore.usgaIndex ?? null,
-          handicap: member?.handicap ?? null,
-          scoreId: currentScore._id || null,
-          scorecardId:
-            (currentScore.scorecardId &&
-              (typeof currentScore.scorecardId === 'string'
-                ? currentScore.scorecardId
-                : currentScore.scorecardId._id)) || null,
-          scCourse: currentScore.scCourse || '',
-          scTees: currentScore.scTees || '',
-          scRating: currentScore.scRating || null,
-          scSlope: currentScore.scSlope || null,
-          scPar: currentScore.scPar || null,
-          matchId:
-            (currentScore.matchId &&
-              (typeof currentScore.matchId === 'string'
-                ? currentScore.matchId
-                : currentScore.matchId._id)) || matchId,
+          name: score.name || '',
+          postedScore: score.postedScore ?? score.score ?? null,
+          datePlayed: score.datePlayed || new Date().toISOString(),
+          author: score.author || author,
+          matchId,
           memberId,
-          author: currentUser,
+          rochDifferentialForTodaysRound: score.rochDifferentialForTodaysRound ?? null,
+          usgaDifferentialForTodaysRound: score.usgaDifferentialForTodaysRound ?? null,
+          rochHandicapForThisRound: rochCapForThisRound,
+          usgaHandicapForThisRound: usgaCapForThisRound,
+          rochIndexForThisRound: score.rochIndex ?? null,
+          usgaIndexForThisRound: score.usgaIndex ?? null,
+          // rochHandicapForThisRound: score.rochIndex ?? null,
+          // usgaHandicapForThisRound: score.usgaIndex ?? null,
+          teeAbreviation: score.teeAbreviation || null,
+          scCourse: score.scCourse || null,
+          scTees: score.scTees || null,
+          scSlope: score.scSlope ?? null,
+          scRating: score.scRating ?? null,
+          rochNewCap,
+          usgaNewCap,
+          usgaIndexAfterTodaysScore: score.usgaIndexAfterTodaysScore ?? score.usgaIndex ?? null,
+          rochIndexAfterTodaysScore: score.rochIndexAfterTodaysScore ?? score.rochIndex ?? null,
         };
 
         // Upsert: update existing HCap record for same member+match, or create new
@@ -571,22 +541,9 @@ export class MatchListComponent implements OnInit, OnDestroy {
           }
         }
 
-        // Also update member's handicap field if newHCap changed
-        if (memberId && newHCap !== null) {
-          try {
-            this.memberService.update(memberId, {
-              handicap: newHCap,
-              datePlayed: currentScore.datePlayed || new Date().toISOString(),
-            } as any).subscribe({
-              next: () => console.log(`Updated member ${memberId} handicap to ${newHCap}`),
-              error: (e) => console.warn('Failed to update member handicap:', e),
-            });
-          } catch {}
-        }
-
         return await lastValueFrom(this.hcapService.create(hcapRecord));
       } catch (err) {
-        console.error('Failed to create HCap for score:', currentScore, err);
+        console.error('Failed to create HCap record for score:', score, err);
         return null;
       }
     });
@@ -653,7 +610,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
 
     const subject = `Golf Scorecard - ${course} - ${matchDate}`;
     const body = `Please find attached the scorecard for ${matchName} at ${course} on ${matchDate}.\n\nPlayers:\n${players
-      .map((p) => `• ${p.member.firstName} ${p.member.lastName} (${p.handicap})`)
+      .map((p) => `• ${p.member.firstName} ${p.member.lastName} (${p.rochIndex})`)
       .join('\n')}\n\nGenerated on ${new Date().toLocaleDateString()}`;
 
     // Download the PDF first

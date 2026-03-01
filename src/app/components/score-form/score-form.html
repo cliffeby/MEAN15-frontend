@@ -16,7 +16,7 @@
 
   <mat-form-field appearance="fill">
     <mat-label>Handicap</mat-label>
-    <input matInput formControlName="handicap" type="number" required placeholder="Enter handicap" title="Handicap" />
+    <input matInput formControlName="rochIndex" type="number" required placeholder="Enter rochIndex" title="Handicap" />
   </mat-form-field>
 
   <mat-form-field appearance="fill">
@@ -32,7 +32,7 @@
 
   <mat-form-field appearance="fill">
     <mat-label>USGA Index for Today's Score</mat-label>
-    <input matInput formControlName="usgaIndexForTodaysScore" type="number" step="0.1" min="-10" max="54" placeholder="Enter USGA Index for today (e.g. 12.5)" title="USGA Index for Today" />
+    <input matInput formControlName="usgaIndexAfterTodaysScore" type="number" step="0.1" min="-10" max="54" placeholder="Enter USGA Index for today (e.g. 12.5)" title="USGA Index for Today" />
     <mat-error *ngIf="isUsgaIndexForTodaysScoreMinError">
       USGA Index cannot be less than -10.0
     </mat-error>

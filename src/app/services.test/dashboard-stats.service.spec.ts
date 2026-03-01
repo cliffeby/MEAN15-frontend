@@ -66,8 +66,8 @@ describe('DashboardStatsService', () => {
         { _id: '2', firstName: 'Bob', lastName: 'Jones' }
       ];
       const scores = [
-        { memberId: '1', score: 72, datePlayed: '2025-11-01',handicap:2 },
-        { memberId: '2', score: 68, datePlayed: '2025-10-01',handicap:0 }
+        { memberId: '1', score: 72, datePlayed: '2025-11-01',rochIndex:2 },
+        { memberId: '2', score: 68, datePlayed: '2025-10-01',rochIndex:0 }
       ];
       const membersSignal = signal(members as any);
       const scoresSignal = signal(scores as any);
@@ -94,8 +94,8 @@ describe('DashboardStatsService', () => {
         { _id: '2', firstName: 'Bob', lastName: 'Jones' }
       ];
           const scores = [
-      { memberId: '1', score: 72, handicap: 2, datePlayed: '2025-11-01' },
-      { memberId: '2', score: 68, handicap: 0, datePlayed: '2025-10-01' }
+      { memberId: '1', score: 72, rochIndex: 2, datePlayed: '2025-11-01' },
+      { memberId: '2', score: 68, rochIndex: 0, datePlayed: '2025-10-01' }
       ];
       const membersSignal = signal(members as any);
       const scoresSignal = signal(scores as any);

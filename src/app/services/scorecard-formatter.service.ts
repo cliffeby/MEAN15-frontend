@@ -14,14 +14,14 @@ export class ScorecardFormatterService {
   getFormattedPlayerName(player: PrintablePlayer): string {
     const firstName = player.member.firstName || '';
     const lastName = player.member.lastName || '';
-    const handicap = player.handicap;
+    const rochIndex = player.rochIndex;
     const teeAbreviation = player.teeAbreviation || '';
     
     
     const firstInitial = firstName.charAt(0).toUpperCase();
     const lastNameTruncated = lastName.length > 8 ? lastName.substring(0, 8) : lastName;
     
-    return `${firstInitial}. ${lastNameTruncated} (${handicap}) ${teeAbreviation}`;
+    return `${firstInitial}. ${lastNameTruncated} (${rochIndex}) ${teeAbreviation}`;
   }
 
   /**
@@ -74,9 +74,9 @@ export class ScorecardFormatterService {
   }
 
   /**
-   * Format handicap for display
+   * Format rochIndex for display
    */
-  formatHandicap(handicap: number): string {
-    return handicap > 0 ? handicap.toString() : '-';
+  formatHandicap(rochIndex: number): string {
+    return rochIndex > 0 ? rochIndex.toString() : '-';
   }
 }

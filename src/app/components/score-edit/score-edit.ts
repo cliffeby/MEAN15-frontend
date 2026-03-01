@@ -66,7 +66,7 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
   scoreForm: FormGroup;
   loading = false;
   scoreId: string | null = null;
-  authorName = '';
+  author: { name: string } | null = null;
   matchStatus = '';
   matchName = '';
   isMatchCompleted = false;
@@ -93,8 +93,10 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
       scores: this.fb.array([]),
       scoresToPost: this.fb.array([]),
       usgaIndex: [null, [Validators.min(-10), Validators.max(54)]],
-      usgaIndexForTodaysScore: [null, [Validators.min(-10), Validators.max(54)]],
-      handicap: [null, [Validators.required, Validators.min(0)]],
+      usgaIndexAfterTodaysScore: [null, [Validators.min(-10), Validators.max(54)]],
+      rochCapToday: [null, [Validators.required, Validators.min(0)]],
+      usgaCapToday: [null, [Validators.required, Validators.min(0)]],
+      rochIndex: [null, [Validators.required, Validators.min(0)]],
       wonTwoBall: [false],
       wonOneBall: [false],
       wonIndo: [false],
@@ -113,8 +115,9 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
       scTees: [''],
       datePlayed: [new Date()],
       foursomeIds: this.fb.array([]),
-      partnerIds: this.fb.array([])
-    });
+      partnerIds: this.fb.array([]),
+      authorName: [''] // For display only
+    });   
   }
 
   get scoresArray() {
@@ -152,7 +155,7 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
     this.scoresToPostArray.clear();
 
     // Get author name directly from score object
-    this.authorName = score.author?.name || 'Unknown Author';
+    this.author = score.author || { name: 'Unknown Author' };
 
     // Check match status to determine if scores are locked
     if (score.matchId === null || score.matchId === undefined || (typeof score.matchId === 'string' && !score.matchId) || (typeof score.matchId === 'object' && !score.matchId._id)) {
@@ -197,7 +200,9 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
       postedScore: score.postedScore,
       usgaIndex: score.usgaIndex,
       usgaDifferentialToday: score.usgaDifferentialToday,
-      handicap: score.handicap,
+      rochCapToday: score.rochCapToday,
+      usgaCapToday: score.usgaCapToday,
+      rochIndex: score.rochIndex,
       wonTwoBall: score.wonTwoBall,
       wonOneBall: score.wonOneBall,
       wonIndo: score.wonIndo,
@@ -212,7 +217,8 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
       scRating: score.scRating,
       scCourse: score.scCourse || '',
       scTees: score.scTees || '',
-      datePlayed: score.datePlayed ? new Date(score.datePlayed) : new Date()
+      datePlayed: score.datePlayed ? new Date(score.datePlayed) : new Date(),
+      authorName: score.author?.name || 'Unknown Author'
     });
 
     // Populate arrays
@@ -246,7 +252,7 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
   }
 
   get usgaIndexForTodaysScoreControl() {
-    return this.scoreForm.get('usgaIndexForTodaysScore');
+    return this.scoreForm.get('usgaIndexAfterTodaysScore');
   }
 
   get isUsgaIndexMinError(): boolean {
@@ -284,11 +290,6 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
     if (formValue.datePlayed instanceof Date) {
       formValue.datePlayed = formValue.datePlayed.toISOString();
     }
-    
-    // Include the userId for saving
-    // if (this.userId) {
-    //   formValue.user = this.userId;
-    // }
 
     this.scoreService.update(this.scoreId, formValue).subscribe({
       next: () => {

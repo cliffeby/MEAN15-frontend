@@ -87,17 +87,17 @@
                   <small *ngIf="player.member.usgaIndex">
                     USGA Index: {{ player.member.usgaIndex | number:'1.1-1' }}
                     <br />
-                    Roch Index: {{ player.member.handicap | number:'1.1-1' }}
+                    Roch Index: {{ player.member.rochIndex | number:'1.1-1' }}
                   </small>
                 </div>
               </td>
             </ng-container>
 
             <!-- Handicap Column -->
-            <ng-container matColumnDef="handicap">
+            <ng-container matColumnDef="rochIndex">
               <th mat-header-cell *matHeaderCellDef>Handicap</th>
               <td mat-cell *matCellDef="let player">
-                {{ player.handicap }}
+                {{ player.rochCapToday }} {{ player.usgaCapToday ? ' / ' + player.usgaCapToday : '' }}
               </td>
             </ng-container>
 

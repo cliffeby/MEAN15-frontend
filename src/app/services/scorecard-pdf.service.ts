@@ -126,7 +126,7 @@ export class ScorecardPdfService {
     // Draw par row
     currentY = this.drawParRow(pdf, scorecard, startX, currentY, playerColWidth, holeColWidth, totalColWidth);
 
-    // Draw handicap row
+    // Draw rochIndex row
     currentY = this.drawHandicapRow(pdf, scorecard, startX, currentY, playerColWidth, holeColWidth, totalColWidth);
 
     // Draw player rows
@@ -245,7 +245,7 @@ export class ScorecardPdfService {
   }
 
   /**
-   * Draw handicap row
+   * Draw rochIndex row
    */
   private drawHandicapRow(
     pdf: jsPDF, 
@@ -303,7 +303,7 @@ export class ScorecardPdfService {
     currentX = this.drawCell(pdf, currentX, y, playerColWidth, 8, playerName);
 
     for (let hole = 0; hole < 18; hole++) {
-      const playerHandicap = player.handicap;
+      const playerHandicap = player.rochIndex;
       const holeHandicap = this.handicapService.getHoleHandicap(scorecard, hole);
       // Individual strokes (x's)
       const strokeCount = this.handicapService.getStrokeCountOnHole(playerHandicap, holeHandicap);

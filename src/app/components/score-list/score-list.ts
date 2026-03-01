@@ -73,8 +73,8 @@ export class ScoreListComponent implements OnInit {
   filteredGroupedByMember: GroupedByMember[] = [];
   memberSearchTerm = '';
   loading = false;
-  displayedColumns: string[] = ['name', 'score', 'postedScore', 'course', 'usgaIndex','handicap',  'method', 'actions'];
-  memberDisplayedColumns: string[] = ['match', 'score', 'postedScore', 'datePlayed', 'course', 'usgaIndex', 'handicap',  'method', 'actions'];
+  displayedColumns: string[] = ['name', 'score', 'postedScore', 'course', 'usgaIndex','rochIndex',  'method', 'actions'];
+  memberDisplayedColumns: string[] = ['match', 'score', 'postedScore', 'datePlayed', 'course', 'usgaIndex', 'rochIndex',  'method', 'actions'];
 
   constructor(
     private scoreService: ScoreService,
@@ -267,9 +267,9 @@ export class ScoreListComponent implements OnInit {
     }
   }
 
-  formatHandicap(handicap: number): string {
-    if (handicap === null || handicap === undefined) return 'N/A';
-    return handicap.toString();
+  formatHandicap(rochIndex: number): string {
+    if (rochIndex === null || rochIndex === undefined) return 'N/A';
+    return rochIndex.toString();
   }
 
   formatCourseName(scName: string): string {

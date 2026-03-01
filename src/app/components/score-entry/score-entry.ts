@@ -15,7 +15,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { forkJoin, of, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, delay, take } from 'rxjs/operators';
 import { buildScoreData } from '../../utils/score-data-builder';
-import { calculateUSGADifferentialToday } from '../../utils/score-utils';
+import { calculateDifferential } from '../../utils/score-utils';
 
 import { MatchService } from '../../services/matchService';
 import { MemberService } from '../../services/memberService';
@@ -72,13 +72,13 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   }
 
   getHoleHandicapFromScorecard(holeIndex: number): number {
-    // Returns the handicap for a specific hole from scorecard
+    // Returns the rochIndex for a specific hole from scorecard
     return this.scorecard?.hCaps?.[holeIndex] || 0;
   }
 
   getHoleHandicap(playerIndex: number): number {
-    // Returns the handicap for a player
-    return this.playerScores[playerIndex]?.handicap || 0;
+    // Returns the rochIndex for a player
+    return this.playerScores[playerIndex]?.rochIndex || 0;
   }
 
   onKeyDown(event: KeyboardEvent, playerIndex: number, holeIndex: number): void {
@@ -123,7 +123,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   playerSaveStatus: Map<number, 'saved' | 'saving' | 'unsaved' | 'error'> = new Map();
   lastSaveTime: Map<number, Date> = new Map();
 
-  displayedColumns: string[] = ['player', 'handicap'];
+  displayedColumns: string[] = ['player', 'rochIndex'];
   holeColumns: string[] = [];
 
   ngOnInit(): void {
@@ -464,7 +464,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       this.holeColumns = Array.from({ length: 18 }, (_, i) => `hole${i + 1}`);
       this.displayedColumns = [
         'player',
-        'handicap',
+        'rochIndex',
         ...this.holeColumns,
         'frontNine',
         'backNine',
@@ -480,7 +480,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       member: member as Member,
       totalScore: null,
       differential: null,
-      handicap: (member as Member).usgaIndex || 0,
+      rochIndex: (member as Member).usgaIndex || 0,
       netScore: 0,
       wonIndo: false,
       wonOneBall: false,
@@ -775,7 +775,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   private calculatePlayerTotals(playerIndex: number): void {
     const player = this.playerScores[playerIndex];
     const scores = player.scores;
-    const { frontNine, backNine, totalScore, netScore } = calculatePlayerTotals(scores, player.handicap);
+    const { frontNine, backNine, totalScore, netScore } = calculatePlayerTotals(scores, player.rochIndex);
     player.frontNine = frontNine;
     player.backNine = backNine;
     player.totalScore = totalScore;
@@ -909,38 +909,6 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       playerScore.postedScore = response.postedScore;
     }
   }
-  // private async savePlayerScore(playerScore: any): Promise<void> {
-  //   const scoreData: Partial<Score> = {
-  //     name: `${playerScore.member.firstName} ${playerScore.member.lastName || ''}`.trim(),
-  //     score: playerScore.total,
-  //     postedScore: playerScore.total,
-  //     scores: playerScore.scores.map((s: any) => s || 0),
-  //     scoresToPost: playerScore.scores.map((s: any) => s || 0),
-  //     scoreRecordType: 'byHole',
-  //     usgaIndex: playerScore.member.usgaIndex,
-  //     handicap: calculateCourseHandicap(playerScore.handicap, this.scorecard?.slope),
-  //     matchId: this.match?._id,
-  //     memberId: playerScore.member._id,
-  //     // scorecardId: this.scorecardId,
-  //     scorecardId: this.scorecardId && this.scorecardId.trim() !== '' ? this.scorecardId : undefined,
-  //     scSlope: this.scorecard?.slope,
-  //     scRating: this.scorecard?.rating,
-  //     scPars: this.scorecard?.pars,
-  //     scHCaps: this.scorecard?.hCaps,
-  //     scTees: this.scorecard?.tees,
-  //     scCourse: this.scorecard?.course,
-  //     datePlayed: this.match?.datePlayed,
-  //     author: this.authService.getAuthorObject(),
-  //     isScored: true,
-  //   };
-
-  //   try {
-  //     await this.scoreService.savePlayerScore(scoreData, playerScore.existingScoreId);
-  //   } catch (error) {
-  //     console.error(`Error saving score for ${playerScore.member.firstName}:`, error);
-  //     throw error;
-  //   }
-  // }
 
   canSave(): boolean {
     return !this.loading && !this.saving && !this.isMatchCompleted && this.playerScores.length > 0;

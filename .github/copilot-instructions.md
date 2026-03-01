@@ -33,7 +33,7 @@ The `match-lineup` component is a critical part of the Matches feature. When gen
 ### Match-lineup functions
 - `removeGroup(event)`: This function should handle the removal of a group from the lineup. Ensure that it correctly updates the state and UI.
 - `openMemberSelectionDialog()`: This function should open a dialog for selecting members to add to the lineup. Ensure that it integrates with the member selection component and updates the lineup accordingly.
-- `pairing(groupIndex: number, memberIndex: number)`: This function should return a unique identifier for each pairing in the lineup. Various types of pairing will be available. The configuration component will set the type of pairing used.  Fourball pairing will create two-man teams which consist of an A and a B player. The combined handicap of each team should be as close as possible to other teams in the match. If there are an odd number of players, a low handicap player will be on two teams.
+- `pairing(groupIndex: number, memberIndex: number)`: This function should return a unique identifier for each pairing in the lineup. Various types of pairing will be available. The configuration component will set the type of pairing used.  Fourball pairing will create two-man teams which consist of an A and a B player. The combined rochIndex of each team should be as close as possible to other teams in the match. If there are an odd number of players, a low rochIndex player will be on two teams.
 - `getHandicap(memberId: string)`: This function should retrieve the USGAIndex for a given member. Ensure that it fetches the correct data from the member model or service.
 # Angular Copilot Instructions
 

@@ -217,7 +217,7 @@
       }
     }
 
-    .handicap-column {
+    .rochIndex-column {
       min-width: 50px;
       position: sticky;
       left: 130px;
@@ -345,7 +345,7 @@
       font-weight: 600;
     }
     
-    .handicap-row-data {
+    .rochIndex-row-data {
       background-color: #f3e5f5;
       font-weight: 500;
       font-size: 0.9em;
@@ -368,7 +368,7 @@
         }
         
         td.player-column,
-        td.handicap-column {
+        td.rochIndex-column {
           background-color: #fafafa;
         }
         
@@ -385,7 +385,7 @@
         }
         
         td.player-column,
-        td.handicap-column {
+        td.rochIndex-column {
           background-color: #e3f2fd;
         }
       }
@@ -469,7 +469,7 @@ mat-card-actions {
         min-width: 120px;
       }
       
-      .handicap-column {
+      .rochIndex-column {
         left: 120px;
       }
       

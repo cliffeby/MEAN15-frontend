@@ -11,7 +11,10 @@ export interface Score {
   usgaDifferentialToday: number | undefined;
   rochDifferentialToday: number | undefined;
   othersDifferentialToday: number | undefined;
-  handicap: number;
+  rochIndex: number;
+  rochCapToday?: number;
+  usgaCapToday?: number;
+  netScore: number;
   wonTwoBall?: boolean;
   wonOneBall?: boolean;
   wonIndo?: boolean;
@@ -45,7 +48,7 @@ export interface Score {
   scHCaps?: number[];
   scTees?: string;
   scCourse?: string;
-  // teeAbreviation?: string;
+  teeAbreviation?: string;
   datePlayed?: string;
   foursomeIds?: string[];
   partnerIds?: string[];
@@ -71,7 +74,9 @@ export interface SimplePlayerScore {
   usgaDifferentialToday: number | undefined;
   rochDifferentialToday: number | undefined;
   othersDifferentialToday: number | undefined;
-  handicap: number;
+  rochIndex: number;
+  rochCapToday?: number;
+  usgaCapToday?: number;
   netScore: number;
   wonIndo: boolean;
   wonOneBall: boolean;
@@ -79,9 +84,9 @@ export interface SimplePlayerScore {
   existingScoreId?: string;
   scorecardId?: string;
   teeAbreviation?: string;
-  rating?: number;
-  slope?: number;
-  tees?: string;
+  scRating?: number;
+  scSlope?: number;
+  scTees?: string;
   memberScorecard?: Scorecard;
 }
 

@@ -199,9 +199,9 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
     const defaultColumns = [
       { key: 'fullName', label: 'Name', visible: true },
       { key: 'Email', label: 'Email', visible: true },
-      { key: 'usgaIndex', label: 'USGA Index', visible: true },
       { key: 'GHIN', label: 'GHIN', visible: true },
-      { key: 'handicap', label: 'Handicap', visible: true },
+      { key: 'usgaIndex', label: 'USGA Index', visible: true },
+      { key: 'rochIndex', label: 'Handicap', visible: true },
       { key: 'lastDatePlayed', label: 'Last Played', visible: true },
       { key: 'hidden', label: 'Hidden', visible: false },
       { key: 'actions', label: 'Actions', visible: true, fixed: true },
@@ -221,7 +221,7 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loading = true;
     this.memberService.getAll().subscribe({
       next: (members) => {
-        // Use the handicap value as provided by the backend (do not calculate or override)
+        // Use the rochIndex value as provided by the backend (do not calculate or override)
         this.members = members || [];
         this.applyFilter();
         this.loading = false;
@@ -285,9 +285,9 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
           aValue = (a as any).GHIN || '';
           bValue = (b as any).GHIN || '';
           break;
-        case 'handicap':
-          aValue = (a as any).handicap || 0;
-          bValue = (b as any).handicap || 0;
+        case 'rochIndex':
+          aValue = (a as any).rochIndex || 0;
+          bValue = (b as any).rochIndex || 0;
           break;
         case 'Email':
           aValue = (a.Email || '').toLowerCase();
@@ -439,7 +439,7 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
       { key: 'Email', visible: true },
       { key: 'usgaIndex', visible: true },
       { key: 'GHIN', visible: true },
-      { key: 'handicap', visible: true },
+      { key: 'rochIndex', visible: true },
       { key: 'lastDatePlayed', visible: true },
     ];
 

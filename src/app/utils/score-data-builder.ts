@@ -28,7 +28,7 @@ export function buildScoreData(
     scoresToPost: (playerScore.scores ? playerScore.scores.map(s => s == null ? 0 : s) : new Array(18).fill(0)),
     scoreRecordType: entryMode === 'differential' ? 'differential' : 'total',
     usgaIndex: playerScore.member.usgaIndex,
-    handicap: playerScore.handicap,
+    rochIndex: playerScore.rochIndex,
     usgaDifferentialToday: calculateUSGADifferentialToday(
       playerScore.totalScore || 0,
       scorecard?.slope || 113,
@@ -43,11 +43,12 @@ export function buildScoreData(
     matchId: match?._id,
     memberId: playerScore.member._id,
     scorecardId: playerScore.scorecardId,
-    scSlope: playerScore.slope,
-    scRating: playerScore.rating,
+    scSlope: playerScore.scSlope,
+    scRating: playerScore.scRating,
     scPars: scorecard?.pars,
     scHCaps: scorecard?.hCaps,
-    scTees: playerScore.teeAbreviation,
+    scTees: playerScore.scTees,
+    teeAbreviation: playerScore.teeAbreviation,
     scCourse: scorecard?.course,
     datePlayed: match?.datePlayed,
     author,
@@ -55,5 +56,7 @@ export function buildScoreData(
     wonIndo: playerScore.wonIndo,
     wonOneBall: playerScore.wonOneBall,
     wonTwoBall: playerScore.wonTwoBall,
+    rochCapToday: playerScore.rochCapToday, // Added rochCapToday to the returned object
+    usgaCapToday: playerScore.usgaCapToday, // Added usgaCapToday to the returned object
   };
 }

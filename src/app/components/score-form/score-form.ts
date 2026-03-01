@@ -62,8 +62,8 @@ export class ScoreFormComponent implements OnInit, OnDestroy {
       scores: this.fb.array([]),
       scoresToPost: this.fb.array([]),
       usgaIndex: [null, [Validators.min(-10), Validators.max(54)]],
-      usgaIndexForTodaysScore: [null, [Validators.min(-10), Validators.max(54)]],
-      handicap: [null, [Validators.required, Validators.min(0)]],
+      usgaIndexAfterTodaysScore: [null, [Validators.min(-10), Validators.max(54)]],
+      rochIndex: [null, [Validators.required, Validators.min(0)]],
       wonTwoBall: [false],
       wonOneBall: [false],
       wonIndo: [false],
@@ -113,7 +113,7 @@ export class ScoreFormComponent implements OnInit, OnDestroy {
   }
 
   get usgaIndexForTodaysScoreControl() {
-    return this.scoreForm.get('usgaIndexForTodaysScore');
+    return this.scoreForm.get('usgaIndexAfterTodaysScore');
   }
 
   get isUsgaIndexMinError(): boolean {

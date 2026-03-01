@@ -27,7 +27,7 @@
                 <li>Enter or accept the default match name. (Default is configured in Admin → Default Match Name.)
                     It is followed by the week number for the year.
                     If you have multiple matches each week, follow it with an a, b, c,...</li>
-                <li>Choose a <em>Scorecard</em> (course/tees). The selected scorecard drives pars and hole handicap for
+                <li>Choose a <em>Scorecard</em> (course/tees). The selected scorecard drives pars and hole rochIndex for
                     the course.
                     Tees are determined by defaults set in the members profile.</li>
                 <li>Set the match date.
@@ -38,7 +38,7 @@
             <h4>Print Scorecards and Score a Match</h4>
             <ol>
                 <li>From the Matches list, open the match and click <strong>Print Scorecards.</strong>
-                    Scorecard should show the course, pairings, and strokes - both to par and off the low handicap
+                    Scorecard should show the course, pairings, and strokes - both to par and off the low rochIndex
                     player.
                     The players hsndicap and tees should be listed next to the name.
                 </li>
@@ -52,7 +52,7 @@
                 <li>Save individual player scores as you complete them, or use <strong>Save All</strong> if available.
                 </li>
                 <li>When all scores are entered, mark the match <strong>Completed</strong>. This finalizes results,
-                    triggers audit logging, and updates any downstream calculations (handicap updates if enabled).</li>
+                    triggers audit logging, and updates any downstream calculations (rochIndex updates if enabled).</li>
                 <li>To correct a score later: open the match → edit the player's entry → change hole values → save.
                     Corrections are audited.</li>
             </ol>
@@ -60,7 +60,7 @@
             <ol>
                 <li>Open <strong>Members</strong> from the sidebar.</li>
                 <li>Click <strong>New Member</strong> to open the add form.</li>
-                <li>Fill required fields (First Name) and recommended fields (Email, GHIN/handicap).</li>
+                <li>Fill required fields (First Name) and recommended fields (Email, GHIN/rochIndex).</li>
                 <li>Assign default scorecards if helpful (favorite courses) and save.</li>
                 <li>New members become selectable when creating or editing matches.</li>
             </ol>
@@ -74,7 +74,7 @@
                 <li>Save individual player scores as you complete them, or use <strong>Save All</strong> if available.
                 </li>
                 <li>When all scores are entered, mark the match <strong>Completed</strong>. This finalizes results,
-                    triggers audit logging, and updates any downstream calculations (handicap updates if enabled).</li>
+                    triggers audit logging, and updates any downstream calculations (rochIndex updates if enabled).</li>
                 <li>To correct a score later: open the match → edit the player's entry → change hole values → save.
                     Corrections are audited.</li>
             </ol>
@@ -221,7 +221,7 @@
             <mat-divider></mat-divider>
             <h4>Overview</h4>
             <p>
-                The Members feature manages member profiles (name, email, league, handicap, status) used across matches,
+                The Members feature manages member profiles (name, email, league, rochIndex, status) used across matches,
                 scorecards, and reporting. It supports listing, adding, editing, and deleting members with search and
                 filtering.
             </p>
@@ -254,7 +254,7 @@
             <h4>Form Handling & Validation</h4>
             <ul>
                 <li>Reactive forms for add/edit member with client-side validators (required fields, email format,
-                    handicap ranges).</li>
+                    rochIndex ranges).</li>
                 <li>Server-side validation in controllers to enforce data integrity and unique constraints (email).</li>
             </ul>
             <h4>Interactive Tables & UI</h4>
@@ -272,7 +272,7 @@
             <h4>Backend Details</h4>
             <ul>
                 <li><strong>Model:</strong> <code>backend/models/Member.js</code> — fields include name, email, league,
-                    handicap, status, roles.</li>
+                    rochIndex, status, roles.</li>
                 <li><strong>Controller:</strong> <code>backend/controllers/memberController.js</code> — handles
                     validation, business rules, and audit logging.</li>
                 <li><strong>Routes:</strong> <code>GET /api/members</code>, <code>GET /api/members/:id</code>,
@@ -410,8 +410,8 @@
             <mat-divider></mat-divider>
             <h4>Overview</h4>
             <p>
-                The HCap (handicap) feature manages member handicaps, adjustments, and historical handicap records. It
-                supports importing/updating handicaps, applying handicap rules for matches, and tracking handicap
+                The HCap (rochIndex) feature manages member handicaps, adjustments, and historical rochIndex records. It
+                supports importing/updating handicaps, applying rochIndex rules for matches, and tracking rochIndex
                 changes over time.
             </p>
             <h4>Frontend (Angular)</h4>
@@ -430,13 +430,13 @@
                 <li><strong>State:</strong> Managed by <code>HCapService</code> and component-local state (no NgRx
                     feature)</li>
                 <li><strong>UI:</strong> Tables for current handicaps, per-member history view, upload/import UI for
-                    handicap files, and controls to recalculate handicaps.</li>
+                    rochIndex files, and controls to recalculate handicaps.</li>
             </ul>
             <h4>NgRx Store Usage</h4>
             <ul>
                 <li><strong>Actions:</strong> Load current hcaps, import/update handicaps, load history</li>
                 <li><strong>Reducers:</strong> Manage hcap state, loading indicators, and error states</li>
-                <li><strong>Selectors:</strong> Query current handicap values, historical traces, and pending import
+                <li><strong>Selectors:</strong> Query current rochIndex values, historical traces, and pending import
                     results</li>
                 <li><strong>Effects:</strong> Handle API calls for importing, recalculation, and historical data
                     retrieval</li>
@@ -446,21 +446,21 @@
                 <li><strong>Endpoints:</strong> <code>GET /api/hcaps</code>, <code>POST /api/hcaps/import</code>,
                     <code>GET /api/hcaps/:memberId/history</code>, <code>PUT /api/hcaps/:memberId</code>
                 </li>
-                <li><strong>Model:</strong> <code>backend/models/HCap.js</code> — stores current handicap, history
+                <li><strong>Model:</strong> <code>backend/models/HCap.js</code> — stores current rochIndex, history
                     entries, and metadata about calculation rules.</li>
                 <li><strong>Validation:</strong> Ensures imported files match expected formats and values fall within
                     acceptable ranges.</li>
             </ul>
             <h4>Form Handling & Validation</h4>
             <ul>
-                <li>Upload form for handicap files with client-side format validation and preview of parsed records.
+                <li>Upload form for rochIndex files with client-side format validation and preview of parsed records.
                 </li>
                 <li>Server-side checks to validate member references and numeric ranges before committing imports.</li>
             </ul>
             <h4>Interactive Tables & UI</h4>
             <ul>
-                <li>Filterable list of members with current handicap, last update date, and source (manual/import).</li>
-                <li>Per-member history view showing previous handicap values, reasons, and timestamps.</li>
+                <li>Filterable list of members with current rochIndex, last update date, and source (manual/import).</li>
+                <li>Per-member history view showing previous rochIndex values, reasons, and timestamps.</li>
                 <li>Recalculation tools for administrators to apply new rules or backfill historical data.</li>
             </ul>
             <h4>Notifications & Feedback</h4>

@@ -128,7 +128,7 @@ export class PrintableScorecardComponent implements OnInit {
                     const memberScorecard = getMemberScorecard(finalScorecard.course, member.scorecardsId || [], scorecardList);
                     return {
                       member,
-                      handicap: this.handicapService.calculateCourseHandicap(member.usgaIndex || 0),
+                      rochIndex: this.handicapService.calculateCourseHandicap(member.rochIndex || 0, memberScorecard?.slope || 113),
                       teeAbreviation: memberScorecard?.teeAbreviation || '',
                     };
                   }
@@ -176,9 +176,9 @@ export class PrintableScorecardComponent implements OnInit {
       console.log('Parsed pars:', scorecard.pars);
     }
     
-    // Parse handicap data from string if arrays are missing
+    // Parse rochIndex data from string if arrays are missing
     if ((!scorecard.hCaps || !Array.isArray(scorecard.hCaps)) && scorecard.hCapInputString) {
-      console.log('Parsing handicap data from string:', scorecard.hCapInputString);
+      console.log('Parsing rochIndex data from string:', scorecard.hCapInputString);
       scorecard.hCaps = scorecard.hCapInputString.split(',').map((h: string) => parseInt(h.trim(), 10)).filter((h: number) => !isNaN(h));
       console.log('Parsed hCaps:', scorecard.hCaps);
     }

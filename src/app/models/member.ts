@@ -5,7 +5,7 @@ export interface Member {
   firstName: string;
   lastName: string | null;
   usgaIndex?: number;
-  handicap?: number;
+  rochIndex?: number;
   GHIN?: string;
   lastDatePlayed?: string;
   scorecardsId?: string[];

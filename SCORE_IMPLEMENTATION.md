@@ -8,7 +8,7 @@ This document summarizes the score model, service, and components that have been
 - **File**: `src/app/models/score.ts`
 - **Description**: TypeScript interface defining the Score data structure
 - **Key Properties**:
-  - Basic info: name, score, postedScore, handicap
+  - Basic info: name, score, postedScore, rochIndex
   - Golf-specific: usgaIndex, scName, scSlope, scRating
   - Game results: wonTwoBall, wonOneBall, wonIndo
   - Relations: memberId, scorecardId, matchId
@@ -93,7 +93,7 @@ The components expect the backend score API to be available at `/api/scores` wit
 
 Possible improvements:
 1. Add member/scorecard selection dropdowns instead of manual ID entry
-2. Implement score calculations and handicap updates
+2. Implement score calculations and rochIndex updates
 3. Add filtering and sorting capabilities
 4. Include score analytics and reporting features
 5. Add bulk import functionality for tournament scores

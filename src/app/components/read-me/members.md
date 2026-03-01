@@ -43,7 +43,7 @@ The Members feature allows users to view, add, edit, and manage members in the a
 - `DELETE /api/members/:id` — Delete member
 
 ### Data Model
-- Fields: name, email, league, handicap, status, etc.
+- Fields: name, email, league, rochIndex, status, etc.
 - Validation and business logic handled in controller/model
 
 ---

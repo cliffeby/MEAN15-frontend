@@ -40,34 +40,86 @@
       <td mat-cell *matCellDef="let row"> {{ row.postedScore ?? '-' }} </td>
     </ng-container>
 
-    <ng-container matColumnDef="rochDifferentialToday">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> Today's<br>Differential </th>
-      <td mat-cell *matCellDef="let row"> {{ row.rochDifferentialToday ?? '-' }} </td>
-    </ng-container>
-
-    <ng-container matColumnDef="currentHCap">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> Played HCap<br>Index</th>
-      <td mat-cell *matCellDef="let row"> {{ row.currentHCap ?? '-' }} </td>
-    </ng-container>
-
-    <ng-container matColumnDef="newHCap">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> New HCap<br>Index</th>
-      <td mat-cell *matCellDef="let row">
-        <span *ngIf="row.noScores || !row.newHCap" style="color: red; font-weight: bold;">{{ row.currentHCap ?? '-' }}</span>
-        <span *ngIf="!row.noScores && row.newHCap">{{ row.newHCap }}</span>
-      </td>
-    </ng-container>
-
     <ng-container matColumnDef="datePlayed">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Date </th>
       <td mat-cell *matCellDef="let row"> {{ row.datePlayed ? (row.datePlayed | date:'shortDate') : '-' }} </td>
     </ng-container>
 
-    <ng-container matColumnDef="usgaIndex">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> USGA<br>Index </th>
-      <td mat-cell *matCellDef="let row"> {{ row.usgaIndexForTodaysScore ?? '-' }} </td>
+    <ng-container matColumnDef="rochIndexForThisRound">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Roch Index Used Today </th>
+      <td mat-cell *matCellDef="let row"> {{ row.rochIndexForThisRound ?? '-' }} </td>
     </ng-container>
-    
+
+    <ng-container matColumnDef="usgaIndexForThisRound">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> USGA Index Used Today </th>
+      <td mat-cell *matCellDef="let row"> {{ row.usgaIndexForThisRound ?? '-' }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="rochHandicapForThisRound">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Roch Handicap Used Today </th>
+      <td mat-cell *matCellDef="let row"> {{ row.rochHandicapForThisRound ?? '-' }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="usgaHandicapForThisRound">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> USGA Handicap Used Today </th>
+      <td mat-cell *matCellDef="let row"> {{ row.usgaHandicapForThisRound ?? '-' }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="rochDifferentialForTodaysRound">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Roch<br>Diff </th>
+      <td mat-cell *matCellDef="let row"> {{ row.rochDifferentialForTodaysRound ?? '-' }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="usgaDifferentialForTodaysRound">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> USGA<br>Diff </th>
+      <td mat-cell *matCellDef="let row"> {{ row.usgaDifferentialForTodaysRound ?? '-' }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="rochNewCap">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> New<br>Roch Cap </th>
+      <td mat-cell *matCellDef="let row"> {{ row.rochNewCap ?? '-' }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="usgaNewCap">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> New<br>USGA Cap </th>
+      <td mat-cell *matCellDef="let row"> {{ row.usgaNewCap ?? '-' }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="rochIndexAfterTodaysScore">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Roch<br>After </th>
+      <td mat-cell *matCellDef="let row"> {{ row.rochIndexAfterTodaysScore ?? '-' }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="usgaIndexAfterTodaysScore">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> USGA<br>After </th>
+      <td mat-cell *matCellDef="let row"> {{ row.usgaIndexAfterTodaysScore ?? '-' }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="scCourse">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Course </th>
+      <td mat-cell *matCellDef="let row"> {{ row.scCourse || '-' }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="scTees">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Tees </th>
+      <td mat-cell *matCellDef="let row"> {{ row.scTees || '-' }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="teeAbreviation">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Tee<br>Abrev </th>
+      <td mat-cell *matCellDef="let row"> {{ row.teeAbreviation || '-' }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="scRating">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Rating </th>
+      <td mat-cell *matCellDef="let row"> {{ row.scRating ?? '-' }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="scSlope">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Slope </th>
+      <td mat-cell *matCellDef="let row"> {{ row.scSlope ?? '-' }} </td>
+    </ng-container>
+
     <ng-container matColumnDef="author">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Author </th>
       <td mat-cell *matCellDef="let row"> {{ row.author?.name || '-' }} </td>

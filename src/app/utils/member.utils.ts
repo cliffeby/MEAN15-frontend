@@ -49,16 +49,16 @@ export class MemberUtils {
   }
 
   /**
-   * Validates that a score has valid score and handicap data
+   * Validates that a score has valid score and rochIndex data
    */
   static isValidScore(score: Score): boolean {
-    return !!(score.score && score.handicap !== undefined);
+    return !!(score.score && score.rochIndex !== undefined);
   }
 
   /**
-   * Calculates net score from gross score and handicap
+   * Calculates net score from gross score and rochIndex
    */
   static calculateNetScore(score: Score): number {
-    return score.score - (score.handicap || 0);
+    return score.score - (score.rochIndex || 0);
   }
 }

@@ -4,6 +4,6 @@ export interface PrintablePlayer {
     firstName: string;
     lastName: string;
   };
-  handicap: number;
+  rochIndex: number;
   teeAbreviation: string;
 }

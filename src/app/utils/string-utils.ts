@@ -8,7 +8,7 @@ export function parseStringData(scorecard: Scorecard): void {
       scorecard.pars = parseNumberString(scorecard.parInputString);
     }
     
-    // Parse handicap data from string if arrays are missing
+    // Parse rochIndex data from string if arrays are missing
     if ((!scorecard.hCaps || !Array.isArray(scorecard.hCaps)) && scorecard.hCapInputString) {
       scorecard.hCaps = parseNumberString(scorecard.hCapInputString);
     }

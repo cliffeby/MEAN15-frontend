@@ -60,13 +60,13 @@
 
             <!-- USGA Index Column -->
             <ng-container matColumnDef="usgaIndex">
-              <th mat-header-cell *matHeaderCellDef>USGA<br>Index</th>
-              <td mat-cell *matCellDef="let score">{{ score.usgaIndex || 'N/A' }}</td>
+              <th mat-header-cell *matHeaderCellDef>USGA<br>Handicap</th>
+              <td mat-cell *matCellDef="let score">{{ score.usgaCapToday || 'N/A' }}</td>
             </ng-container> <!-- Handicap Column -->
             
-            <ng-container matColumnDef="handicap">
-              <th mat-header-cell *matHeaderCellDef>Round<br>Handicap</th>
-              <td mat-cell *matCellDef="let score">{{ score.handicap || 'N/A' }}</td>
+            <ng-container matColumnDef="rochIndex">
+              <th mat-header-cell *matHeaderCellDef>Roch<br>Handicap</th>
+              <td mat-cell *matCellDef="let score">{{ score.rochCapToday || 'N/A' }}</td>
             </ng-container>
 
             <!-- Method Column -->
@@ -171,14 +171,14 @@
 
                   <!-- USGA Index Column -->
                   <ng-container matColumnDef="usgaIndex">
-                    <th mat-header-cell *matHeaderCellDef>USGA<br>Index</th>
-                    <td mat-cell *matCellDef="let score">{{ score.usgaIndex || 'N/A' }}</td>
+                    <th mat-header-cell *matHeaderCellDef>USGA<br>Handicap</th>
+                    <td mat-cell *matCellDef="let score">{{ score.usgaCapToday || 'N/A' }}</td>
                   </ng-container>
 
                   <!-- Handicap Column -->
-                  <ng-container matColumnDef="handicap">
-                    <th mat-header-cell *matHeaderCellDef>Round<br>Handicap</th>
-                    <td mat-cell *matCellDef="let score">{{ score.handicap || 'N/A' }}</td>
+                  <ng-container matColumnDef="rochIndex">
+                    <th mat-header-cell *matHeaderCellDef>Roch<br>Handicap</th>
+                    <td mat-cell *matCellDef="let score">{{ score.rochIndex || 'N/A' }}</td>
                   </ng-container>
 
                   <!-- Method Column -->

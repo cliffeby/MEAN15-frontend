@@ -23,7 +23,7 @@ describe('HcapListComponent', () => {
       currentHCap: 12,
       newHCap: '11.5',
       datePlayed: new Date(),
-      usgaIndexForTodaysScore: {
+      usgaIndexAfterTodaysScore: {
         type: 1,
         min: [-10, 'USGA Index for today cannot be less than -10.0'],
         max: [54, 'USGA Index for today cannot be greater than 54.0'],
@@ -47,15 +47,15 @@ describe('HcapListComponent', () => {
     {
       name: 'Bob',
       postedScore: 90,
-      currentHCap: 22,
-      newHCap: '21.5',
+      // currentHCap: 22,
+      // newHCap: '21.5',
       datePlayed: new Date(),
-      usgaIndexForTodaysScore: {
+      usgaIndexAfterTodaysScore: {
         type: 1,
         min: [-10, 'USGA Index for today cannot be less than -10.0'],
         max: [54, 'USGA Index for today cannot be greater than 54.0'],
       },
-      handicapDifferential: 22,
+      // handicapDifferential: 22,
       scoreId: 's2',
       scorecardId: 'sc2',
       matchId: 'm2',
@@ -83,7 +83,7 @@ describe('HcapListComponent', () => {
       scoresToPost: [],
       scoringMethod: 'total',
       scoreRecordType: 'total',
-      handicap: 12,
+      rochIndex: 12,
       scorecardId: 'sc1',
       memberId: 'mem1',
       scSlope: 113,
@@ -102,7 +102,7 @@ describe('HcapListComponent', () => {
       scoresToPost: [],
       scoringMethod: 'total',
       scoreRecordType: 'total',
-      handicap: 22,
+      rochIndex: 22,
       scorecardId: 'sc2',
       memberId: 'mem2',
       scSlope: 113,

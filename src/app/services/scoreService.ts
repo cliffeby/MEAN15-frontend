@@ -134,7 +134,7 @@ export class ScoreService {
 
   savePlayerScore(scoreData: Partial<Score>, existingScoreId?: string): Promise<any> {
     if (existingScoreId) {
-      console.log('savePlayerScore: updating existing score with ID:', existingScoreId);
+      console.log('savePlayerScore: updating existing score with ID:', scoreData);
       return lastValueFrom(
         this.update(existingScoreId, scoreData as Score).pipe(
           retryWhen(errors => errors.pipe(delay(500), take(2))),

@@ -106,7 +106,7 @@ export class ConfigurationService {
     {
       key: 'scoring',
       title: 'Scoring Configuration',
-      description: 'Set up scoring rules and handicap calculations',
+      description: 'Set up scoring rules and rochIndex calculations',
       icon: 'emoji_events'
     },
     {
@@ -240,7 +240,7 @@ export class ConfigurationService {
     {
       key: 'handicapCalculationMethod',
       label: 'Handicap method',
-      description: 'Method used for handicap calculations',
+      description: 'Method used for rochIndex calculations',
       type: 'select',
       section: 'scoring',
       options: [

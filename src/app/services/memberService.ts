@@ -96,11 +96,11 @@ export class MemberService {
         return members.map((m: Member) => {
           // Use lastDatePlayed from member for most recent date
           const recentDate: string | null = m.lastDatePlayed ?? null;
-          // Use handicap as the best source for newHCap
+          // Use rochIndex as the best source for newHCap
           return {
             firstName: m.firstName,
             lastName: m.lastName,
-            handicap: typeof m.handicap === 'number' ? m.handicap : null,
+            rochIndex: typeof m.rochIndex === 'number' ? m.rochIndex : null,
             usgaIndex: typeof m.usgaIndex === 'number' ? m.usgaIndex : null,
             recentDateOfPlay: recentDate,
           };

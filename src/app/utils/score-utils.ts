@@ -10,9 +10,9 @@ export function calculateCourseHandicap(usgaIndex: number, slope?: number): numb
   if (!slope) return 0;
   return Math.round((usgaIndex * slope) / 113);
 }
-export function calculateUSGADifferentialToday(todaysScore: number, slope?: number, rating?:number): number {
+export function calculateDifferential(score: number, slope?: number, rating?:number): number {
   if (!slope) return 0;
-  return Math.round(((todaysScore-rating!) * slope) / 113 * 10) / 10;
+  return Math.round(((score-rating!) * slope) / 113 * 10) / 10;
 }
 
 export function getParForHole(pars: number[] | undefined, holeIndex: number): number {
@@ -31,7 +31,7 @@ export function getBackNinePar(pars?: number[]): number {
   return pars?.slice(9, 18).reduce((sum, p) => sum + p, 0) || 36;
 }
 
-export function calculatePlayerTotals(scores: (number | null)[], handicap: number): {
+export function calculatePlayerTotals(scores: (number | null)[], rochIndex: number): {
   frontNine: number;
   backNine: number;
   totalScore: number;
@@ -40,6 +40,6 @@ export function calculatePlayerTotals(scores: (number | null)[], handicap: numbe
   const frontNine = sumScores(scores.slice(0, 9));
   const backNine = sumScores(scores.slice(9, 18));
   const totalScore = frontNine + backNine;
-  const netScore = totalScore - handicap;
+  const netScore = totalScore - rochIndex;
   return { frontNine, backNine, totalScore, netScore };
 }

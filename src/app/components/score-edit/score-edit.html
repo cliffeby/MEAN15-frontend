@@ -1,38 +1,38 @@
 <form class="score-edit">
   <h2>View Score</h2>
-  
+
   <!-- Match Status Warning -->
   @if (isMatchCompleted) {
-    <div class="match-locked-warning">
-      <mat-card class="warning-card">
-        <mat-card-content>
-          <div class="warning-content">
-            <mat-icon class="warning-icon">lock</mat-icon>
-            <div class="warning-text">
-              <strong>Match Completed - Scores Locked</strong>
-              <p>This score cannot be edited because the match "{{ matchName }}" is completed. 
-                 To edit scores, first change the match status from "completed" to "open".</p>
-            </div>
+  <div class="match-locked-warning">
+    <mat-card class="warning-card">
+      <mat-card-content>
+        <div class="warning-content">
+          <mat-icon class="warning-icon">lock</mat-icon>
+          <div class="warning-text">
+            <strong>Match Completed - Scores Locked</strong>
+            <p>This score cannot be edited because the match "{{ matchName }}" is completed.
+              To edit scores, first change the match status from "completed" to "open".</p>
           </div>
-        </mat-card-content>
-      </mat-card>
-    </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
   }
-  
+
   <div class="score-view-grid">
     <div><strong>Name:</strong> <span>{{ scoreForm.get('name')?.value }}</span></div>
     <div><strong>Score:</strong> <span>{{ scoreForm.get('score')?.value }}</span></div>
     <div><strong>Posted:</strong> <span>{{ scoreForm.get('postedScore')?.value }}</span></div>
-    <div><strong>Handicap:</strong> <span>{{ scoreForm.get('handicap')?.value }}</span></div>
+    <div><strong>Roch Cap:</strong> <span>{{ scoreForm.get('rochCapToday')?.value }}</span></div>
     <div><strong>USGA Index:</strong> <span>{{ scoreForm.get('usgaIndex')?.value }}</span></div>
-    <div><strong>USGA Today:</strong> <span>{{ scoreForm.get('usgaIndexForTodaysScore')?.value }}</span></div>
-      <div><strong>Match:</strong> <span>{{ matchName }}</span></div>
-      <div><strong>Date Played:</strong> <span>{{ scoreForm.get('datePlayed')?.value | date:'mediumDate' }}</span></div>
-    <div *ngIf="authorName"><strong>Author:</strong> <span>{{ authorName }}</span></div>
+    <div><strong>USGA Cap:</strong> <span>{{ scoreForm.get('usgaCapToday')?.value }}</span></div>
+    <div><strong>Match:</strong> <span>{{ matchName }}</span></div>
+    <div><strong>Date Played:</strong> <span>{{ scoreForm.get('datePlayed')?.value | date:'mediumDate' }}</span></div>
+    <div *ngIf=author><strong>Author:</strong> <span>{{ author.name }}</span></div>
   </div>
 
   <div class="course-info-compact">
-    
+
     <div><strong>Course:</strong> <span>{{ scoreForm.get('scCourse')?.value || 'Not specified' }}</span></div>
     <div><strong>PlayerTees:</strong> <span>{{ scoreForm.get('scTees')?.value || 'Not specified' }}</span></div>
     <div><strong>Rating:</strong> <span>{{ scoreForm.get('scRating')?.value || 'Not specified' }}</span></div>

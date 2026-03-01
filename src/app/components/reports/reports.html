@@ -42,7 +42,7 @@
           <th *ngIf="isColumnVisible('name')" (click)="setSort('lastName')">Name <span *ngIf="sortField==='lastName'">{{sortDirection==='asc' ? '▲' : '▼'}}</span></th>
           <th *ngIf="isColumnVisible('recentDateOfPlay')" (click)="setSort('recentDateOfPlay')">Most Recent Date of Play <span *ngIf="sortField==='recentDateOfPlay'">{{sortDirection==='asc' ? '▲' : '▼'}}</span></th>
           <th *ngIf="isColumnVisible('usgaIndex')" (click)="setSort('usgaIndex')">USGA Index <span *ngIf="sortField==='usgaIndex'">{{sortDirection==='asc' ? '▲' : '▼'}}</span></th>
-          <th *ngIf="isColumnVisible('handicap')" (click)="setSort('handicap')">newHCap <span *ngIf="sortField==='handicap'">{{sortDirection==='asc' ? '▲' : '▼'}}</span></th>
+          <th *ngIf="isColumnVisible('rochIndex')" (click)="setSort('rochIndex')">newHCap <span *ngIf="sortField==='rochIndex'">{{sortDirection==='asc' ? '▲' : '▼'}}</span></th>
         </tr>
       </thead>
       <tbody>
@@ -50,7 +50,7 @@
           <td *ngIf="isColumnVisible('name')">{{ member.name }}</td>
           <td *ngIf="isColumnVisible('recentDateOfPlay')">{{ member.recentDateOfPlay | date:'shortDate' }}</td>
           <td *ngIf="isColumnVisible('usgaIndex')">{{ member.usgaIndex !== null && member.usgaIndex !== undefined ? (member.usgaIndex | number:'1.1-1') : '' }}</td>
-          <td *ngIf="isColumnVisible('handicap')">{{ member.handicap !== null && member.handicap !== undefined ? (member.handicap | number:'1.1-1') : '' }}</td>
+          <td *ngIf="isColumnVisible('rochIndex')">{{ member.rochIndex !== null && member.rochIndex !== undefined ? (member.rochIndex | number:'1.1-1') : '' }}</td>
         </tr>
       </tbody>
     </table>

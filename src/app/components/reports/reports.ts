@@ -15,7 +15,7 @@ export interface MemberReportRow {
   lastName: string;
   recentDateOfPlay: string | null;
   usgaIndex: number | null;
-  handicap: number | null;
+  rochIndex: number | null;
 }
 
 @Component({
@@ -41,12 +41,12 @@ export class ReportsComponent implements OnInit {
     { key: 'name', visible: true },
     { key: 'recentDateOfPlay', visible: true },
     { key: 'usgaIndex', visible: true },
-    { key: 'handicap', visible: true },
+    { key: 'rochIndex', visible: true },
   ];
 
   showingMemberReport = false;
   today = new Date();
-  sortField: 'lastName' | 'recentDateOfPlay' | 'handicap' | 'usgaIndex' = 'lastName';
+  sortField: 'lastName' | 'recentDateOfPlay' | 'rochIndex' | 'usgaIndex' = 'lastName';
   sortDirection: 'asc' | 'desc' = 'asc';
   memberReport: MemberReportRow[] = [];
   filteredReport: MemberReportRow[] = [];
@@ -55,7 +55,7 @@ export class ReportsComponent implements OnInit {
     { key: 'name', label: 'Name', visible: true },
     { key: 'recentDateOfPlay', label: 'Most Recent Date of Play', visible: true },
     { key: 'usgaIndex', label: 'USGA Index', visible: true },
-    { key: 'handicap', label: 'newHCap', visible: true },
+    { key: 'rochIndex', label: 'newHCap', visible: true },
   ];
 
   constructor(
@@ -75,7 +75,7 @@ export class ReportsComponent implements OnInit {
         lastName: m.lastName ?? '',
         recentDateOfPlay: m.lastDatePlayed ?? m.recentDateOfPlay ?? m.recentDate ?? null,
         usgaIndex: m.usgaIndex ?? null,
-        handicap: m.handicap ?? null
+        rochIndex: m.rochIndex ?? null
       }));
       this.applyFilterAndSort();
     });
@@ -83,7 +83,7 @@ export class ReportsComponent implements OnInit {
 
   applyFilterAndSort() {
     this.filteredReport = this.memberReport
-      .filter(m => m.handicap !== null && m.handicap !== undefined)
+      .filter(m => m.rochIndex !== null && m.rochIndex !== undefined)
       .sort((a, b) => {
         let aVal = a[this.sortField];
         let bVal = b[this.sortField];
@@ -95,7 +95,7 @@ export class ReportsComponent implements OnInit {
           aVal = aVal ? new Date(aVal).getTime() : 0;
           bVal = bVal ? new Date(bVal).getTime() : 0;
         }
-        if (this.sortField === 'handicap') {
+        if (this.sortField === 'rochIndex') {
           aVal = aVal ? aVal : 0;
           bVal = bVal ? bVal : 0;
         }
@@ -112,7 +112,7 @@ export class ReportsComponent implements OnInit {
       });
   }
 
-  setSort(field: 'lastName' | 'recentDateOfPlay' | 'handicap' | 'usgaIndex') {
+  setSort(field: 'lastName' | 'recentDateOfPlay' | 'rochIndex' | 'usgaIndex') {
     if (this.sortField === field) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {

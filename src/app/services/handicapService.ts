@@ -13,9 +13,9 @@ export class HandicapService {
   private configService = inject(ConfigurationService);
 
   /**
-   * Compute handicap index using selected method from configuration
+   * Compute rochIndex index using selected method from configuration
    * @param hcapRecords Array of HCapRecord (must have scoreDifferential)
-   * @returns string: handicap (e.g. '12.3' or '12.3*' if not enough scores)
+   * @returns string: rochIndex (e.g. '12.3' or '12.3*' if not enough scores)
    */
   computeHandicap(hcapRecords: HCapRecord[]): string {
     // Update the type of handicapCalculationMethod in your configuration service to include 'roch'
@@ -31,7 +31,7 @@ export class HandicapService {
   }
 
   /**
-   * USGA handicap calculation 
+   * USGA rochIndex calculation 
    */
   computeUSGA(hcapRecords: HCapRecord[]): string {
     if (!hcapRecords || hcapRecords.length === 0) return '';
@@ -47,16 +47,16 @@ export class HandicapService {
     const used = [...differentials].sort((a, b) => a - b).slice(0, numToUse);
     const avg = used.reduce((sum, d) => sum + d, 0) / used.length;
     console.log('USGA Handicap Calculation: n=', n, 'numToUse=', numToUse, 'used differentials=', used, 'diff', differentials);
-    let handicap = Math.round(avg * 0.96 * 10) / 10;
+    let rochIndex = Math.round(avg * 0.96 * 10) / 10;
     // Clamp to max 54.0
-    if (handicap > 54) handicap = 54.0;
+    if (rochIndex > 54) rochIndex = 54.0;
     // Show * if not enough scores
     const needsAsterisk = n < 3 || numToUse < 3;
-    return handicap.toFixed(1) + (needsAsterisk ? '*' : '');
+    return rochIndex.toFixed(1) + (needsAsterisk ? '*' : '');
   }
 
   /**
-   * Placeholder for Roch handicap calculation (TBD)
+   * Placeholder for Roch rochIndex calculation (TBD)
    */
   computeRoch(hcapRecords: HCapRecord[]): string {
     if (!hcapRecords || hcapRecords.length === 0) return '';
@@ -72,12 +72,12 @@ export class HandicapService {
     const used = [...differentials].sort((a, b) => a - b).slice(0, numToUse);
     console.log('Roch Handicap Calculation: n=', n, 'numToUse=', numToUse, 'used differentials=', used, 'diff', differentials);
     const avg = used.reduce((sum, d) => sum + d, 0) / used.length;
-    let handicap = Math.round(avg * 10) / 10;
+    let rochIndex = Math.round(avg * 10) / 10;
     // Clamp to max 54.0
-    if (handicap > 26) handicap = 26.0;
+    if (rochIndex > 26) rochIndex = 26.0;
     // Show * if not enough scores
     const needsAsterisk = n < 3 || numToUse < 3;
-    return handicap.toFixed(1) + (needsAsterisk ? '*' : '');
+    return rochIndex.toFixed(1) + (needsAsterisk ? '*' : '');
   }
 
 
@@ -133,7 +133,7 @@ export class HandicapService {
   }
 
   /**
-   * Compute handicap from raw Score documents using the configured method.
+   * Compute rochIndex from raw Score documents using the configured method.
    * Pass up to 20 records; method limits internally.
    */
   computeHandicapFromScores(scores: any[]): string {
