@@ -70,7 +70,7 @@ export class EmailDialogComponent {
         'Welcome to the Rochester Golf! We\'re excited to have another pigeon on board.\n\n' +
         'Next steps:\n' +
         '- When the weekend matches are scheduled you will get an email. Respond promptly if you plan to participate.\n' +
-        '- - You will recieve a confirmation on your status. If you do not, resend your requestReview upcoming events and join a match or practice session.\n\n' +
+        '- - You will receive a confirmation on your status. If you do not, resend your request. \n\n' +
         'If you have any questions, show up at 8AM and we will be happy to offer insults to your unnecessary questions.\n\n' +
         'Best regards,\n' +
         'Rochester Golf Commish'

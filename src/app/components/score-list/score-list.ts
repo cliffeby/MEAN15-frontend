@@ -68,6 +68,8 @@ interface GroupedByMember {
 export class ScoreListComponent implements OnInit {
   scores: Score[] = [];
   groupedScores: GroupedScores[] = [];
+  filteredGroupedScores: GroupedScores[] = [];
+  matchSearchTerm = '';
   matches: Match[] = [];
   members: Member[] = [];
   groupedByMember: GroupedByMember[] = [];
@@ -233,8 +235,25 @@ export class ScoreListComponent implements OnInit {
       return new Date(dateB).getTime() - new Date(dateA).getTime();
     });
 
-    // Only show the four most recent matches
-    this.groupedScores = allGroups.slice(0, 4);
+    // Store full list, show top 4 by default
+    this.groupedScores = allGroups;
+    this.filteredGroupedScores = allGroups.slice(0, 4);
+  }
+
+  onMatchSearch() {
+    if (!this.matchSearchTerm.trim()) {
+      this.filteredGroupedScores = this.groupedScores.slice(0, 4);
+    } else {
+      const searchLower = this.matchSearchTerm.toLowerCase();
+      this.filteredGroupedScores = this.groupedScores.filter((group) =>
+        group.matchName.toLowerCase().includes(searchLower),
+      );
+    }
+  }
+
+  clearMatchSearch() {
+    this.matchSearchTerm = '';
+    this.onMatchSearch();
   }
 
   editScore(id: string) {

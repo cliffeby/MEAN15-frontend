@@ -4,15 +4,18 @@
     </mat-card-header>
 
     <mat-card-actions>
-        <button mat-button color="primary" (click)="setView('instructions')"
-            [class.active]="view === 'instructions'">Instructions</button>
         <button mat-button color="primary" (click)="setView('overview')"
             [class.active]="view === 'overview'">Overview</button>
+        <button mat-button color="primary" (click)="setView('instructions')"
+            [class.active]="view === 'instructions'">Instructions</button>
+
         <button mat-button color="primary" (click)="setView('api')" [class.active]="view === 'api'">API Details</button>
         <button mat-button color="primary" (click)="setView('config')" [class.active]="view === 'config'">Configuration
             (TODO)</button>
         <button mat-button color="primary" (click)="setView('initialSetup')"
             [class.active]="view === 'initialSetup'">Initial Setup (TODO)</button>
+        <button mat-button color="primary" (click)="setView('developer overview')"
+            [class.active]="view === 'developer overview'">Developer Overview</button>
     </mat-card-actions>
 
     <mat-card-content>
@@ -27,7 +30,7 @@
                 <li>Enter or accept the default match name. (Default is configured in Admin → Default Match Name.)
                     It is followed by the week number for the year.
                     If you have multiple matches each week, follow it with an a, b, c,...</li>
-                <li>Choose a <em>Scorecard</em> (course/tees). The selected scorecard drives pars and hole rochIndex for
+                <li>Choose a <em>Scorecard</em> (course/tees). The selected scorecard drives pars and hole index for
                     the course.
                     Tees are determined by defaults set in the members profile.</li>
                 <li>Set the match date.
@@ -38,9 +41,9 @@
             <h4>Print Scorecards and Score a Match</h4>
             <ol>
                 <li>From the Matches list, open the match and click <strong>Print Scorecards.</strong>
-                    Scorecard should show the course, pairings, and strokes - both to par and off the low rochIndex
+                    Scorecard should show the course, pairings, and strokes - both to par and off the low index
                     player.
-                    The players hsndicap and tees should be listed next to the name.
+                    The players handicap and tees should be listed next to the name.
                 </li>
                 <li>From the Matches list, open the match and click <strong>Enter Scores</strong>. Score entry will be
                     either detailed hole by hole score or
@@ -51,8 +54,8 @@
                 <li>The UI displays pars and applies handicaps; verify net scores and totals as you go.</li>
                 <li>Save individual player scores as you complete them, or use <strong>Save All</strong> if available.
                 </li>
-                <li>When all scores are entered, mark the match <strong>Completed</strong>. This finalizes results,
-                    triggers audit logging, and updates any downstream calculations (rochIndex updates if enabled).</li>
+                <li>When all scores are entered, mark the match <strong>Completed</strong>. This finalizes results, updates handicaps
+                    triggers audit logging, and updates any downstream calculations.</li>
                 <li>To correct a score later: open the match → edit the player's entry → change hole values → save.
                     Corrections are audited.</li>
             </ol>
@@ -61,7 +64,7 @@
                 <li>Open <strong>Members</strong> from the sidebar.</li>
                 <li>Click <strong>New Member</strong> to open the add form.</li>
                 <li>Fill required fields (First Name) and recommended fields (Email, GHIN/rochIndex).</li>
-                <li>Assign default scorecards if helpful (favorite courses) and save.</li>
+                <li>Assign default scorecards and save.</li>
                 <li>New members become selectable when creating or editing matches.</li>
             </ol>
 
@@ -81,14 +84,7 @@
 
             <h4>Tips & Best Practices</h4>
             <ul>
-                <li>Before mass emailing, check <strong>Email Manager → Bounced Emails</strong>—bounced addresses are
-                    excluded automatically.</li>
-                <li>Use Admin → Configuration to tune default page sizes and UI options (these are stored locally by
-                    default).</li>
-                <li>When importing or bulk-editing handicaps or scores, prefer backend scripts or admin-import tools in
-                    <code>backend/scripts</code>.
-                </li>
-                <li>Keep an audit trail: prefer editing via the UI so changes are logged and attributable to a user.
+                <li>Beat Granny
                 </li>
             </ul>
         </div>
@@ -107,6 +103,111 @@
         </div>
 
         <div *ngIf="view === 'overview'">
+            <h3>Overview & Features</h3>
+            <p><em>The Rochester Golf Club Management System is for golf groups that want
+                    to maintain their own handicap system. It is designed for groups of fourball matches played on the
+                    same day,
+                    but can be used for other formats.</em></p>
+            <p><em>Using selected members, the "admin" can create matches, foursomes and pairings. Based on member
+                    handicaps,
+                    it can create a marked up scorecard for a one- and two-ball group match and
+                    fourball(nassau).</em></p>
+            <p><em>Admin entered scores are then used to generate handicaps and reports. </em> </p>
+            <p><em>Access to the system is controlled via user roles and permissions
+                    assigned to an individual via email. A "user" is a view only role, while an "admin"
+                    can create matches, add members, and manage settings. Other roles are "developer" and "field-hand."
+                </em></p>
+            <mat-divider></mat-divider>
+            <h4>Dashboard</h4>
+            <p>
+                The Dashboard provides a consolidated, at-a-glance view of key metrics and recent activity: totals,
+                trends, and quick actions for matches, members, scorecards, and scores.
+            </p>
+            <h4>Members Features</h4>
+            <p>
+                The Members section allows you to create and manage player profiles. including contact information,
+                handicap, indexes, and default course/tee preferences. The member list is
+                adjustable to show selected columns. These column selections and pagination options
+                (like many others in the system) are persisted by user.
+            </p>
+            <p> To maintain data integrety, member records shouldnot be deleted if the member has played in a match
+                Instead, you can mark a member as hidden to hie them from selection in matches and reports
+                while preserving historical data.</p>
+            <p>
+                The default course/tee preferences on the member profile are used to pre-select tees when for a member.
+                Course handicaps are adjusted based on these preferences.
+            </p>
+            <h4>Scorecards Features</h4>
+            <p>
+                The Scorecards section contains the data for courses and tees.
+                Grouping is based on Course Name,so the selected name should stay
+                consistent across all defined tees. Minimum data for each course/tee combination
+                is par, rating, slope, name/abreviation, and hole handicap values.
+                The handicap values are needed to create a preconfigured scorecard for the match.
+                Par detail values are needed to calculate adjusted scores by hole when detailed
+                score entry is used.
+            </p>
+            <h4>Matches Features</h4>
+            <p>
+                The Matches section is where you create and manage golf matches. <br>
+                <span class="match-detail-indent">
+                    - Add Match: This create a new match by selecting players, course/tee (scorecard),<br>
+                    and date. Pairings and foresomes are based on player handicaps using an A and B player<br>
+                    method with aggregate two-man team hanicapsas balanced as possible. The match name is partially <br>
+                    pre-filled based on a default value and the week number, but can be edited.<br>
+                    Use the buttons to add members and create pairs and foursomes. ReMix is not yet implemented,
+                    but you can...<br><br>
+                    The match date defaults to the current date.
+                </span>
+            </p>
+            <p>
+                Once a match is created, you can print scorecards and enter scores. Scorecards are pre-populated with
+                player names, tees, handicaps, and pars. Score entry can be either simple (total score) or detailed
+                (hole-by-hole).</p>
+            <p>When a match is completed, handicap record are created and the playing members' handicaps are updated.
+            </p>
+
+            <h4>Scores Features</h4>
+            <p>
+                The Scores section allows you to view and manage individual score entries. You can filter scores by
+                member, match, or date range. Score details include hole-by-hole breakdowns, net scores, and
+                adjustments. You can edit scores to correct errors or update handicaps, with all changes logged for
+                audit purposes.
+            <h4>HCaps Features</h4>
+            <p>
+                The HCaps section provides a view of player handicaps and indexes. Columns are selectable and
+                search can focus on a single player history</p>
+
+            <h4>Reports Features</h4>
+            <p>
+                The Reports section a listing of current index vaules sorted by date played.
+                Other reports can be genrated on request.
+            </p>
+            <h4>Email Features</h4>
+            <p>
+                The Email section allows you to manage email templates, notifications, and communication settings. You
+                can create, edit, and send emails to members, configure automated notifications, and customize email
+                content
+                to match your club's branding.
+            </p>
+                        <h4>Email</h4>
+            <p>
+                The Email section allows you to manage email templates, notifications, and communication settings. You
+                can create, edit, and send emails to members, configure automated notifications.
+
+            <h4>Admin & Configuration</h4>
+            <p>
+                Most of this section remains a work in process.</p>
+            <p>
+                 The Admin section provides tools for managing system settings, user roles, and permissions. You can
+                The Configuration section allows you to manage application settings, user roles, and permissions. You
+                can
+                configure default values for matches, set up email templates, and adjust other system-wide settings to
+                tailor the application to your club's needs.
+            </p>
+        </div>
+
+        <div *ngIf="view === 'developer overview'">
             <h3>Dashboard Feature</h3>
             <mat-divider></mat-divider>
             <h4>Overview</h4>
@@ -221,7 +322,8 @@
             <mat-divider></mat-divider>
             <h4>Overview</h4>
             <p>
-                The Members feature manages member profiles (name, email, league, rochIndex, status) used across matches,
+                The Members feature manages member profiles (name, email, league, rochIndex, status) used across
+                matches,
                 scorecards, and reporting. It supports listing, adding, editing, and deleting members with search and
                 filtering.
             </p>
@@ -459,7 +561,8 @@
             </ul>
             <h4>Interactive Tables & UI</h4>
             <ul>
-                <li>Filterable list of members with current rochIndex, last update date, and source (manual/import).</li>
+                <li>Filterable list of members with current rochIndex, last update date, and source (manual/import).
+                </li>
                 <li>Per-member history view showing previous rochIndex values, reasons, and timestamps.</li>
                 <li>Recalculation tools for administrators to apply new rules or backfill historical data.</li>
             </ul>

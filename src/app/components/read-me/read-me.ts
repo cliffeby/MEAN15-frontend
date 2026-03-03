@@ -14,9 +14,9 @@ import { API } from '../apis/apis';
   styleUrls: ['./read-me.scss']
 })
 export class ReadMe {
-  view: 'overview' | 'instructions' | 'api' | 'config' | 'initialSetup' = 'overview';
+  view: 'overview' | 'instructions' | 'api' | 'config' |'developer overview' | 'initialSetup' = 'overview';
 
-  setView(v: 'overview' | 'instructions' | 'api' | 'config' | 'initialSetup') {
+  setView(v: 'overview' | 'instructions' | 'api' | 'config' | 'developer overview' | 'initialSetup') {
     this.view = v;
   }
 

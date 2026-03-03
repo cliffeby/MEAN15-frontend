@@ -1,13 +1,24 @@
 <div class="score-list">
   <h2>Scores by Match</h2>
-  
-  <div class="header"></div>
+
+  <div class="header">
+    <mat-form-field class="search-field">
+      <mat-label>Search Match</mat-label>
+      <input matInput [(ngModel)]="matchSearchTerm" (ngModelChange)="onMatchSearch()" placeholder="Type to search...">
+      <button mat-icon-button matSuffix *ngIf="matchSearchTerm" (click)="clearMatchSearch()">
+        <mat-icon>close</mat-icon>
+      </button>
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+    <p class="search-info" *ngIf="!matchSearchTerm">Showing 4 most recent matches</p>
+    <p class="search-info" *ngIf="matchSearchTerm">Found {{ filteredGroupedScores.length }} match(es)</p>
+  </div>
   <mat-divider></mat-divider>
-  
-  <div *ngIf="groupedScores.length" class="grouped-scores">
+
+  <div *ngIf="filteredGroupedScores.length" class="grouped-scores">
     <mat-accordion>
       <mat-expansion-panel 
-        *ngFor="let group of groupedScores" 
+        *ngFor="let group of filteredGroupedScores" 
         [expanded]="group.expanded"
         (expandedChange)="group.expanded = $event"
         class="match-group"
@@ -97,7 +108,7 @@
     </mat-accordion>
   </div>
   
-  <div *ngIf="!groupedScores.length && !loading" class="no-data">No scores found.</div>
+  <div *ngIf="!filteredGroupedScores.length && !loading" class="no-data">No scores found.</div>
 
   <!-- By Member Section -->
   <h2 class="section-title">Scores by Member</h2>

@@ -87,13 +87,23 @@ export class OrphanService {
    * @returns Array of orphaned HCap records with reason
    */
   findOrphanedHcaps(hcaps: any[], scores: any[], matches: any[]): Array<{ hcap: any; reason: string }> {
-    const scoreIds = new Set(scores.map(s => s._id || s.scoreId));
-    const matchIds = new Set(matches.map(m => m._id));
+    // Helper to extract string ID from either a raw ObjectID or a populated object { _id, ... }
+    const toIdStr = (val: any): string | null => {
+      if (!val) return null;
+      if (typeof val === 'object' && val._id) return String(val._id);
+      return String(val);
+    };
+
+    const scoreIds = new Set(scores.map(s => String(s._id)));
+    const matchIds = new Set(matches.map(m => String(m._id)));
 
     return hcaps
+      .filter(hcap => hcap.orphaned !== true) // skip intentionally orphaned records
       .map(hcap => {
-        const scoreMissing = !hcap.scoreId || !scoreIds.has(hcap.scoreId);
-        const matchMissing = !hcap.matchId || !matchIds.has(hcap.matchId);
+        const scoreIdStr = toIdStr(hcap.scoreId);
+        const matchIdStr = toIdStr(hcap.matchId);
+        const scoreMissing = !scoreIdStr || !scoreIds.has(scoreIdStr);
+        const matchMissing = !matchIdStr || !matchIds.has(matchIdStr);
         if (scoreMissing && matchMissing) {
           return { hcap, reason: 'No matching Score or Match record' };
         }
