@@ -41,16 +41,16 @@
         <tr>
           <th *ngIf="isColumnVisible('name')" (click)="setSort('lastName')">Name <span *ngIf="sortField==='lastName'">{{sortDirection==='asc' ? '▲' : '▼'}}</span></th>
           <th *ngIf="isColumnVisible('recentDateOfPlay')" (click)="setSort('recentDateOfPlay')">Most Recent Date of Play <span *ngIf="sortField==='recentDateOfPlay'">{{sortDirection==='asc' ? '▲' : '▼'}}</span></th>
-          <th *ngIf="isColumnVisible('usgaIndex')" (click)="setSort('usgaIndex')">USGA Index <span *ngIf="sortField==='usgaIndex'">{{sortDirection==='asc' ? '▲' : '▼'}}</span></th>
-          <th *ngIf="isColumnVisible('rochIndex')" (click)="setSort('rochIndex')">newHCap <span *ngIf="sortField==='rochIndex'">{{sortDirection==='asc' ? '▲' : '▼'}}</span></th>
+          <th *ngIf="isColumnVisible('usgaIndexB4Round')" (click)="setSort('usgaIndexB4Round')">USGA Index <span *ngIf="sortField==='usgaIndexB4Round'">{{sortDirection==='asc' ? '▲' : '▼'}}</span></th>
+          <th *ngIf="isColumnVisible('rochIndexB4Round')" (click)="setSort('rochIndexB4Round')">Roch Index <span *ngIf="sortField==='rochIndexB4Round'">{{sortDirection==='asc' ? '▲' : '▼'}}</span></th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let member of filteredReport">
           <td *ngIf="isColumnVisible('name')">{{ member.name }}</td>
           <td *ngIf="isColumnVisible('recentDateOfPlay')">{{ member.recentDateOfPlay | date:'shortDate' }}</td>
-          <td *ngIf="isColumnVisible('usgaIndex')">{{ member.usgaIndex !== null && member.usgaIndex !== undefined ? (member.usgaIndex | number:'1.1-1') : '' }}</td>
-          <td *ngIf="isColumnVisible('rochIndex')">{{ member.rochIndex !== null && member.rochIndex !== undefined ? (member.rochIndex | number:'1.1-1') : '' }}</td>
+          <td *ngIf="isColumnVisible('usgaIndexB4Round')">{{ member.usgaIndexB4Round !== null && member.usgaIndexB4Round !== undefined ? (member.usgaIndexB4Round | number:'1.1-1') : '' }}</td>
+          <td *ngIf="isColumnVisible('rochIndexB4Round')">{{ member.rochIndexB4Round !== null && member.rochIndexB4Round !== undefined ? (member.rochIndexB4Round | number:'1.1-1') : '' }}</td>
         </tr>
       </tbody>
     </table>

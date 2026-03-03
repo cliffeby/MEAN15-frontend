@@ -133,7 +133,7 @@
                   <td class="player-column">
                     <div class="player-info">
                       <strong>{{ player.member.firstName }} {{ player.member.lastName }} - {{player.teeAbreviation}}</strong>
-                      <small *ngIf="player.member.usgaIndex">USGA: {{ player.member.usgaIndex | number:'1.1-1' }}</small>
+                      <small *ngIf="player.member.usgaIndexB4Round">USGA: {{ player.member.usgaIndexB4Round | number:'1.1-1' }}</small>
                       <div class="save-status" [ngClass]="getPlayerSaveColor(playerIndex)">
                         <mat-icon class="save-icon">{{ getPlayerSaveIcon(playerIndex) }}</mat-icon>
                         <small>{{ getPlayerSaveStatus(playerIndex) }}</small>

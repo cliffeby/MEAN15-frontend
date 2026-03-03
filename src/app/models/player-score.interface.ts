@@ -7,8 +7,9 @@ export interface PlayerScore {
   backNine: number;
   total: number;
   totalScore: number | null;
-  differential: number | null;
-  rochIndex: number;
+  differentialForRound: number | undefined; // Updated to match SimplePlayerScore
+  rochIndexB4Round: number;
+  usgaIndexB4Round: number;
   netScore: number;
   wonIndo: boolean;
   wonOneBall: boolean;
@@ -21,8 +22,5 @@ export interface PlayerScore {
   teeAbreviation?: string;
   rating?: number;
   slope?: number;
-  usgaDifferentialToday: number;
-  rochDifferentialToday: number;
-  othersDifferentialToday: number;
 }
 

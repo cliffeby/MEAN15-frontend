@@ -4,25 +4,12 @@ export interface HCap {
   // currentHCap: number;
   // newHCap: string;
   datePlayed: Date;
-  rochDifferentialForTodaysRound: number;
-  usgaDifferentialForTodaysRound: number;
-  rochIndexForThisRound: number;
-  usgaIndexForThisRound: number;
-  usgaIndexAfterTodaysScore: {
-    type: number;
-    min: [-10, 'USGA Index for today cannot be less than -10.0'];
-    max: [54, 'USGA Index for today cannot be greater than 54.0'];
-  };
-  rochIndexAfterTodaysScore: {
-    type: number;
-    min: [-10, 'USGA Index for today cannot be less than -10.0'];
-    max: [26, 'USGA Index for today cannot be greater than 26.0'];
-  };
-  rochHandicapForThisRound: number;
-  usgaHandicapForThisRound: number;
-  rochNewCap: number,
-  usgaNewCap: number,
-  // handicapDifferential: number;
+  usgaIndexB4Round?: number;
+  rochIndexB4Round: number;
+  usgaIndexAfterRound?: number;
+  rochIndexAfterRound: number;
+  differentialForRound: number | undefined;
+  courseAdjustedDifferentialForRound: number | undefined;
   scoreId: string;
   scorecardId: string;
   scPar: number;

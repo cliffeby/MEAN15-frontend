@@ -56,17 +56,15 @@
               <td mat-cell *matCellDef="let score">{{ score.scTees || 'N/A' }}</td>
             </ng-container>
 
-           
-
             <!-- USGA Index Column -->
-            <ng-container matColumnDef="usgaIndex">
-              <th mat-header-cell *matHeaderCellDef>USGA<br>Handicap</th>
-              <td mat-cell *matCellDef="let score">{{ score.usgaCapToday || 'N/A' }}</td>
-            </ng-container> <!-- Handicap Column -->
-            
+                  <ng-container matColumnDef="usgaIndex">
+                    <th mat-header-cell *matHeaderCellDef>USGA<br>Handicap</th>
+                    <td mat-cell *matCellDef="let score">{{ calculateCourseHandicap(score.usgaIndexB4Round, score.scSlope) || 'N/A' }}</td>
+                  </ng-container>
+
             <ng-container matColumnDef="rochIndex">
               <th mat-header-cell *matHeaderCellDef>Roch<br>Handicap</th>
-              <td mat-cell *matCellDef="let score">{{ score.rochCapToday || 'N/A' }}</td>
+              <td mat-cell *matCellDef="let score">{{ calculateCourseHandicap(score.rochIndexB4Round, score.scSlope) || 'N/A' }}</td>
             </ng-container>
 
             <!-- Method Column -->
@@ -172,13 +170,13 @@
                   <!-- USGA Index Column -->
                   <ng-container matColumnDef="usgaIndex">
                     <th mat-header-cell *matHeaderCellDef>USGA<br>Handicap</th>
-                    <td mat-cell *matCellDef="let score">{{ score.usgaCapToday || 'N/A' }}</td>
+                    <td mat-cell *matCellDef="let score">{{ calculateCourseHandicap(score.usgaIndexB4Round,score.slope) || 'N/A' }}</td>
                   </ng-container>
 
                   <!-- Handicap Column -->
                   <ng-container matColumnDef="rochIndex">
                     <th mat-header-cell *matHeaderCellDef>Roch<br>Handicap</th>
-                    <td mat-cell *matCellDef="let score">{{ score.rochIndex || 'N/A' }}</td>
+                    <td mat-cell *matCellDef="let score">{{ score.rochIndexB4Round }}</td>
                   </ng-container>
 
                   <!-- Method Column -->

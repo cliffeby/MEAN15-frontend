@@ -73,6 +73,19 @@ export function mapMembersToPlayerScores(
   memberScorecards?: Map<string, Scorecard>,
 ): any[] {
   return members.map((member) => {
-    const playerScore: any = {};
+    const playerScore: any = {
+      member,
+      totalScore: null,
+      scores: [],
+      differentialForRound: 0, // Default value
+      frontNine: 0, // Default value
+      backNine: 0, // Default value
+      total: 0, // Default value
+      netScore: 0, // Default value
+      wonIndo: false, // Default value
+      wonOneBall: false, // Default value
+      wonTwoBall: false, // Default value
+    };
+    return playerScore;
   });
 }

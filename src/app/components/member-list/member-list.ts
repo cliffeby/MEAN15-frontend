@@ -294,8 +294,8 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
           bValue = (b.Email || '').toLowerCase();
           break;
         case 'usgaIndex':
-          aValue = a.usgaIndex || 0;
-          bValue = b.usgaIndex || 0;
+          aValue = a.usgaIndexB4Round || 0;
+          bValue = b.usgaIndexB4Round || 0;
           break;
         case 'lastDatePlayed':
           aValue = a.lastDatePlayed ? new Date(a.lastDatePlayed) : new Date(0);

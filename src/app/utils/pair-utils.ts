@@ -5,8 +5,8 @@ export function getTeamIndexSum(team: string[], getMemberById: (id: string) => M
   let sum = 0;
   for (const memberId of team) {
     const member = getMemberById(memberId);
-    if (member && typeof member.usgaIndex === 'number') {
-      sum += member.usgaIndex;
+    if (member && typeof member.usgaIndexB4Round === 'number') {
+      sum += member.usgaIndexB4Round;
     }
   }
   return Math.round(sum * 10) / 10;
@@ -20,15 +20,15 @@ export function pairFourballTeams(members: Member[], getMemberById: (id: string)
   const lineupIds: string[] = lineUpsArray.value as string[];
   const lineupMembers = lineupIds.map((id) => getMemberById(id)).filter(Boolean) as Member[];
   if (lineupMembers.length % 2 !== 0 && lineupMembers.length > 1) {
-    const sortedForDummy = [...lineupMembers].sort((a, b) => (a.usgaIndex ?? 99) - (b.usgaIndex ?? 99));
+    const sortedForDummy = [...lineupMembers].sort((a, b) => (a.usgaIndexB4Round ?? 99) - (b.usgaIndexB4Round ?? 99));
     const lastPlayer = sortedForDummy[sortedForDummy.length - 1];
     if (lastPlayer) {
-      const dummy: Member = { ...MEMBER_B_DUMMY, _id: '00000000000000000000B001', usgaIndex: lastPlayer.usgaIndex };
+      const dummy: Member = { ...MEMBER_B_DUMMY, _id: '00000000000000000000B001', usgaIndexB4Round: lastPlayer.usgaIndexB4Round };
       lineupMembers.push(dummy);
     }
   }
-  lineupMembers.sort((a, b) => (a.usgaIndex ?? 99) - (b.usgaIndex ?? 99));
-  const sortedMembers = [...lineupMembers].sort((a, b) => (a.usgaIndex ?? 99) - (b.usgaIndex ?? 99));
+  lineupMembers.sort((a, b) => (a.usgaIndexB4Round ?? 99) - (b.usgaIndexB4Round ?? 99));
+  const sortedMembers = [...lineupMembers].sort((a, b) => (a.usgaIndexB4Round ?? 99) - (b.usgaIndexB4Round ?? 99));
   const n = sortedMembers.length;
   const half = Math.floor(n / 2);
   const aPlayers = sortedMembers.slice(0, half);
@@ -37,12 +37,12 @@ export function pairFourballTeams(members: Member[], getMemberById: (id: string)
   for (let i = 0; i < half; i++) {
     let a = aPlayers[i];
     let b = bPlayers[half - 1 - i];
-    if ((a?.usgaIndex ?? 99) > (b?.usgaIndex ?? 99)) {
+    if ((a?.usgaIndexB4Round ?? 99) > (b?.usgaIndexB4Round ?? 99)) {
       [a, b] = [b, a];
     }
     const aId = typeof a?._id === 'string' ? a._id : '';
     const bId = typeof b?._id === 'string' ? b._id : '';
-    const combined = Math.round(((a?.usgaIndex ?? 0) + (b?.usgaIndex ?? 0)) * 10) / 10;
+    const combined = Math.round(((a?.usgaIndexB4Round ?? 0) + (b?.usgaIndexB4Round ?? 0)) * 10) / 10;
     teams.push({ ids: [aId, bId], combined });
   }
   const pairedTeams: { teamA: string[]; teamB: string[]; combinedA: number; combinedB: number }[] = [];

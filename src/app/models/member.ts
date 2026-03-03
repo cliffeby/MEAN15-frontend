@@ -4,8 +4,8 @@ export interface Member {
   _id?: string;
   firstName: string;
   lastName: string | null;
-  usgaIndex?: number;
-  rochIndex?: number;
+  usgaIndexB4Round?: number;
+  rochIndexB4Round?: number;
   GHIN?: string;
   lastDatePlayed?: string;
   scorecardsId?: string[];

@@ -100,8 +100,8 @@ export class MemberService {
           return {
             firstName: m.firstName,
             lastName: m.lastName,
-            rochIndex: typeof m.rochIndex === 'number' ? m.rochIndex : null,
-            usgaIndex: typeof m.usgaIndex === 'number' ? m.usgaIndex : null,
+            rochIndexB4Round: m.rochIndexB4Round,
+            usgaIndexB4Round: m.usgaIndexB4Round ,
             recentDateOfPlay: recentDate,
           };
         });

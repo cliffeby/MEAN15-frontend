@@ -7,13 +7,16 @@ export interface Score {
   scoresToPost: number[];
   scoringMethod: string;
   scoreRecordType: 'byHole' | 'total' | 'differential';
-  usgaIndex?: number;
-  usgaDifferentialToday: number | undefined;
-  rochDifferentialToday: number | undefined;
-  othersDifferentialToday: number | undefined;
-  rochIndex: number;
-  rochCapToday?: number;
-  usgaCapToday?: number;
+  usgaIndexB4Round?: number;
+  rochIndexB4Round: number;
+  usgaIndexAfterRound?: number;
+  rochIndexAfterRound: number;
+  differentialForRound: number | undefined;
+  courseAdjustedDifferentialForRound: number | undefined;
+  
+  // rochIndex: number;
+  // rochCapToday?: number;
+  // usgaCapToday?: number;
   netScore: number;
   wonTwoBall?: boolean;
   wonOneBall?: boolean;
@@ -70,13 +73,12 @@ export interface SimplePlayerScore {
   member: Member;
   totalScore: number | null;
   scores: (number | null)[];
-  differential: number | null;
-  usgaDifferentialToday: number | undefined;
-  rochDifferentialToday: number | undefined;
-  othersDifferentialToday: number | undefined;
-  rochIndex: number;
-  rochCapToday?: number;
-  usgaCapToday?: number;
+  usgaIndexB4Round: number; // Updated to make it required to align with PlayerScore
+  rochIndexB4Round: number;
+  usgaIndexAfterRound?: number;
+  rochIndexAfterRound?: number;
+  differentialForRound: number; // Updated to make it required to align with PlayerScore
+  courseAdjustedDifferentialForRound?: number | undefined;
   netScore: number;
   wonIndo: boolean;
   wonOneBall: boolean;
@@ -88,6 +90,9 @@ export interface SimplePlayerScore {
   scSlope?: number;
   scTees?: string;
   memberScorecard?: Scorecard;
+  frontNine: number; // Added to match PlayerScore
+  backNine: number; // Added to match PlayerScore
+  total: number; // Added to match PlayerScore
 }
 
 export interface ScoresApiResponse {

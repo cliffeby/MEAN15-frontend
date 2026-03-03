@@ -14,8 +14,8 @@ export interface MemberReportRow {
   name: string;
   lastName: string;
   recentDateOfPlay: string | null;
-  usgaIndex: number | null;
-  rochIndex: number | null;
+  usgaIndexB4Round: number | null;
+  rochIndexB4Round: number | null;
 }
 
 @Component({
@@ -40,13 +40,13 @@ export class ReportsComponent implements OnInit {
   static readonly DEFAULT_COLUMNS: ColumnPreference[] = [
     { key: 'name', visible: true },
     { key: 'recentDateOfPlay', visible: true },
-    { key: 'usgaIndex', visible: true },
-    { key: 'rochIndex', visible: true },
+    { key: 'usgaIndexB4Round', visible: true },
+    { key: 'rochIndexB4Round', visible: true },
   ];
 
   showingMemberReport = false;
   today = new Date();
-  sortField: 'lastName' | 'recentDateOfPlay' | 'rochIndex' | 'usgaIndex' = 'lastName';
+  sortField: 'lastName' | 'recentDateOfPlay' | 'rochIndexB4Round' | 'usgaIndexB4Round' = 'lastName';
   sortDirection: 'asc' | 'desc' = 'asc';
   memberReport: MemberReportRow[] = [];
   filteredReport: MemberReportRow[] = [];
@@ -54,8 +54,8 @@ export class ReportsComponent implements OnInit {
   allColumns: Array<{ key: string; label: string; visible: boolean }> = [
     { key: 'name', label: 'Name', visible: true },
     { key: 'recentDateOfPlay', label: 'Most Recent Date of Play', visible: true },
-    { key: 'usgaIndex', label: 'USGA Index', visible: true },
-    { key: 'rochIndex', label: 'newHCap', visible: true },
+    { key: 'usgaIndexB4Round', label: 'USGA Index', visible: true },
+    { key: 'rochIndexB4Round', label: 'Roch Index', visible: true },
   ];
 
   constructor(
@@ -74,8 +74,8 @@ export class ReportsComponent implements OnInit {
         name: `${m.firstName ?? ''} ${m.lastName ?? ''}`.trim(),
         lastName: m.lastName ?? '',
         recentDateOfPlay: m.lastDatePlayed ?? m.recentDateOfPlay ?? m.recentDate ?? null,
-        usgaIndex: m.usgaIndex ?? null,
-        rochIndex: m.rochIndex ?? null
+        usgaIndexB4Round: m.usgaIndexB4Round ?? null,
+        rochIndexB4Round: m.rochIndexB4Round ?? null
       }));
       this.applyFilterAndSort();
     });
@@ -83,7 +83,7 @@ export class ReportsComponent implements OnInit {
 
   applyFilterAndSort() {
     this.filteredReport = this.memberReport
-      .filter(m => m.rochIndex !== null && m.rochIndex !== undefined)
+      .filter(m => m.rochIndexB4Round !== null && m.rochIndexB4Round !== undefined)
       .sort((a, b) => {
         let aVal = a[this.sortField];
         let bVal = b[this.sortField];
@@ -95,11 +95,11 @@ export class ReportsComponent implements OnInit {
           aVal = aVal ? new Date(aVal).getTime() : 0;
           bVal = bVal ? new Date(bVal).getTime() : 0;
         }
-        if (this.sortField === 'rochIndex') {
+        if (this.sortField === 'rochIndexB4Round') {
           aVal = aVal ? aVal : 0;
           bVal = bVal ? bVal : 0;
         }
-        if (this.sortField === 'usgaIndex') {
+        if (this.sortField === 'usgaIndexB4Round') {
           aVal = aVal ? aVal : 0;
           bVal = bVal ? bVal : 0;
         }
@@ -112,7 +112,7 @@ export class ReportsComponent implements OnInit {
       });
   }
 
-  setSort(field: 'lastName' | 'recentDateOfPlay' | 'rochIndex' | 'usgaIndex') {
+  setSort(field: 'lastName' | 'recentDateOfPlay' | 'rochIndexB4Round' | 'usgaIndexB4Round') {
     if (this.sortField === field) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {

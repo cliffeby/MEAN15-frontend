@@ -128,7 +128,7 @@ export class PrintableScorecardComponent implements OnInit {
                     const memberScorecard = getMemberScorecard(finalScorecard.course, member.scorecardsId || [], scorecardList);
                     return {
                       member,
-                      rochIndex: this.handicapService.calculateCourseHandicap(member.rochIndex || 0, memberScorecard?.slope || 113),
+                      rochIndex: this.handicapService.calculateCourseHandicap(member.rochIndexB4Round || 0, memberScorecard?.slope || 113),
                       teeAbreviation: memberScorecard?.teeAbreviation || '',
                     };
                   }

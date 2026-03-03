@@ -2,7 +2,8 @@ import { SimplePlayerScore } from '../models/score'; // Adjusted path if the cor
 import { Match } from '../models/match';
 import { Scorecard } from '../models/scorecard.interface';
 import { Score } from '../models/score';
-import { calculateUSGADifferentialToday } from './score-utils';
+import { HandicapCalculationService } from '../services/handicap-calculation.service';
+// import { calculateDifferentialToday } from './score-utils';
 
 /**
  * Builds a score data object for saving, given player, match, scorecard, entry mode, and author.
@@ -18,7 +19,8 @@ export function buildScoreData(
   match: Match,
   scorecard: Scorecard,
   entryMode: 'totalScore' | 'differential',
-  author: any
+  author: any,
+  // handicapCalculationService: HandicapCalculationService,
 ): Partial<Score> {
   return {
     name: `${playerScore.member.firstName} ${playerScore.member.lastName || ''}`.trim(),
@@ -27,19 +29,14 @@ export function buildScoreData(
     scores: (playerScore.scores ? playerScore.scores.map(s => s == null ? 0 : s) : new Array(18).fill(0)),
     scoresToPost: (playerScore.scores ? playerScore.scores.map(s => s == null ? 0 : s) : new Array(18).fill(0)),
     scoreRecordType: entryMode === 'differential' ? 'differential' : 'total',
-    usgaIndex: playerScore.member.usgaIndex,
-    rochIndex: playerScore.rochIndex,
-    usgaDifferentialToday: calculateUSGADifferentialToday(
-      playerScore.totalScore || 0,
-      scorecard?.slope || 113,
-      scorecard?.rating || 72
-    ) || 0,
-    rochDifferentialToday: calculateUSGADifferentialToday(
-      playerScore.totalScore || 0,
-      scorecard?.slope || 113,
-      scorecard?.rating || 72
-    ) || 0,
-    othersDifferentialToday: playerScore.othersDifferentialToday || 0,
+    usgaIndexB4Round: playerScore.member.usgaIndexB4Round,
+    rochIndexB4Round: playerScore.member.rochIndexB4Round,
+    // usgaCapToday: handicapCalculationService.calculateCourseHandicapFromIndex(
+    //   playerScore.member.usgaIndexB4Round || 0,
+    //   scorecard?.slope || 113,
+    //   scorecard?.rating || 72,
+    //   scorecard?.par || 72) || 0,
+
     matchId: match?._id,
     memberId: playerScore.member._id,
     scorecardId: playerScore.scorecardId,
@@ -56,7 +53,7 @@ export function buildScoreData(
     wonIndo: playerScore.wonIndo,
     wonOneBall: playerScore.wonOneBall,
     wonTwoBall: playerScore.wonTwoBall,
-    rochCapToday: playerScore.rochCapToday, // Added rochCapToday to the returned object
-    usgaCapToday: playerScore.usgaCapToday, // Added usgaCapToday to the returned object
+    // rochCapToday: playerScore.rochCapToday, // Added rochCapToday to the returned object
+    // usgaCapToday: playerScore.usgaCapToday, // Added usgaCapToday to the returned object
   };
 }

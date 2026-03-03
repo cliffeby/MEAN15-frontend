@@ -11,6 +11,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { FormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { HCapService } from '../../services/hcapService';
+import { calculateCourseHandicap } from '../../utils/score-utils';
 import { HCap } from '../../models/hcap';
 import { UserPreferencesService, ColumnPreference } from '../../services/user-preferences.service';
 
@@ -30,8 +31,8 @@ import { UserPreferencesService, ColumnPreference } from '../../services/user-pr
     MatSnackBarModule,
     FormsModule,
     MatSortModule,
-    MatCheckboxModule
-  ]
+    MatCheckboxModule,
+  ],
 })
 export class HcapListComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -41,35 +42,35 @@ export class HcapListComponent implements OnInit {
   filtered: HCap[] = [];
   paged: HCap[] = [];
   loading = false;
-  activeSort: Sort = {active: '', direction: ''};
+  activeSort: Sort = { active: '', direction: '' };
 
   search = '';
   pageSize = 20;
   pageIndex = 0;
 
-  allColumns: { key: string, label: string }[] = [
+  allColumns: { key: string; label: string }[] = [
     { key: 'name', label: 'Name' },
     { key: 'postedScore', label: 'Posted Score' },
     { key: 'datePlayed', label: 'Date' },
-    { key: 'rochIndexForThisRound', label: 'Roch Index Used Today' },
-    { key: 'usgaIndexForThisRound', label: 'USGA Index Used Today' },
-    { key: 'rochHandicapForThisRound', label: 'Roch Handicap Used Today' },
-    { key: 'usgaHandicapForThisRound', label: 'USGA Handicap Used Today' },
-    { key: 'rochDifferentialForTodaysRound', label: 'Roch Diff' },
-    { key: 'usgaDifferentialForTodaysRound', label: 'USGA Diff' },
-    { key: 'rochNewCap', label: 'New Roch Cap' },
-    { key: 'usgaNewCap', label: 'New USGA Cap' },
-    { key: 'rochIndexAfterTodaysScore', label: 'Roch Index After Today' },
-    { key: 'usgaIndexAfterTodaysScore', label: 'USGA Index After Today' },
+    { key: 'rochIndexB4Round', label: 'Roch Index Used Today' },
+    { key: 'usgaIndexB4Round', label: 'USGA Index Used Today' },
+    { key: 'rochCapB4Round', label: 'Roch Handicap Used Today' },
+    { key: 'usgaCapB4Round', label: 'USGA Handicap Used Today' },
+    { key: 'rochIndexAfterRound', label: 'Roch Index After Today' },
+    { key: 'usgaIndexAfterRound', label: 'USGA Index After Today' },
     { key: 'scCourse', label: 'Course' },
     { key: 'scTees', label: 'Tees' },
     { key: 'teeAbreviation', label: 'Tee Abrev' },
     { key: 'scRating', label: 'Rating' },
     { key: 'scSlope', label: 'Slope' },
-    { key: 'scPar', label: 'Par' },
+    // { key: 'scPar', label: 'Par' },
     { key: 'author', label: 'Author' },
   ];
-  displayedColumns: string[] = this.allColumns.map(c => c.key);
+  
+   calculateCourseHandicap(index: number | null, slope: number | undefined): number | '' {
+    return index != null ? calculateCourseHandicap(index, slope) : '';
+  }
+  displayedColumns: string[] = this.allColumns.map((c) => c.key);
   private readonly HCAP_PREF_KEY = 'hcapListColumns';
   toggleColumn(col: string) {
     const idx = this.displayedColumns.indexOf(col);
@@ -78,7 +79,7 @@ export class HcapListComponent implements OnInit {
       this.displayedColumns.splice(idx, 1);
     } else {
       // Show column (add at original order)
-      const origIdx = this.allColumns.findIndex(c => c.key === col);
+      const origIdx = this.allColumns.findIndex((c) => c.key === col);
       if (origIdx > -1) {
         this.displayedColumns.splice(origIdx, 0, col);
       } else {
@@ -95,7 +96,7 @@ export class HcapListComponent implements OnInit {
   private saveColumnPreferences(): void {
     const prefs: ColumnPreference[] = this.allColumns.map((col: { key: string }) => ({
       key: col.key,
-      visible: this.displayedColumns.includes(col.key)
+      visible: this.displayedColumns.includes(col.key),
     }));
     this.userPreferences.saveCustomColumnPreferences(this.HCAP_PREF_KEY, prefs);
   }
@@ -103,15 +104,17 @@ export class HcapListComponent implements OnInit {
   private loadColumnPreferences(): void {
     const prefs: ColumnPreference[] = this.userPreferences.getCustomColumnPreferences(
       this.HCAP_PREF_KEY,
-      this.allColumns.map((col: { key: string }) => ({ key: col.key, visible: true }))
+      this.allColumns.map((col: { key: string }) => ({ key: col.key, visible: true })),
     );
-    this.displayedColumns = prefs.filter((p: ColumnPreference) => p.visible).map((p: ColumnPreference) => p.key);
+    this.displayedColumns = prefs
+      .filter((p: ColumnPreference) => p.visible)
+      .map((p: ColumnPreference) => p.key);
   }
 
   constructor(
     private hcapService: HCapService,
     private snackBar: MatSnackBar,
-    private userPreferences: UserPreferencesService
+    private userPreferences: UserPreferencesService,
   ) {}
 
   ngOnInit() {
@@ -143,7 +146,7 @@ export class HcapListComponent implements OnInit {
       error: (_err) => {
         this.snackBar.open('Error loading HCap data', 'Close', { duration: 3000 });
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -152,9 +155,10 @@ export class HcapListComponent implements OnInit {
     if (!term) {
       this.filtered = [...this.hcaps];
     } else {
-      this.filtered = this.hcaps.filter(h =>
-        (h.name || '')?.toString().toLowerCase().includes(term) ||
-        (h.memberId || '')?.toString().toLowerCase().includes(term)
+      this.filtered = this.hcaps.filter(
+        (h) =>
+          (h.name || '')?.toString().toLowerCase().includes(term) ||
+          (h.memberId || '')?.toString().toLowerCase().includes(term),
       );
     }
     if (this.paginator) this.paginator.firstPage();

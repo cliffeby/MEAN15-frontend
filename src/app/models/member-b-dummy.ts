@@ -5,7 +5,7 @@ export const MEMBER_B_DUMMY: Member = {
   _id: '00000000000000000000B001',
   firstName: 'B.Dummy',
   lastName: '',
-  usgaIndex: 0, // Will be set dynamically
+  usgaIndexB4Round: 0, // Will be set dynamically
   author: { id: 'system', email: 'bdummy@example.com', name: 'System' },
   Email: '',
   fullName: 'B.Dummy',

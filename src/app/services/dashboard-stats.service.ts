@@ -267,7 +267,7 @@ export class DashboardStatsService {
           netScore, 
           memberName, 
           score: score.score, 
-          rochIndex: score.rochIndex 
+          rochIndexB4Round: score.rochIndexB4Round
         });
         
         const scoreData: ScoreWithMember = {
@@ -311,7 +311,7 @@ export class DashboardStatsService {
           netScore, 
           memberName, 
           score: score.score, 
-          rochIndex: score.rochIndex 
+          rochIndexB4Round: score.rochIndexB4Round 
         });
         
         const scoreData: ScoreWithMember = {

@@ -90,7 +90,7 @@ export class MemberSelectionDialogComponent implements OnInit {
     this.filteredMembers = this.allMembers.filter(member => 
       `${member.firstName} ${member.lastName || ''}`.toLowerCase().includes(term) ||
       member.Email?.toLowerCase().includes(term) ||
-      member.usgaIndex?.toString().includes(term)
+      member.usgaIndexB4Round?.toString().includes(term)
     );
   }
 

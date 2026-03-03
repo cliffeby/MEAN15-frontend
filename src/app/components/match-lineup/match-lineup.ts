@@ -114,11 +114,11 @@ export class MatchLineupComponent {
   getCompactNameWithIndex(member: Member): string {
     // If dummy, show 'B.Dummy' only
     if (member._id === '00000000000000000000B001') {
-      return `B.Dummy(${typeof member.rochIndex === 'number' ? member.rochIndex.toFixed(1) : 'NA'})`;
+      return `B.Dummy(${typeof member.rochIndexB4Round === 'number' ? member.rochIndexB4Round.toFixed(1) : 'NA'})`;
     }
     const firstInitial = member.firstName ? member.firstName.charAt(0).toUpperCase() : '';
     const lastName = member.lastName || 'Unknown';
-    const index = typeof member.rochIndex === 'number' ? member.rochIndex.toFixed(1) : 'NA';
+    const index = typeof member.rochIndexB4Round === 'number' ? member.rochIndexB4Round.toFixed(1) : 'NA';
     return `${lastName}, ${firstInitial}(${index})`;
   }
 

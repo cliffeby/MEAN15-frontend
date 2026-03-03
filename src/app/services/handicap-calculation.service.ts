@@ -67,9 +67,9 @@ export class HandicapCalculationService {
     if (!slope) return 0;
     return Math.min(26, Math.round((anyIndex * slope) / 113));
   }
-  calculateCourseHandicapFromIndex(Index: number, slope: number, rating: number, par: number): number {
+  calculateCourseHandicapFromIndex(index: number, slope: number, rating: number, par: number): number {
     if (!slope) return 0;
-    return Math.min(26, Math.floor(((Index * slope) / 113) + rating - par));
+    return Math.min(26, Math.floor(((index * slope) / 113) + rating - par));
   }
   /**
    * Calculate front nine par total

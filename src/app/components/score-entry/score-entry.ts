@@ -29,7 +29,6 @@ import { Score, SimplePlayerScore, ScoresApiResponse } from '../../models/score'
 import type { PlayerScore } from '../../models/player-score.interface';
 import {
   sumScores,
-  calculateCourseHandicap,
   getParForHole,
   getCoursePar,
   getFrontNinePar,
@@ -78,7 +77,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
 
   getHoleHandicap(playerIndex: number): number {
     // Returns the rochIndex for a player
-    return this.playerScores[playerIndex]?.rochIndex || 0;
+    return this.playerScores[playerIndex]?.rochIndexB4Round || 0;
   }
 
   onKeyDown(event: KeyboardEvent, playerIndex: number, holeIndex: number): void {
@@ -479,15 +478,17 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
     this.playerScores = members.map((member) => ({
       member: member as Member,
       totalScore: null,
-      differential: null,
-      rochIndex: (member as Member).usgaIndex || 0,
+      rochIndexB4Round: (member as Member).usgaIndexB4Round || 0,
+      usgaIndexB4Round: (member as Member).usgaIndexB4Round || 0,
+      usgaIndexAfterRound: 0,
+      rochIndexAfterRound: 0,
+      courseAdjustedDifferentialAfterRound: 0,
       netScore: 0,
       wonIndo: false,
       wonOneBall: false,
       wonTwoBall: false,
-      usgaDifferentialToday: 0,
-      rochDifferentialToday: 0,
-      othersDifferentialToday: 0,
+      differentialForRound: undefined,
+      courseAdjustedDifferentialForRound: 0,
       // Attach member's scorecard info for use in template or calculations
       scorecardId: member.scorecard?._id,
       tees: member.memberScorecard?.tees,
@@ -775,7 +776,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   private calculatePlayerTotals(playerIndex: number): void {
     const player = this.playerScores[playerIndex];
     const scores = player.scores;
-    const { frontNine, backNine, totalScore, netScore } = calculatePlayerTotals(scores, player.rochIndex);
+    const { frontNine, backNine, totalScore, netScore } = calculatePlayerTotals(scores, player.rochIndexB4Round);
     player.frontNine = frontNine;
     player.backNine = backNine;
     player.totalScore = totalScore;
@@ -812,7 +813,8 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
     this.playerSaveStatus.set(playerIndex, 'saving');
 
     try {
-      await this.savePlayerScore(playerScore);
+      const simplePlayerScore = this.transformToSimplePlayerScore(playerScore);
+      await this.savePlayerScore(simplePlayerScore);
       this.playerSaveStatus.set(playerIndex, 'saved');
       this.lastSaveTime.set(playerIndex, new Date());
       console.log(`✅ Auto-saved player ${playerIndex} at`, new Date().toLocaleTimeString());
@@ -846,7 +848,8 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
         // Recalculate totals before saving
         this.calculatePlayerTotals(i);
         console.log('About to save player', i, 'playerScore:', this.playerScores[i]);
-        await this.savePlayerScore(this.playerScores[i]);
+        const simplePlayerScore = this.transformToSimplePlayerScore(this.playerScores[i]);
+        await this.savePlayerScore(simplePlayerScore);
         console.log('Saved player', this.playerScores[i], new Date().toLocaleTimeString());
         this.playerSaveStatus.set(i, 'saved');
         this.lastSaveTime.set(i, new Date());
@@ -861,6 +864,13 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       this.saving = false;
     }
   }
+  private transformToSimplePlayerScore(playerScore: PlayerScore): SimplePlayerScore {
+    return {
+      ...playerScore,
+      differentialForRound: playerScore.differentialForRound ?? 0, // Ensure it's defined
+    };
+  }
+
   private async savePlayerScore(playerScore: SimplePlayerScore): Promise<void> {
     // Prevent duplicate creates: if a create is in progress and existingScoreId is not set, block further saves
     if (!playerScore.existingScoreId && playerScore.creating) {

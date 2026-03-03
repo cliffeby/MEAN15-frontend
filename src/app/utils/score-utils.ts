@@ -1,6 +1,6 @@
 // Utility functions for score calculations
 
-import { NonNullableFormBuilder } from "@angular/forms";
+// import { NonNullableFormBuilder } from "@angular/forms";
 
 export function sumScores(scores: (number | null)[]): number {
   return scores.reduce((sum: number, score: number | null) => sum + (score || 0), 0);
@@ -10,9 +10,10 @@ export function calculateCourseHandicap(usgaIndex: number, slope?: number): numb
   if (!slope) return 0;
   return Math.round((usgaIndex * slope) / 113);
 }
-export function calculateDifferential(score: number, slope?: number, rating?:number): number {
+
+export function calculateDifferential(score: number, slope?: number, rating?:number, par?: number): number {
   if (!slope) return 0;
-  return Math.round(((score-rating!) * slope) / 113 * 10) / 10;
+  return Math.round(((score-rating!) * slope) / 113 );
 }
 
 export function getParForHole(pars: number[] | undefined, holeIndex: number): number {

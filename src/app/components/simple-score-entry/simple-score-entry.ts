@@ -29,6 +29,7 @@ import { calculateDifferential } from '../../utils/score-utils';
 import { buildScoreData } from '../../utils/score-data-builder';
 import { HandicapCalculationService } from '../../services/handicap-calculation.service';
 
+
 @Component({
   selector: 'app-simple-score-entry',
   standalone: true,
@@ -176,35 +177,34 @@ export class SimpleScoreEntryComponent implements OnInit {
         const membersWithCourseScorecard = members.map((member) => {
           const memberScorecard: Scorecard | null = getMemberScorecard(
             matchCourse ?? '',
-            member.scorecardsId ?? [],scorecardList);
+            member.scorecardsId ?? [],
+            scorecardList,
+          );
           console.log('Member:', member, 'Member Scorecard:', memberScorecard);
           return { ...member, memberScorecard };
         });
 
         // Setup player scores with member-specific tees/rating/slope
         this.playerScores = membersWithCourseScorecard.map(({ memberScorecard, ...member }) => ({
-          member: member as Member,
+          member, // Adding the missing `member` property
           totalScore: null,
-          scores: [],  //Added to get score-entry working with by-hole scores in simple mode
-          differential: null,
-          usgaDifferentialToday: 0,
-          rochDifferentialToday: 0,
-          rochCapToday: this.handicapCalculationService.calculateCourseHandicap(member.rochIndex || 0, memberScorecard?.slope || 113),
-          usgaCapToday: this.handicapCalculationService.calculateCourseHandicap(member.usgaIndex || 0, memberScorecard?.slope || 113),
-          othersDifferentialToday: 0,
-          rochIndex: (member as Member).rochIndex || 0,
-          usgaIndex: (member as Member).usgaIndex || 0,
-          netScore: 0,
-          wonIndo: false,
-          wonOneBall: false,
-          wonTwoBall: false,
-          // Attach member's scorecard info for use in template or calculations
-          scorecardId: memberScorecard?._id,
-          scTees: memberScorecard?.tees,
-          teeAbreviation: memberScorecard?.teeAbreviation,
-          scRating: memberScorecard?.rating,
-          scSlope: memberScorecard?.slope,
-          scPar: memberScorecard?.par
+          scores: [], //Added to get score-entry working with by-hole scores in simple mode
+          differentialForRound: 0, // Default value
+          scCourseHandicap: memberScorecard?.par || 0, // Updated to use `par`
+          scTees: memberScorecard?.tees || '',
+          teeAbreviation: memberScorecard?.teeAbreviation || '',
+          scPar: memberScorecard?.par || 0,
+          scSlope: memberScorecard?.slope || 0,
+          scRating: memberScorecard?.rating || 0,
+          usgaIndexB4Round: member.usgaIndexB4Round || 0, // Derived from `member`
+          rochIndexB4Round: member.rochIndexB4Round || 0, // Derived from `member`
+          frontNine: 0, // Default value
+          backNine: 0, // Default value
+          total: 0, // Default value
+          netScore: 0, // Default value
+          wonIndo: false, // Default value
+          wonOneBall: false, // Default value
+          wonTwoBall: false // Default value
         }));
         console.log('Player Scores after setup:', this.playerScores);
 
@@ -274,33 +274,22 @@ export class SimpleScoreEntryComponent implements OnInit {
           );
 
           if (playerIndex >= 0) {
-            const totalScore = score.score || score.postedScore;
-            this.playerScores[playerIndex].totalScore = totalScore;
-            this.playerScores[playerIndex].existingScoreId = score._id;
+            // Set existingScoreId so future saves update, not create
+            this.playerScores[playerIndex].existingScoreId = score._id || score.id;
 
-            // Set win booleans from backend data if present
-            this.playerScores[playerIndex].wonIndo =
-              typeof score.wonIndo === 'boolean' ? score.wonIndo : false;
-            this.playerScores[playerIndex].wonOneBall =
-              typeof score.wonOneBall === 'boolean' ? score.wonOneBall : false;
-            this.playerScores[playerIndex].wonTwoBall =
-              typeof score.wonTwoBall === 'boolean' ? score.wonTwoBall : false;
-
-            // Calculate differential from total score (reverse calculation)
-            const coursePar = this.scorecard?.par || 72;
-            const scRating = this.playerScores[playerIndex].scRating || coursePar;
-            const scSlope = this.playerScores[playerIndex].scSlope || 113;
-            this.playerScores[playerIndex].differential = totalScore - scRating;
-            this.playerScores[playerIndex].usgaDifferentialToday = 
-             calculateDifferential(totalScore,scSlope,scRating) ;
-             this.playerScores[playerIndex].rochDifferentialToday = 
-             calculateDifferential(totalScore,scSlope,scRating) ;
+            const totalScore = score.score || score.postedScore || 0; // Ensure totalScore is defined
+            const coursePar = this.scorecard?.par || 72; // Ensure coursePar is defined
+            const scPar = this.scorecard?.par || 72; // Ensure coursePar is defined
+            const differentialForRound = this.playerScores[playerIndex].differentialForRound = totalScore - coursePar || 0; // Ensure differentialForRound is defined
+            const scRating = this.playerScores[playerIndex].scRating || coursePar; // Ensure scRating is defined
+            const scSlope = this.playerScores[playerIndex].scSlope || 113; // Ensure scSlope is defined
+            const courseAdjustedDifferentialForRound = calculateDifferential(this.playerScores[playerIndex].differentialForRound || 0, scSlope) || 0; // Ensure courseAdjustedDifferentialForRound is defined
 
             const playerFormGroup = this.getPlayerFormGroup(playerIndex);
             playerFormGroup.get('totalScore')?.setValue(totalScore);
             playerFormGroup
               .get('differential')
-              ?.setValue(this.playerScores[playerIndex].differential);
+              ?.setValue(this.playerScores[playerIndex].differentialForRound);
 
             this.calculateNetScore(playerIndex);
           }
@@ -341,18 +330,23 @@ export class SimpleScoreEntryComponent implements OnInit {
       score = parseInt(inputValue);
     }
     this.playerScores[playerIndex].totalScore = score;
-    this.playerScores[playerIndex].usgaDifferentialToday = calculateDifferential(score || 0, this.playerScores[playerIndex].scSlope || 113, this.playerScores[playerIndex].scRating || 72) || 0;
-    this.playerScores[playerIndex].rochDifferentialToday = calculateDifferential(score || 0, this.playerScores[playerIndex].scSlope || 113, this.playerScores[playerIndex].scRating || 72) || 0;
+    this.playerScores[playerIndex].differentialForRound =
+      calculateDifferential(
+        score || 0,
+        this.playerScores[playerIndex].scSlope || 113,
+        this.playerScores[playerIndex].scRating || 72,
+      ) || 0; // Ensure a valid number is assigned
+
     // Update differential based on total score
     if (score !== null) {
-      // const courseRating = this.scorecard?.rating || this.scorecard?.par || 72;
-      this.playerScores[playerIndex].differential = score - this.playerScores[playerIndex].scRating!;
+      this.playerScores[playerIndex].differentialForRound =
+        (score - this.playerScores[playerIndex].scRating!) || 0; // Ensure a valid number is assigned
       const playerFormGroup = this.getPlayerFormGroup(playerIndex);
       playerFormGroup
         .get('differential')
-        ?.setValue(this.playerScores[playerIndex].differential, { emitEvent: false });
+        ?.setValue(this.playerScores[playerIndex].differentialForRound, { emitEvent: false });
     } else {
-      this.playerScores[playerIndex].differential = null;
+      this.playerScores[playerIndex].differentialForRound = 0; // Assigning a valid default value
     }
 
     this.calculateNetScore(playerIndex);
@@ -365,16 +359,16 @@ export class SimpleScoreEntryComponent implements OnInit {
       return;
     }
     const inputValue = event.target.value.trim();
-    let differential: number | null = null;
+    let differential: number | undefined;
     if (!inputValue) {
-      differential = null;
+      differential = undefined;
     } else if (!isNaN(inputValue)) {
       differential = parseFloat(inputValue);
     }
-    this.playerScores[playerIndex].differential = differential;
+    this.playerScores[playerIndex].differentialForRound = differential || 0; // Ensure a valid number is assigned
 
     // Calculate total score from differential
-    if (differential !== null) {
+    if (differential !== undefined) {
       const scRating = this.scorecard?.rating || this.scorecard?.par || 72;
       this.playerScores[playerIndex].totalScore = Math.round(differential + scRating);
       const playerFormGroup = this.getPlayerFormGroup(playerIndex);
@@ -391,10 +385,18 @@ export class SimpleScoreEntryComponent implements OnInit {
     this.entryMode = this.entryMode === 'totalScore' ? 'differential' : 'totalScore';
   }
 
+  public calculateCourseHandicap(index: number, slope: number | undefined): number {
+    if (!index || !slope) {
+      return 0;
+    }
+    return Math.round((index * slope) / 113);
+  }
+
   private calculateNetScore(playerIndex: number): void {
     const player = this.playerScores[playerIndex];
     if (player.totalScore !== null) {
-      player.netScore = player.totalScore - player.rochIndex;
+      const rochCap = this.calculateCourseHandicap(player.rochIndexB4Round, player.scSlope);
+      player.netScore = player.totalScore - rochCap;
     } else {
       player.netScore = 0;
     }
@@ -407,7 +409,13 @@ export class SimpleScoreEntryComponent implements OnInit {
     this.saving = true;
     try {
       for (const playerScore of this.playerScores) {
-        console.log('Saving score for player:', playerScore.member.firstName, playerScore.member.lastName, 'Score:', playerScore);
+        console.log(
+          'Saving score for player:',
+          playerScore.member.firstName,
+          playerScore.member.lastName,
+          'Score:',
+          playerScore,
+        );
         if (playerScore.totalScore !== null) {
           await this.savePlayerScore(playerScore);
         }
@@ -424,7 +432,17 @@ export class SimpleScoreEntryComponent implements OnInit {
   }
 
   private async savePlayerScore(playerScore: SimplePlayerScore): Promise<void> {
-    console.log('Saving score data for player:', playerScore.rochCapToday, playerScore.usgaCapToday);
+    // TODO: Get scPars for this player from their scorecard info
+    console.log(
+      'Saving score data for player:',
+      playerScore.rochIndexB4Round,
+      playerScore.usgaIndexB4Round,
+      this.handicapCalculationService.calculateCourseHandicapFromIndex(playerScore.member.rochIndexB4Round || 0, 
+        playerScore.scSlope || 113, playerScore.scRating || 72, playerScore.scRating || 72),
+      this.handicapCalculationService.calculateCourseHandicapFromIndex(playerScore.member.usgaIndexB4Round || 0, 
+        playerScore.scSlope || 113, playerScore.scRating || 72, playerScore.scRating || 72),
+      playerScore,
+    );
     const scoreData = buildScoreData(
       playerScore,
       this.match!,

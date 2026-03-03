@@ -45,54 +45,36 @@
       <td mat-cell *matCellDef="let row"> {{ row.datePlayed ? (row.datePlayed | date:'shortDate') : '-' }} </td>
     </ng-container>
 
-    <ng-container matColumnDef="rochIndexForThisRound">
+    <ng-container matColumnDef="rochIndexB4Round">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Roch Index Used Today </th>
-      <td mat-cell *matCellDef="let row"> {{ row.rochIndexForThisRound ?? '-' }} </td>
+      <td mat-cell *matCellDef="let row"> {{ row.rochIndexB4Round != null ? (row.rochIndexB4Round | number:'1.1-1') : '-' }} </td>
     </ng-container>
 
-    <ng-container matColumnDef="usgaIndexForThisRound">
+    <ng-container matColumnDef="rochCapB4Round">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Roch Handicap </th>
+      <td mat-cell *matCellDef="let row"> {{ calculateCourseHandicap(row.rochIndexB4Round, row.scSlope) }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="usgaIndexB4Round">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> USGA Index Used Today </th>
-      <td mat-cell *matCellDef="let row"> {{ row.usgaIndexForThisRound ?? '-' }} </td>
+      
+      <td mat-cell *matCellDef="let row"> {{ row.usgaIndexB4Round != null ? (row.usgaIndexB4Round | number:'1.1-1') : '-' }} </td>
     </ng-container>
 
-    <ng-container matColumnDef="rochHandicapForThisRound">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> Roch Handicap Used Today </th>
-      <td mat-cell *matCellDef="let row"> {{ row.rochHandicapForThisRound ?? '-' }} </td>
+        <ng-container matColumnDef="usgaCapB4Round">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> USGA Handicap </th>
+      <td mat-cell *matCellDef="let row"> {{ calculateCourseHandicap(row.usgaIndexB4Round, row.scSlope) }} </td>
     </ng-container>
 
-    <ng-container matColumnDef="usgaHandicapForThisRound">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> USGA Handicap Used Today </th>
-      <td mat-cell *matCellDef="let row"> {{ row.usgaHandicapForThisRound ?? '-' }} </td>
+
+    <ng-container matColumnDef="rochIndexAfterRound">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> New Roch Index </th>
+      <td mat-cell *matCellDef="let row"> {{ row.rochIndexAfterRound != null ? (row.rochIndexAfterRound | number:'1.1-1') : '-' }} </td>
     </ng-container>
 
-    <ng-container matColumnDef="rochDifferentialForTodaysRound">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> Roch<br>Diff </th>
-      <td mat-cell *matCellDef="let row"> {{ row.rochDifferentialForTodaysRound ?? '-' }} </td>
-    </ng-container>
-
-    <ng-container matColumnDef="usgaDifferentialForTodaysRound">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> USGA<br>Diff </th>
-      <td mat-cell *matCellDef="let row"> {{ row.usgaDifferentialForTodaysRound ?? '-' }} </td>
-    </ng-container>
-
-    <ng-container matColumnDef="rochNewCap">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> New<br>Roch Cap </th>
-      <td mat-cell *matCellDef="let row"> {{ row.rochNewCap ?? '-' }} </td>
-    </ng-container>
-
-    <ng-container matColumnDef="usgaNewCap">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> New<br>USGA Cap </th>
-      <td mat-cell *matCellDef="let row"> {{ row.usgaNewCap ?? '-' }} </td>
-    </ng-container>
-
-    <ng-container matColumnDef="rochIndexAfterTodaysScore">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> Roch<br>After </th>
-      <td mat-cell *matCellDef="let row"> {{ row.rochIndexAfterTodaysScore ?? '-' }} </td>
-    </ng-container>
-
-    <ng-container matColumnDef="usgaIndexAfterTodaysScore">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> USGA<br>After </th>
-      <td mat-cell *matCellDef="let row"> {{ row.usgaIndexAfterTodaysScore ?? '-' }} </td>
+    <ng-container matColumnDef="usgaIndexAfterRound">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> New USGA Index </th>
+      <td mat-cell *matCellDef="let row"> {{ row.usgaIndexAfterRound != null ? (row.usgaIndexAfterRound | number:'1.1-1') : '-' }} </td>
     </ng-container>
 
     <ng-container matColumnDef="scCourse">
@@ -112,7 +94,7 @@
 
     <ng-container matColumnDef="scRating">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Rating </th>
-      <td mat-cell *matCellDef="let row"> {{ row.scRating ?? '-' }} </td>
+      <td mat-cell *matCellDef="let row"> {{ row.scRating != null ? (row.scRating | number:'1.1-1') : '-' }} </td>
     </ng-container>
 
     <ng-container matColumnDef="scSlope">
@@ -129,5 +111,6 @@
     <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
   </table>
 
-  <mat-paginator [length]="filtered.length" [pageSize]="pageSize" [pageIndex]="pageIndex" [pageSizeOptions]="[5,10,20,50]" (page)="onPage($event)"></mat-paginator>
+  <mat-paginator [length]="filtered.length" [pageSize]="pageSize" [pageIndex]="pageIndex"
+    [pageSizeOptions]="[5,10,20,50]" (page)="onPage($event)"></mat-paginator>
 </div>

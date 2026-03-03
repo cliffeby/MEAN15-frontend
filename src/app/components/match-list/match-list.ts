@@ -301,8 +301,8 @@ export class MatchListComponent implements OnInit, OnDestroy {
               const memberScorecard = getMemberScorecard(finalScorecard.course, member.scorecardsId || [], scorecardList);
               return {
                 member,
-                rochIndex: this.hcapCalculationService.calculateCourseHandicap(
-                  member.usgaIndex || 0,
+                rochIndexB4Round: this.hcapCalculationService.calculateCourseHandicap(
+                  member.usgaIndexB4Round || 0,
                   finalScorecard?.slope,
                 ),
                 teeAbreviation: memberScorecard?.teeAbreviation || '',
@@ -498,13 +498,11 @@ export class MatchListComponent implements OnInit, OnDestroy {
         // const newHCapStr = this.handicapService.computeHandicapFromScores([score, ...priorScores]);
         // const newHCapIndex = newHCapStr ? parseFloat(newHCapStr) : null;
 
-        const rochNewCapStr = this.handicapService.computeRochFromScores([score, ...priorScores]);
-        const usgaNewCapStr = this.handicapService.computeUSGAFromScores([score, ...priorScores]);
-        const rochNewCap = rochNewCapStr ? parseFloat(rochNewCapStr) : null;
-        const usgaNewCap = usgaNewCapStr ? parseFloat(usgaNewCapStr) : null;
-        const rochCapForThisRound = this.hcapCalculationService.calculateCourseHandicapFromIndex(score.rochIndex ?? 0, score.scSlope ?? 113, score.scRating ?? 72, score.scPar ?? 72);
-        const usgaCapForThisRound = this.hcapCalculationService.calculateCourseHandicapFromIndex(score.usgaIndex ?? 0, score.scSlope ?? 113, score.scRating ?? 72, score.scPar ?? 72);
-
+        const rochNewIndexStr = this.handicapService.computeRochFromScores([score, ...priorScores]);
+        const usgaNewIndexStr = this.handicapService.computeUSGAFromScores([score, ...priorScores]);
+        const rochNewIndex = rochNewIndexStr ? parseFloat(rochNewIndexStr) : null;
+        const usgaNewIndex = usgaNewIndexStr ? parseFloat(usgaNewIndexStr) : null;
+       
         const hcapRecord: any = {
           name: score.name || '',
           postedScore: score.postedScore ?? score.score ?? null,
@@ -512,12 +510,12 @@ export class MatchListComponent implements OnInit, OnDestroy {
           author: score.author || author,
           matchId,
           memberId,
-          rochDifferentialForTodaysRound: score.rochDifferentialForTodaysRound ?? null,
-          usgaDifferentialForTodaysRound: score.usgaDifferentialForTodaysRound ?? null,
-          rochHandicapForThisRound: rochCapForThisRound,
-          usgaHandicapForThisRound: usgaCapForThisRound,
-          rochIndexForThisRound: score.rochIndex ?? null,
-          usgaIndexForThisRound: score.usgaIndex ?? null,
+          differentialForRound: score.differentialForRound ?? null,
+          // usgaDifferentialForTodaysRound: score.usgaDifferentialForTodaysRound ?? null,
+          rochIndexB4Round: score.rochIndexB4Round ?? null,
+          usgaIndexB4Round: score.usgaIndexB4Round  ?? null,
+          rochIndexAfterRound: rochNewIndex ?? score.rochIndex ?? null,
+          usgaIndexAfterRound: usgaNewIndex ?? score.usgaIndex ?? null,
           // rochHandicapForThisRound: score.rochIndex ?? null,
           // usgaHandicapForThisRound: score.usgaIndex ?? null,
           teeAbreviation: score.teeAbreviation || null,
@@ -525,8 +523,6 @@ export class MatchListComponent implements OnInit, OnDestroy {
           scTees: score.scTees || null,
           scSlope: score.scSlope ?? null,
           scRating: score.scRating ?? null,
-          rochNewCap,
-          usgaNewCap,
           usgaIndexAfterTodaysScore: score.usgaIndexAfterTodaysScore ?? score.usgaIndex ?? null,
           rochIndexAfterTodaysScore: score.rochIndexAfterTodaysScore ?? score.rochIndex ?? null,
         };

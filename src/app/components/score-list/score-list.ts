@@ -23,6 +23,7 @@ import { Member } from '../../models/member';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../services/authService';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { calculateCourseHandicap } from '../../utils/score-utils';
 
 interface GroupedScores {
   matchId: string | null;
@@ -61,8 +62,8 @@ interface GroupedByMember {
     MatTabsModule,
     MatFormFieldModule,
     MatInputModule,
-    FormsModule
-  ]
+    FormsModule,
+  ],
 })
 export class ScoreListComponent implements OnInit {
   scores: Score[] = [];
@@ -73,8 +74,27 @@ export class ScoreListComponent implements OnInit {
   filteredGroupedByMember: GroupedByMember[] = [];
   memberSearchTerm = '';
   loading = false;
-  displayedColumns: string[] = ['name', 'score', 'postedScore', 'course', 'usgaIndex','rochIndex',  'method', 'actions'];
-  memberDisplayedColumns: string[] = ['match', 'score', 'postedScore', 'datePlayed', 'course', 'usgaIndex', 'rochIndex',  'method', 'actions'];
+  displayedColumns: string[] = [
+    'name',
+    'score',
+    'postedScore',
+    'course',
+    'usgaIndex',
+    'rochIndex',
+    'method',
+    'actions',
+  ];
+  memberDisplayedColumns: string[] = [
+    'match',
+    'score',
+    'postedScore',
+    'datePlayed',
+    'course',
+    'usgaIndex',
+    'rochIndex',
+    'method',
+    'actions',
+  ];
 
   constructor(
     private scoreService: ScoreService,
@@ -83,16 +103,15 @@ export class ScoreListComponent implements OnInit {
     private router: Router,
     private snackBar: MatSnackBar,
     private authService: AuthService,
-    private confirmDialog: ConfirmDialogService
+    private confirmDialog: ConfirmDialogService,
   ) {}
 
- get isAuthorized(): boolean {
+  get isAuthorized(): boolean {
     return this.authService.hasMinRole('fieldhand');
   }
   get isAuthorizedToDelete(): boolean {
     return this.authService.hasMinRole('admin');
   }
-
 
   ngOnInit() {
     this.loadMembers();
@@ -106,7 +125,7 @@ export class ScoreListComponent implements OnInit {
       },
       error: () => {
         this.snackBar.open('Error loading members', 'Close', { duration: 2000 });
-      }
+      },
     });
   }
 
@@ -122,7 +141,7 @@ export class ScoreListComponent implements OnInit {
         this.loading = false;
         // Load scores anyway, even if matches fail
         this.loadScores();
-      }
+      },
     });
   }
 
@@ -130,7 +149,7 @@ export class ScoreListComponent implements OnInit {
     this.loading = true;
     this.scoreService.getAll().subscribe({
       next: (res) => {
-        console.log('Scores loaded:', res);    
+        console.log('Scores loaded:', res);
         this.scores = res.scores || res;
         this.groupScoresByMatch();
         this.groupScoresByMember();
@@ -139,15 +158,15 @@ export class ScoreListComponent implements OnInit {
       error: () => {
         this.snackBar.open('Error loading scores', 'Close', { duration: 2000 });
         this.loading = false;
-      }
+      },
     });
   }
 
   groupScoresByMatch() {
     const grouped = new Map<string, Score[]>();
-    
+
     // Group scores by matchId
-    this.scores.forEach(score => {
+    this.scores.forEach((score) => {
       const matchId = this.extractMatchId(score);
       if (!grouped.has(matchId)) {
         grouped.set(matchId, []);
@@ -158,17 +177,17 @@ export class ScoreListComponent implements OnInit {
     // Convert to GroupedScores array
     let allGroups = Array.from(grouped.entries()).map(([matchId, scores]) => {
       // Get match info from populated object or find in matches array
-      const matchInfo = this.extractMatchInfo(scores[0]) || 
-        this.matches.find(m => (m._id) === matchId);
-      
+      const matchInfo =
+        this.extractMatchInfo(scores[0]) || this.matches.find((m) => m._id === matchId);
+
       // Detect if this is an orphaned group
       const isOrphaned = matchId !== 'no-match' && !matchInfo;
-      
+
       // Check for other types of orphans in the scores
-      const hasOrphanedMembers = scores.some(score => 
-        score.memberId && typeof score.memberId === 'string' && !score.name
+      const hasOrphanedMembers = scores.some(
+        (score) => score.memberId && typeof score.memberId === 'string' && !score.name,
       );
-      
+
       let course = '';
       if (matchId === 'no-match') {
         course = 'Unassigned Scores';
@@ -177,21 +196,30 @@ export class ScoreListComponent implements OnInit {
       } else {
         course = matchInfo ? matchInfo.name : `Match ${matchId}`;
       }
-      
+
       return {
         matchId: matchId === 'no-match' ? null : matchId,
         matchName: course,
-        matchDate: matchInfo ? (matchInfo.datePlayed || null) : null,
-        scores: scores.sort((a, b) => new Date(b.datePlayed || '').getTime() - new Date(a.datePlayed || '').getTime()),
+        matchDate: matchInfo ? matchInfo.datePlayed || null : null,
+        scores: scores.sort(
+          (a, b) => new Date(b.datePlayed || '').getTime() - new Date(a.datePlayed || '').getTime(),
+        ),
         expanded: isOrphaned, // Auto-expand orphaned groups for attention
         isOrphaned: isOrphaned,
-        orphanType: isOrphaned ? 'match' : (hasOrphanedMembers ? 'member' : undefined) as 'match' | 'member' | 'scorecard' | 'user' | undefined
+        orphanType: isOrphaned
+          ? 'match'
+          : ((hasOrphanedMembers ? 'member' : undefined) as
+              | 'match'
+              | 'member'
+              | 'scorecard'
+              | 'user'
+              | undefined),
       };
     });
 
     // Hide 'Unassigned Scores' group from non-developer users
     if (!this.authService.hasRole('developer')) {
-      allGroups = allGroups.filter(group => group.matchName !== 'Unassigned Scores');
+      allGroups = allGroups.filter((group) => group.matchName !== 'Unassigned Scores');
     }
 
     // Sort groups by date (most recent first), but put orphaned groups at top
@@ -221,11 +249,11 @@ export class ScoreListComponent implements OnInit {
     }
 
     // Find the score to get its name for the confirmation dialog
-    const score = this.scores.find(s => s._id === id);
+    const score = this.scores.find((s) => s._id === id);
     const scoreName = score?.name || `Score ${id}`;
     const authorName = this.authService.getAuthorName() || '';
 
-    this.confirmDialog.confirmDelete(scoreName, 'score').subscribe(confirmed => {
+    this.confirmDialog.confirmDelete(scoreName, 'score').subscribe((confirmed) => {
       if (confirmed) {
         this.scoreService.delete({ id, name: scoreName, authorName }).subscribe({
           next: () => {
@@ -234,11 +262,13 @@ export class ScoreListComponent implements OnInit {
           },
           error: (err) => {
             if (err.status === 403 || err.status === 401) {
-              this.snackBar.open('You are not authorized to delete scores.', 'Close', { duration: 2500 });
+              this.snackBar.open('You are not authorized to delete scores.', 'Close', {
+                duration: 2500,
+              });
             } else {
               this.snackBar.open('Error deleting score', 'Close', { duration: 2000 });
             }
-          }
+          },
         });
       }
     });
@@ -255,7 +285,7 @@ export class ScoreListComponent implements OnInit {
 
   formatScoreMethod(method: string | undefined): string {
     if (!method) return 'N/A';
-    switch(method) {
+    switch (method) {
       case 'byHole':
         return 'By Hole';
       case 'differential':
@@ -281,11 +311,11 @@ export class ScoreListComponent implements OnInit {
   }
 
   expandAllGroups() {
-    this.groupedScores.forEach(group => group.expanded = true);
+    this.groupedScores.forEach((group) => (group.expanded = true));
   }
 
   collapseAllGroups() {
-    this.groupedScores.forEach(group => group.expanded = false);
+    this.groupedScores.forEach((group) => (group.expanded = false));
   }
 
   private extractMatchId(score: Score): string {
@@ -307,12 +337,12 @@ export class ScoreListComponent implements OnInit {
     if (score.memberId && typeof score.memberId === 'string' && !score.name) {
       return true;
     }
-    
+
     // Check for missing essential data that might indicate orphaned references
     if (!score.name || score.name.trim() === '') {
       return true;
     }
-    
+
     return false;
   }
 
@@ -332,19 +362,22 @@ export class ScoreListComponent implements OnInit {
     twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
 
     // Filter scores from last 12 months
-    const recentScores = this.scores.filter(score => {
+    const recentScores = this.scores.filter((score) => {
       const scoreDate = new Date(score.datePlayed || '');
       return scoreDate >= twelveMonthsAgo;
     });
 
     // Count rounds per member
-    const memberRounds = new Map<string, { member: Member | null, scores: Score[], count: number }>();
+    const memberRounds = new Map<
+      string,
+      { member: Member | null; scores: Score[]; count: number }
+    >();
 
-    recentScores.forEach(score => {
+    recentScores.forEach((score) => {
       const memberId = this.extractMemberId(score);
       if (memberId) {
         if (!memberRounds.has(memberId)) {
-          const member = this.members.find(m => m._id === memberId) || null;
+          const member = this.members.find((m) => m._id === memberId) || null;
           memberRounds.set(memberId, { member, scores: [], count: 0 });
         }
         const memberData = memberRounds.get(memberId)!;
@@ -354,13 +387,17 @@ export class ScoreListComponent implements OnInit {
     });
 
     // Convert to array and sort by round count
-    const allGrouped = Array.from(memberRounds.entries()).map(([memberId, data]) => ({
-      memberId,
-      memberName: data.scores[0]?.name || 'Unknown Player', // Updated to use score.name directly
-      scores: data.scores.sort((a, b) => new Date(b.datePlayed || '').getTime() - new Date(a.datePlayed || '').getTime()),
-      roundCount: data.count,
-      expanded: false
-    })).sort((a, b) => b.roundCount - a.roundCount);
+    const allGrouped = Array.from(memberRounds.entries())
+      .map(([memberId, data]) => ({
+        memberId,
+        memberName: data.scores[0]?.name || 'Unknown Player', // Updated to use score.name directly
+        scores: data.scores.sort(
+          (a, b) => new Date(b.datePlayed || '').getTime() - new Date(a.datePlayed || '').getTime(),
+        ),
+        roundCount: data.count,
+        expanded: false,
+      }))
+      .sort((a, b) => b.roundCount - a.roundCount);
 
     // Store all grouped members
     this.groupedByMember = allGrouped;
@@ -376,8 +413,8 @@ export class ScoreListComponent implements OnInit {
     } else {
       // Filter by search term
       const searchLower = this.memberSearchTerm.toLowerCase();
-      this.filteredGroupedByMember = this.groupedByMember.filter(group =>
-        group.memberName.toLowerCase().includes(searchLower)
+      this.filteredGroupedByMember = this.groupedByMember.filter((group) =>
+        group.memberName.toLowerCase().includes(searchLower),
       );
     }
   }
@@ -386,6 +423,9 @@ export class ScoreListComponent implements OnInit {
     this.memberSearchTerm = '';
     this.onMemberSearch();
   }
+  calculateCourseHandicap(index: number | null, slope: number | undefined): number | '' {
+    return index != null ? calculateCourseHandicap(index, slope) : '';
+  }
 
   private extractMemberId(score: Score): string | null {
     if (typeof score.memberId === 'object' && score.memberId) {
@@ -393,5 +433,4 @@ export class ScoreListComponent implements OnInit {
     }
     return score.memberId || null;
   }
-
 }

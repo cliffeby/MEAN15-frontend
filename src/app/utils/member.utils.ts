@@ -52,13 +52,13 @@ export class MemberUtils {
    * Validates that a score has valid score and rochIndex data
    */
   static isValidScore(score: Score): boolean {
-    return !!(score.score && score.rochIndex !== undefined);
+    return !!(score.score && score.rochIndexB4Round !== undefined);
   }
 
   /**
    * Calculates net score from gross score and rochIndex
    */
   static calculateNetScore(score: Score): number {
-    return score.score - (score.rochIndex || 0);
+    return score.score - (score.rochIndexB4Round || 0);
   }
 }
