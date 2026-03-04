@@ -2,8 +2,40 @@
   <h2>Reports</h2>
   <div class="report-actions no-print">
     <button mat-raised-button color="primary" (click)="showMemberReport()">Member Recent Play & HCap</button>
-    <!-- Add more report buttons here -->
+    <button mat-raised-button color="accent" (click)="showRosterReport()">Most Recent Match Roster</button>
   </div>
+    <!-- Most Recent Match Roster Report (Grouped by Partner, Foursome, as in sample image) -->
+    <div *ngIf="showingRosterReport">
+      <div *ngIf="!mostRecentMatch" class="debug-message">
+        <p>No match data found for roster report.</p>
+      </div>
+      <div *ngIf="mostRecentMatch">
+        <div class="print-header">
+          <div class="header-row">
+            <h3 class="report-title">{{ rosterHeader }}</h3>
+            <span class="print-date">{{ rosterDate | date:'fullDate' }}</span>
+            <span *ngIf="rosterCourse">Course: {{ rosterCourse }}</span>
+            <button mat-raised-button color="accent" class="no-print print-btn" (click)="printRosterReport()">Print</button>
+          </div>
+        </div>
+        <div *ngFor="let group of rosterPartnerDisplayGroups">
+          <h4>Foursome {{ group.groupNum }}</h4>
+          <div class="foursome-row">
+            <div class="partner-col">
+              <div *ngFor="let player of group.partners[0]">
+                {{ player.name }} ({{ player.handicap }}) {{ player.teeAbbreviation }}
+              </div>
+            </div>
+            <div class="vs-separator">vs</div>
+            <div class="partner-col">
+              <div *ngFor="let player of group.partners[1]">
+                {{ player.name }} ({{ player.handicap }}) {{ player.teeAbbreviation }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   <div *ngIf="showingMemberReport">
     <div *ngIf="filteredReport.length === 0" class="debug-message">
       <p>No member data found for report. Please check filter logic.</p>

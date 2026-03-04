@@ -55,6 +55,18 @@ export class MatchFormComponent implements OnInit, OnDestroy {
   onAddMembers(): void {
     this.openMemberSelectionDialog();
   }
+
+  pairingMode = false;
+
+  onPairingUpdated(event: { foursomeIdsTEMP: string[][], partnerIdsTEMP: string[][] }) {
+    this.pairingMode = true;
+    const foursomeArray = this.matchForm.get('foursomeIdsTEMP') as FormArray;
+    const partnerArray = this.matchForm.get('partnerIdsTEMP') as FormArray;
+    foursomeArray.clear();
+    partnerArray.clear();
+    event.foursomeIdsTEMP.forEach(group => foursomeArray.push(this.fb.control(group)));
+    event.partnerIdsTEMP.forEach(pair => partnerArray.push(this.fb.control(pair)));
+  }
   defaultName: string = '';
   matchForm: FormGroup;
   loading$: Observable<boolean>;
@@ -105,6 +117,8 @@ export class MatchFormComponent implements OnInit, OnDestroy {
       course: [''],
       status: ['open', Validators.required],
       lineUps: this.fb.array([]),
+      foursomeIdsTEMP: this.fb.array([]),
+      partnerIdsTEMP: this.fb.array([]),
       datePlayed: [new Date(), Validators.required],
       author: [this.authService.getAuthorObject(), Validators.required],
     });
@@ -235,6 +249,8 @@ export class MatchFormComponent implements OnInit, OnDestroy {
     if (formValue.datePlayed instanceof Date) {
       formValue.datePlayed = formValue.datePlayed.toISOString();
     }
+    formValue.foursomeIdsTEMP = (this.matchForm.get('foursomeIdsTEMP') as FormArray).value;
+    formValue.partnerIdsTEMP = (this.matchForm.get('partnerIdsTEMP') as FormArray).value;
 
     // Dispatch NgRx action to create match
     this.store.dispatch(MatchActions.createMatch({ match: formValue }));
@@ -283,15 +299,13 @@ export class MatchFormComponent implements OnInit, OnDestroy {
       datePlayed: new Date(),
     });
 
-    // Ensure the FormArray is cleared (patching with a non-array causes forEach errors)
-    try {
-      this.lineUpsArray.clear();
-    } catch (err) {
-      // Fallback: if lineUpsArray is not available for some reason, ensure the control value is an empty array
+    // Ensure all FormArrays are cleared
+    try { this.lineUpsArray.clear(); } catch (err) {
       const control = this.matchForm.get('lineUps');
-      if (control) {
-        control.setValue([] as any);
-      }
+      if (control) control.setValue([] as any);
     }
+    try { (this.matchForm.get('foursomeIdsTEMP') as FormArray).clear(); } catch (_) {}
+    try { (this.matchForm.get('partnerIdsTEMP') as FormArray).clear(); } catch (_) {}
+    this.pairingMode = false;
   }
 }

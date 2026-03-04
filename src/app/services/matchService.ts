@@ -122,6 +122,13 @@ export class MatchService {
       .pipe(catchError(this.handleError));
   }
 
+  updatePairings(id: string, foursomeIdsTEMP: string[][], partnerIdsTEMP: string[][]): Observable<any> {
+    this.clearCache();
+    return this.http
+      .patch(`${this.baseUrl}/${id}/pairings`, { foursomeIdsTEMP, partnerIdsTEMP }, this.getHeaders())
+      .pipe(catchError(this.handleError));
+  }
+
   delete(params: { id: string; name?: string; authorName?: string }): Observable<any> {
     if (!params?.id) throw new Error('Must provide id');
     const url = `${this.baseUrl}/${params.id}`;

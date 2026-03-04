@@ -21,6 +21,7 @@ import { Member } from '../../models/member';
 import { MemberService } from '../../services/memberService';
 import { AuthService } from '../../services/authService';
 import { ScorecardService } from '../../services/scorecardService';
+import { MatchService } from '../../services/matchService';
 import { MemberSelectionDialogComponent } from '../member-selection-dialog/member-selection-dialog';
 import { ConfirmDialogComponent } from '../../shared/dialogs/confirm-dialog.component';
 import { MatchLineupComponent } from '../match-lineup/match-lineup';
@@ -60,6 +61,20 @@ export class MatchEditComponent implements OnInit, OnDestroy {
       partnerArray.clear();
       event.foursomeIdsTEMP.forEach(group => foursomeArray.push(this.fb.control(group)));
       event.partnerIdsTEMP.forEach(pair => partnerArray.push(this.fb.control(pair)));
+
+      if (!this.matchId) return;
+
+      this.fixScorecardIdValue();
+      const formValue = { ...this.matchForm.value };
+      if (formValue.datePlayed instanceof Date) { formValue.datePlayed = formValue.datePlayed.toISOString(); }
+      formValue.lineUps = (this.matchForm.get('lineUps') as FormArray).value;
+      formValue.foursomeIdsTEMP = event.foursomeIdsTEMP;
+      formValue.partnerIdsTEMP = event.partnerIdsTEMP;
+
+      this.matchService.update(this.matchId, formValue).subscribe({
+        next: () => this.snackBar.open('Pairings saved!', 'OK', { duration: 3000 }),
+        error: (err) => this.snackBar.open('Save error: ' + (err?.message || err?.status || 'unknown'), 'OK', { duration: 6000 })
+      });
     }
   matchForm: FormGroup;
   loading$: Observable<boolean>;
@@ -86,7 +101,8 @@ export class MatchEditComponent implements OnInit, OnDestroy {
     private memberService: MemberService,
     private authService: AuthService,
     private dialog: MatDialog,
-    private scorecardService: ScorecardService
+    private scorecardService: ScorecardService,
+    private matchService: MatchService
   ) {
     this.matchForm = this.fb.group({
       name: ['', Validators.required],

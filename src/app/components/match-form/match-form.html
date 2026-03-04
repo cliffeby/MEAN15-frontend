@@ -46,8 +46,12 @@
     <app-match-lineup
       [members]="(members$ | async) ?? []"
       [lineUpsArray]="lineUpsArray"
+      [pairingMode]="pairingMode"
+      [foursomeIdsTEMP]="matchForm.get('foursomeIdsTEMP')?.value"
+      [partnerIdsTEMP]="matchForm.get('partnerIdsTEMP')?.value"
       (removeGroup)="onRemoveGroup($event)"
-      (addMembers)="onAddMembers()">
+      (addMembers)="onAddMembers()"
+      (pairingUpdated)="onPairingUpdated($event)">
     </app-match-lineup>
   </div>
 

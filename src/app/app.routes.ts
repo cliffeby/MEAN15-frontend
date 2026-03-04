@@ -55,7 +55,7 @@ export const routes: Routes = [
       { path: 'read-me', 
         component: ReadMe,
         canActivate: [roleGuard],
-        data: { role: 'developer' }
+        data: { role: 'user' }
        },
       { path: 'apis', component: API },
       { path: 'members', component: MemberListComponent },

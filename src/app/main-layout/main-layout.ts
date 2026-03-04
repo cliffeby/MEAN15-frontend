@@ -51,10 +51,8 @@ export class MainLayoutComponent implements OnInit {
       { label: 'HCaps', route: '/hcaps' },
       { label: 'Matches', route: '/matches' },
       { label: 'Reports', route: '/reports' }, // <-- Add Reports option
+      { label: 'Read Me', route: '/read-me' }, // Always visible now
     ];
-    if (this.auth.hasRole && this.auth.hasRole('developer')) {
-      links.push({ label: 'Read Me', route: '/read-me' });
-    }
     if (this.auth.hasMinRole && this.auth.hasMinRole('admin')) {
       links.push({ label: 'Email', route: '/email' });
     }
