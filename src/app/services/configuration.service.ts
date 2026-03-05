@@ -260,7 +260,7 @@ export class ConfigurationService {
         { value: 'detailed', label: 'Detailed (18 holes)' },
         { value: 'simple', label: 'Simple (Total score only)' }
       ],
-      defaultValue: 'detailed'
+      defaultValue: 'simple'
     },
 
     // UI settings
