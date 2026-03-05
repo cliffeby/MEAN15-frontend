@@ -87,9 +87,10 @@ export class OrphanService {
    * @returns Array of orphaned HCap records with reason
    */
   findOrphanedHcaps(hcaps: any[], scores: any[], matches: any[]): Array<{ hcap: any; reason: string }> {
-    // Helper to extract string ID from either a raw ObjectID or a populated object { _id, ... }
+    // Helper to extract string ID from either a raw ObjectID or a populated object { _id, ... }.
+    // Returns null for absent, actual-null, or the stored string "null".
     const toIdStr = (val: any): string | null => {
-      if (!val) return null;
+      if (!val || val === 'null') return null;
       if (typeof val === 'object' && val._id) return String(val._id);
       return String(val);
     };
@@ -102,8 +103,9 @@ export class OrphanService {
       .map(hcap => {
         const scoreIdStr = toIdStr(hcap.scoreId);
         const matchIdStr = toIdStr(hcap.matchId);
-        const scoreMissing = !scoreIdStr || !scoreIds.has(scoreIdStr);
         const matchMissing = !matchIdStr || !matchIds.has(matchIdStr);
+        // scoreId is optional — only flag missing when a real (non-null) ID doesn't resolve
+        const scoreMissing = !!scoreIdStr && !scoreIds.has(scoreIdStr);
         if (matchMissing && scoreMissing) {
           return { hcap, reason: 'No matching Score or Match record' };
         }

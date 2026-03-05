@@ -103,8 +103,8 @@
                   <td>{{ orphan.hcap.name }}</td>
                   <td>{{ orphan.hcap.datePlayed | date:'shortDate' }}</td>
                   <td>{{ orphan.reason }}</td>
-                  <td>{{ orphan.hcap.scoreId }}</td>
-                  <td>{{ orphan.hcap.matchId }}</td>
+                  <td class="mono">{{ orphan.hcap.scoreId?._id || orphan.hcap.scoreId || '—' }}</td>
+                  <td class="mono">{{ orphan.hcap.matchId?.name ? (orphan.hcap.matchId.name + ' (' + (orphan.hcap.matchId._id) + ')') : (orphan.hcap.matchId?._id || orphan.hcap.matchId || '—') }}</td>
                   <td>
                     <button mat-icon-button color="warn" (click)="deleteHcapOrphan(orphan.hcap._id || orphan.hcap.id || orphan.hcap.scoreId)" [disabled]="deletingHcapIds.has(orphan.hcap._id || orphan.hcap.id || orphan.hcap.scoreId)">
                       <mat-icon>delete</mat-icon>
@@ -143,7 +143,7 @@
             <tr *ngFor="let score of memberOrphanScores">
               <td class="mono">{{ score._id || score.id }}</td>
               <td class="mono warn-text">{{ score.memberId }}</td>
-              <td class="mono">{{ score.matchId || '—' }}</td>
+              <td class="mono">{{ score.matchId?.name ? (score.matchId.name + ' (' + score.matchId._id + ')') : (score.matchId?._id || score.matchId || '—') }}</td>
               <td>{{ score.datePlayed | date:'shortDate' }}</td>
               <td>
                 <button mat-icon-button color="warn"
