@@ -96,7 +96,7 @@ export const routes: Routes = [
       { path: 'hcaps', 
         component: HcapListComponent,
         canActivate: [roleGuard],
-        data: { role: ['admin', 'developer','fieldhand'] }
+        data: { role: ['admin', 'developer', 'fieldhand', 'user'] }
         },
       { path: 'matches', component: MatchListComponent },
       {
