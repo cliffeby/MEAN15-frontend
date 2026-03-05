@@ -1,9 +1,80 @@
 <div class="reports-container">
   <h2>Reports</h2>
   <div class="report-actions no-print">
-    <button mat-raised-button color="primary" (click)="showMemberReport()">Member Recent Play & HCap</button>
+    <button mat-raised-button color="primary" (click)="showMemberReport()">Member Recent Play &amp; HCap</button>
     <button mat-raised-button color="accent" (click)="showRosterReport()">Most Recent Match Roster</button>
+    <button mat-raised-button color="warn" (click)="showWinnersReport()">Winners</button>
   </div>
+  <!-- Winners Report -->
+  <div *ngIf="showingWinnersReport">
+    <div *ngIf="winnersLoading" class="debug-message">Loading winners data...</div>
+    <div *ngIf="!winnersLoading">
+      <!-- Top 5 All-Time Winners -->
+      <div class="print-header">
+        <div class="header-row">
+          <h3 class="report-title">Top 5 Winners &mdash; Past 12 Months</h3>
+          <span class="print-date">{{ today | date:'fullDate' }}</span>
+          <button mat-raised-button color="accent" class="no-print print-btn" (click)="printMemberReport()">Print</button>
+        </div>
+      </div>
+      <div *ngIf="winnersTopFive.length === 0" class="debug-message">No winners data found.</div>
+      <table class="report-table winners-table" *ngIf="winnersTopFive.length > 0">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>2-Ball Wins</th>
+            <th>1-Ball Wins</th>
+            <th>Indo Wins</th>
+            <th>Total Wins</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let w of winnersTopFive; let i = index" [class.top-winner-row]="i === 0">
+            <td class="rank-cell">
+              <ng-container *ngIf="i === 0"><div class="jackpot-graphic">🎰</div><div class="jackpot-777">7̲7̲7̲</div></ng-container>
+              <ng-container *ngIf="i !== 0">{{ i + 1 }}</ng-container>
+            </td>
+            <td><span *ngIf="i === 0" class="money-badge">💵💵💵</span> {{ w.name }}</td>
+            <td class="num-cell">{{ w.twoBall }}</td>
+            <td class="num-cell">{{ w.oneBall }}</td>
+            <td class="num-cell">{{ w.indo }}</td>
+            <td class="num-cell total-cell">{{ w.total }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Past 5 Rounds Winners -->
+      <h3 class="report-title winners-section-title">Winners — Past 5 Rounds</h3>
+      <div *ngIf="winnersRecentRounds.length === 0" class="debug-message">No recent rounds found.</div>
+      <div *ngFor="let round of winnersRecentRounds" class="round-winners-block">
+        <h4>{{ round.datePlayed | date:'fullDate' }}</h4>
+        <table class="report-table winners-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Winner(s)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="category-cell">2-Ball</td>
+              <td>{{ round.winners.twoBall.join(', ') || '—' }}</td>
+            </tr>
+            <tr>
+              <td class="category-cell">1-Ball</td>
+              <td>{{ round.winners.oneBall.join(', ') || '—' }}</td>
+            </tr>
+            <tr>
+              <td class="category-cell">Indo</td>
+              <td>{{ round.winners.indo.join(', ') || '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
     <!-- Most Recent Match Roster Report (Grouped by Partner, Foursome, as in sample image) -->
     <div *ngIf="showingRosterReport">
       <div *ngIf="!mostRecentMatch" class="debug-message">

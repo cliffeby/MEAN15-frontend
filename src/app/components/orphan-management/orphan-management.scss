@@ -194,3 +194,24 @@
     }
   }
 }
+
+.orphan-card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.delete-all-btn {
+  margin-left: auto;
+}
+
+.mono {
+  font-family: monospace;
+  font-size: 0.78em;
+  word-break: break-all;
+}
+
+.warn-text {
+  color: #d32f2f;
+}

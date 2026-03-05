@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { MemberService } from '../../services/memberService';
 import { MatchService } from '../../services/matchService';
+import { ScoreService } from '../../services/scoreService';
 
 import { Member } from '../../models/member';
 import { Match } from '../../models/match';
@@ -15,6 +16,20 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { UserPreferencesService, ColumnPreference } from '../../services/user-preferences.service';
+
+export interface TopWinner {
+  name: string;
+  twoBall: number;
+  oneBall: number;
+  indo: number;
+  total: number;
+}
+
+export interface RecentRoundWinners {
+  matchId: string;
+  datePlayed: string;
+  winners: { twoBall: string[]; oneBall: string[]; indo: string[] };
+}
 
 export interface MemberReportRow {
   name: string;
@@ -53,6 +68,10 @@ export class ReportsComponent implements OnInit {
 
   showingMemberReport = false;
   showingRosterReport = false;
+  showingWinnersReport = false;
+  winnersTopFive: TopWinner[] = [];
+  winnersRecentRounds: RecentRoundWinners[] = [];
+  winnersLoading = false;
     // Roster report state
     mostRecentMatch: Match | null = null;
     rosterFoursomes: Array<{
@@ -76,7 +95,7 @@ export class ReportsComponent implements OnInit {
       private memberService: MemberService,
       private preferencesService: UserPreferencesService,
       private matchService: MatchService,
-     
+      private scoreService: ScoreService,
     ) {}
   today = new Date();
   sortField: 'lastName' | 'recentDateOfPlay' | 'rochIndexB4Round' | 'usgaIndexB4Round' = 'lastName';
@@ -91,9 +110,31 @@ export class ReportsComponent implements OnInit {
     { key: 'rochIndexB4Round', label: 'Roch Index', visible: true },
   ];
 
+  showWinnersReport() {
+    this.showingWinnersReport = true;
+    this.showingMemberReport = false;
+    this.showingRosterReport = false;
+    this.mostRecentMatch = null;
+    this.rosterPartnerDisplayGroups = [];
+    this.winnersLoading = true;
+    this.winnersTopFive = [];
+    this.winnersRecentRounds = [];
+    this.scoreService.getWinnersReport().subscribe({
+      next: (resp: any) => {
+        this.winnersTopFive = resp.topFive || [];
+        this.winnersRecentRounds = resp.recentRounds || [];
+        this.winnersLoading = false;
+      },
+      error: () => {
+        this.winnersLoading = false;
+      }
+    });
+  }
+
   showRosterReport() {
     this.showingRosterReport = true;
     this.showingMemberReport = false;
+    this.showingWinnersReport = false;
     this.matchService.getAll().subscribe((matchesResp: any) => {
       let matches: Match[] = [];
       if (Array.isArray(matchesResp)) {
@@ -142,6 +183,7 @@ export class ReportsComponent implements OnInit {
   showMemberReport() {
     this.showingMemberReport = true;
     this.showingRosterReport = false;
+    this.showingWinnersReport = false;
     this.mostRecentMatch = null;
     this.rosterPartnerDisplayGroups = [];
     this.memberService.getAllMembersWithRecentPlayAndHCap().subscribe((members: any[]) => {

@@ -422,7 +422,8 @@ export class SimpleScoreEntryComponent implements OnInit {
       }
 
       this.snackBar.open('Scores saved successfully!', 'Close', { duration: 3000 });
-      this.router.navigate(['/matches']);
+      const returnParams = { ...this.route.snapshot.queryParams, scrollToMatch: this.matchId };
+      this.router.navigate(['/matches'], { queryParams: returnParams });
     } catch (error) {
       console.error('Error saving scores:', error);
       this.snackBar.open('Error saving scores. Please try again.', 'Close', { duration: 3000 });

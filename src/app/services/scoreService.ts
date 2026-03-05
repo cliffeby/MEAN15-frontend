@@ -168,4 +168,9 @@ export class ScoreService {
         catchError(this.handleError)
       );
   }
+
+  getWinnersReport(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/winners`, this.getHeaders())
+      .pipe(catchError(this.handleError));
+  }
 }

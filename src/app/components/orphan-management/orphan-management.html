@@ -78,7 +78,13 @@
         <!-- HCap Orphans Table -->
         <mat-card class="orphans-card" *ngIf="hcapOrphans.length > 0">
           <mat-card-header>
-            <mat-card-title>Orphaned HCap Records</mat-card-title>
+            <div class="orphan-card-header-row">
+              <mat-card-title>Orphaned HCap Records</mat-card-title>
+              <button mat-raised-button color="warn" (click)="deleteAllHcapOrphans()" [disabled]="deletingAllHcaps || loading" class="delete-all-btn">
+                <mat-icon>delete_sweep</mat-icon>
+                Delete All ({{ hcapOrphans.length }})
+              </button>
+            </div>
           </mat-card-header>
           <mat-card-content>
             <table class="orphans-table">
@@ -110,6 +116,48 @@
           </mat-card-content>
         </mat-card>
     </div>
+
+    <!-- Member Orphan Scores Table -->
+    <mat-card class="orphans-card" *ngIf="memberOrphanScores.length > 0">
+      <mat-card-header>
+        <div class="orphan-card-header-row">
+          <mat-card-title>Scores for Deleted Members</mat-card-title>
+          <button mat-raised-button color="warn" (click)="deleteAllMemberOrphanScores()" [disabled]="deletingAllMemberOrphans || loading" class="delete-all-btn">
+            <mat-icon>delete_sweep</mat-icon>
+            Delete All ({{ memberOrphanScores.length }})
+          </button>
+        </div>
+      </mat-card-header>
+      <mat-card-content>
+        <table class="orphans-table">
+          <thead>
+            <tr>
+              <th>Score ID</th>
+              <th>Member ID (Deleted)</th>
+              <th>Match ID</th>
+              <th>Date Played</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let score of memberOrphanScores">
+              <td class="mono">{{ score._id || score.id }}</td>
+              <td class="mono warn-text">{{ score.memberId }}</td>
+              <td class="mono">{{ score.matchId || '—' }}</td>
+              <td>{{ score.datePlayed | date:'shortDate' }}</td>
+              <td>
+                <button mat-icon-button color="warn"
+                  (click)="deleteMemberOrphanScore(score._id || score.id)"
+                  [disabled]="deletingMemberOrphanScoreIds.has(score._id || score.id)"
+                  title="Delete this score">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </mat-card-content>
+    </mat-card>
 
     <!-- Recommendations -->
     <mat-card class="recommendations-card" *ngIf="report.recommendations.length > 0">

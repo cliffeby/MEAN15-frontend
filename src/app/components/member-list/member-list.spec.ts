@@ -80,7 +80,7 @@ describe('MemberListComponent', () => {
     configServiceSpy.displayConfig.and.returnValue({ 
       memberListPageSize: 20,
       matchListPageSize: 20,
-      scoreListPageSize: 20,
+      hcapListPageSize: 20,
       showMemberPhotos: true,
       showScoreDetails: true,
       defaultDateFormat: 'MM/dd/yyyy',

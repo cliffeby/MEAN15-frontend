@@ -34,7 +34,7 @@
     <div *ngIf="(totalMatches$ | async) === 0 && !(loading$ | async)" class="no-matches">
       No matches found.
     </div>
-    <mat-list-item *ngFor="let match of matches">
+    <mat-list-item *ngFor="let match of matches" [id]="'match-' + match._id">
       <div class="match-title-row">
         <h3 mat-line class="match-title">{{ match.name }}</h3>
         <div class="button-group">

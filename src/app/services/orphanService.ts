@@ -104,8 +104,14 @@ export class OrphanService {
         const matchIdStr = toIdStr(hcap.matchId);
         const scoreMissing = !scoreIdStr || !scoreIds.has(scoreIdStr);
         const matchMissing = !matchIdStr || !matchIds.has(matchIdStr);
-        if (scoreMissing && matchMissing) {
+        if (matchMissing && scoreMissing) {
           return { hcap, reason: 'No matching Score or Match record' };
+        }
+        if (matchMissing) {
+          return { hcap, reason: `matchId "${matchIdStr}" references a non-existent match` };
+        }
+        if (scoreMissing) {
+          return { hcap, reason: `scoreId "${scoreIdStr}" references a non-existent score` };
         }
         return null;
       })

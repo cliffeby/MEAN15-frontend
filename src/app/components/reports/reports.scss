@@ -101,3 +101,61 @@
     padding: 0 !important;
   }
 }
+
+// Winners report styles
+.winners-section-title {
+  margin-top: 2em;
+}
+.winners-table {
+  max-width: 640px;
+}
+.winners-table .rank-cell {
+  text-align: center;
+  font-weight: bold;
+  width: 3em;
+}
+.winners-table .num-cell {
+  text-align: center;
+  width: 6em;
+}
+.winners-table .total-cell {
+  font-weight: bold;
+}
+.winners-table .category-cell {
+  font-weight: bold;
+  width: 7em;
+}
+.round-winners-block {
+  margin-bottom: 1.5em;
+  h4 {
+    margin: 0.5em 0 0.25em;
+  }
+}
+
+// Top winner highlight
+.top-winner-row {
+  background: linear-gradient(90deg, #fffbe6 0%, #fff3a0 40%, #fffbe6 100%);
+  border-left: 4px solid #f5c400;
+  font-weight: bold;
+  font-size: 1.08em;
+}
+.top-winner-row td {
+  border-top: 2px solid #f5c400;
+  border-bottom: 2px solid #f5c400;
+}
+.jackpot-graphic {
+  font-size: 1.6em;
+  line-height: 1;
+  text-align: center;
+}
+.jackpot-777 {
+  font-size: 0.85em;
+  font-weight: bold;
+  color: #b8860b;
+  letter-spacing: 0.1em;
+  text-align: center;
+}
+.money-badge {
+  font-size: 1em;
+  margin-right: 0.25em;
+}

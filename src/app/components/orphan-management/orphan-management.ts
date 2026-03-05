@@ -53,7 +53,11 @@ export class OrphanManagementComponent implements OnInit {
   loading = false;
   // cleanupLoading removed: cleanup not available
   deletingHcapIds = new Set<string>();
+  deletingAllHcaps = false;
   intentionalOrphans: any[] = [];
+  memberOrphanScores: any[] = [];
+  deletingMemberOrphanScoreIds = new Set<string>();
+  deletingAllMemberOrphans = false;
 
   constructor(
     private orphanService: OrphanService,
@@ -73,6 +77,41 @@ export class OrphanManagementComponent implements OnInit {
     if (this.isAdmin) {
       this.loadReport();
     }
+  }
+
+  deleteAllHcapOrphans() {
+    if (!this.hcapOrphans.length) return;
+    this.confirmDialog.confirmAction(
+      'Delete All Orphaned HCaps',
+      `Are you sure you want to permanently delete all ${this.hcapOrphans.length} orphaned HCap record(s)? This cannot be undone.`,
+      'Delete All',
+      'Cancel'
+    ).subscribe(confirmed => {
+      if (!confirmed) return;
+      this.deletingAllHcaps = true;
+      const ids = this.hcapOrphans.map(o => o.hcap._id || o.hcap.id || o.hcap.scoreId).filter(Boolean);
+      let completed = 0;
+      let errors = 0;
+      const tryFinish = () => {
+        completed++;
+        if (completed === ids.length) {
+          this.deletingAllHcaps = false;
+          if (errors > 0) {
+            this.snackBar.open(`Deleted with ${errors} error(s). Reloading…`, 'Close', { duration: 4000 });
+          } else {
+            this.snackBar.open(`All ${ids.length} orphaned HCap record(s) deleted.`, 'Close', { duration: 3000 });
+          }
+          this.loadReport();
+        }
+      };
+      for (const id of ids) {
+        this.deletingHcapIds.add(id);
+        this.hcapService.delete(id).subscribe({
+          next: () => { this.deletingHcapIds.delete(id); tryFinish(); },
+          error: () => { errors++; this.deletingHcapIds.delete(id); tryFinish(); }
+        });
+      }
+    });
   }
 
   deleteHcapOrphan(hcapId: string) {
@@ -127,6 +166,66 @@ deletingIntentionalOrphanIds = new Set<string>();
     });
   }
 
+  deleteAllMemberOrphanScores() {
+    if (!this.memberOrphanScores.length) return;
+    this.confirmDialog.confirmAction(
+      'Delete All Member Orphan Scores',
+      `Are you sure you want to permanently delete all ${this.memberOrphanScores.length} score(s) for deleted members? This cannot be undone.`,
+      'Delete All',
+      'Cancel'
+    ).subscribe(confirmed => {
+      if (!confirmed) return;
+      this.deletingAllMemberOrphans = true;
+      const ids = this.memberOrphanScores.map((s: any) => s._id || s.id).filter(Boolean);
+      let completed = 0;
+      let errors = 0;
+      const tryFinish = () => {
+        completed++;
+        if (completed === ids.length) {
+          this.deletingAllMemberOrphans = false;
+          if (errors > 0) {
+            this.snackBar.open(`Deleted with ${errors} error(s). Reloading…`, 'Close', { duration: 4000 });
+          } else {
+            this.snackBar.open(`All ${ids.length} member orphan score(s) deleted.`, 'Close', { duration: 3000 });
+          }
+          this.loadReport();
+        }
+      };
+      for (const id of ids) {
+        this.deletingMemberOrphanScoreIds.add(id);
+        this.scoreService.delete({ id }).subscribe({
+          next: () => { this.deletingMemberOrphanScoreIds.delete(id); tryFinish(); },
+          error: () => { errors++; this.deletingMemberOrphanScoreIds.delete(id); tryFinish(); }
+        });
+      }
+    });
+  }
+
+  deleteMemberOrphanScore(scoreId: string) {
+    if (!scoreId) return;
+    this.confirmDialog.confirmAction(
+      'Delete Member Orphan Score',
+      'Are you sure you want to permanently delete this score for a deleted member?',
+      'Delete',
+      'Cancel'
+    ).subscribe(confirmed => {
+      if (confirmed) {
+        this.deletingMemberOrphanScoreIds.add(scoreId);
+        this.scoreService.delete({ id: scoreId }).subscribe({
+          next: () => {
+            this.snackBar.open('Member orphan score deleted', 'Close', { duration: 2000 });
+            this.deletingMemberOrphanScoreIds.delete(scoreId);
+            this.loadReport();
+          },
+          error: () => {
+            this.snackBar.open('Error deleting member orphan score', 'Close', { duration: 3000 });
+            this.deletingMemberOrphanScoreIds.delete(scoreId);
+          }
+        });
+      }
+    });
+  }
+
 // ...existing code...
 
   loadReport() {
@@ -158,6 +257,7 @@ deletingIntentionalOrphanIds = new Set<string>();
           return;
         }
         this.report = response.report;
+        this.memberOrphanScores = Array.isArray(this.report?.details?.memberOrphans) ? this.report.details.memberOrphans : [];
         // Extract flagged orphaned records if present in report
         // Handle both array and object API responses for hcaps, scores, matches
         // hcaps and scores are already declared above, remove duplicate declarations

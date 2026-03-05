@@ -15,7 +15,7 @@ export class ConfigurationService {
   private readonly defaultConfig: AppConfig = {
     display: {
       matchListPageSize: 10,
-      scoreListPageSize: 20,
+      hcapListPageSize: 20,
       memberListPageSize: 15,
       showMemberPhotos: true,
       showScoreDetails: true,
@@ -136,12 +136,12 @@ export class ConfigurationService {
       defaultValue: 3
     },
     {
-      key: 'scoreListPageSize',
-      label: 'Scores per page',
-      description: 'Number of scores to show when viewing score lists',
+      key: 'hcapListPageSize',
+      label: 'HCap records per page',
+      description: 'Number of HCap records to show per page in the HCap list',
       type: 'number',
       section: 'display',
-      validation: { min: 10, max: 200, required: true },
+      validation: { min: 5, max: 200, required: true },
       defaultValue: 20
     },
     {

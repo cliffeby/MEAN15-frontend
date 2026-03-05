@@ -138,13 +138,23 @@ export class MatchListComponent implements OnInit, OnDestroy {
         this.setupPagination();
       }
 
-      // Scroll to match list after navigation (restores scroll position)
+      // Scroll to specific match after returning from score entry, else scroll to top of list
+      const scrollToId = params['scrollToMatch'];
       setTimeout(() => {
-        const el = document.querySelector('.match-list');
-        if (el) {
-          el.scrollIntoView({ behavior: 'auto', block: 'start' });
+        if (scrollToId) {
+          const el = document.getElementById('match-' + scrollToId);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('match-highlight');
+            setTimeout(() => el.classList.remove('match-highlight'), 2000);
+            return;
+          }
         }
-      }, 0);
+        const listEl = document.querySelector('.match-list');
+        if (listEl) {
+          listEl.scrollIntoView({ behavior: 'auto', block: 'start' });
+        }
+      }, 150);
     });
     // Dispatch action to load matches
     this.store.dispatch(MatchActions.loadMatches());

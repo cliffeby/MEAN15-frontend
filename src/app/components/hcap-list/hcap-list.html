@@ -47,34 +47,41 @@
 
     <ng-container matColumnDef="rochIndexB4Round">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Roch Index Used Today </th>
-      <td mat-cell *matCellDef="let row"> {{ row.rochIndexB4Round != null ? (row.rochIndexB4Round | number:'1.1-1') : '-' }} </td>
+      <td mat-cell *matCellDef="let row" > {{ row.rochIndexB4Round != null ? (row.rochIndexB4Round | number:'1.1-1') : '-' }} </td>
     </ng-container>
 
     <ng-container matColumnDef="rochCapB4Round">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Roch Handicap </th>
-      <td mat-cell *matCellDef="let row"> {{ calculateCourseHandicap(row.rochIndexB4Round, row.scSlope) }} </td>
+      <td mat-cell *matCellDef="let row" class="hcap-value"> {{ calculateCourseHandicap(row.rochIndexB4Round, row.scSlope) }}{{ getMemberRecordCount(row) < 8 ? '*' : '' }} </td>
     </ng-container>
 
     <ng-container matColumnDef="usgaIndexB4Round">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> USGA Index Used Today </th>
       
-      <td mat-cell *matCellDef="let row"> {{ row.usgaIndexB4Round != null ? (row.usgaIndexB4Round | number:'1.1-1') : '-' }} </td>
+      <td mat-cell *matCellDef="let row" > {{ row.usgaIndexB4Round != null ? (row.usgaIndexB4Round | number:'1.1-1') : '-' }} </td>
     </ng-container>
 
         <ng-container matColumnDef="usgaCapB4Round">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> USGA Handicap </th>
-      <td mat-cell *matCellDef="let row"> {{ calculateCourseHandicap(row.usgaIndexB4Round, row.scSlope) }} </td>
+      <td mat-cell *matCellDef="let row" class="hcap-value"> {{ calculateCourseHandicap(row.usgaIndexB4Round, row.scSlope) }} {{ getMemberRecordCount(row) < 8 ? '*' : '' }}</td>
     </ng-container>
 
 
     <ng-container matColumnDef="rochIndexAfterRound">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> New Roch Index </th>
-      <td mat-cell *matCellDef="let row"> {{ row.rochIndexAfterRound != null ? (row.rochIndexAfterRound | number:'1.1-1') : '-' }} </td>
+      <td mat-cell *matCellDef="let row" > {{ row.rochIndexAfterRound != null ? (row.rochIndexAfterRound | number:'1.1-1') : '-' }} </td>
     </ng-container>
 
     <ng-container matColumnDef="usgaIndexAfterRound">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> New USGA Index </th>
-      <td mat-cell *matCellDef="let row"> {{ row.usgaIndexAfterRound != null ? (row.usgaIndexAfterRound | number:'1.1-1') : '-' }} </td>
+      <td mat-cell *matCellDef="let row" > {{ row.usgaIndexAfterRound != null ? (row.usgaIndexAfterRound | number:'1.1-1') : '-' }} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="recordCount">
+      <th mat-header-cell *matHeaderCellDef title="Chronological record # for this member (e.g. '3' means 3rd round recorded)"># </th>
+      <td mat-cell *matCellDef="let row" class="record-count-cell">
+        {{ getMemberRecordCount(row) }}
+      </td>
     </ng-container>
 
     <ng-container matColumnDef="scCourse">
@@ -108,7 +115,7 @@
     </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns" [class.hcap-low-count]="getMemberRecordCount(row) < 4"></tr>
   </table>
 
   <mat-paginator [length]="filtered.length" [pageSize]="pageSize" [pageIndex]="pageIndex"

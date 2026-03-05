@@ -14,6 +14,7 @@ import { HCapService } from '../../services/hcapService';
 import { calculateCourseHandicap } from '../../utils/score-utils';
 import { HCap } from '../../models/hcap';
 import { UserPreferencesService, ColumnPreference } from '../../services/user-preferences.service';
+import { ConfigurationService } from '../../services/configuration.service';
 
 @Component({
   selector: 'app-hcap-list',
@@ -43,6 +44,15 @@ export class HcapListComponent implements OnInit {
   paged: HCap[] = [];
   loading = false;
   activeSort: Sort = { active: '', direction: '' };
+  /** Per-row running sequence number: how many records does this member have up to & including this row's date */
+  rowRecordNumber = new Map<string, number>();
+
+  private getMemberId(h: any): string {
+    const mid = h.memberId;
+    if (!mid) return '';
+    if (typeof mid === 'object' && mid._id) return mid._id.toString();
+    return mid.toString();
+  }
 
   search = '';
   pageSize = 20;
@@ -58,6 +68,7 @@ export class HcapListComponent implements OnInit {
     { key: 'usgaCapB4Round', label: 'USGA Handicap Used Today' },
     { key: 'rochIndexAfterRound', label: 'Roch Index After Today' },
     { key: 'usgaIndexAfterRound', label: 'USGA Index After Today' },
+    { key: 'recordCount', label: '# Records' },
     { key: 'scCourse', label: 'Course' },
     { key: 'scTees', label: 'Tees' },
     { key: 'teeAbreviation', label: 'Tee Abrev' },
@@ -69,6 +80,11 @@ export class HcapListComponent implements OnInit {
   
    calculateCourseHandicap(index: number | null, slope: number | undefined): number | '' {
     return index != null ? calculateCourseHandicap(index, slope) : '';
+  }
+
+  getMemberRecordCount(row: HCap): number {
+    const id = ((row as any)._id || '').toString();
+    return this.rowRecordNumber.get(id) ?? 0;
   }
   displayedColumns: string[] = this.allColumns.map((c) => c.key);
   private readonly HCAP_PREF_KEY = 'hcapListColumns';
@@ -115,7 +131,10 @@ export class HcapListComponent implements OnInit {
     private hcapService: HCapService,
     private snackBar: MatSnackBar,
     private userPreferences: UserPreferencesService,
-  ) {}
+    private configService: ConfigurationService,
+  ) {
+    this.pageSize = this.configService.displayConfig().hcapListPageSize ?? 20;
+  }
 
   ngOnInit() {
     this.loadColumnPreferences();
@@ -127,6 +146,21 @@ export class HcapListComponent implements OnInit {
     this.hcapService.getAll().subscribe({
       next: (res) => {
         this.hcaps = res.hcaps || res || [];
+        // Build per-row running sequence numbers, oldest-first per member
+        this.rowRecordNumber.clear();
+        const byMember = new Map<string, any[]>();
+        for (const h of this.hcaps) {
+          const key = this.getMemberId(h);
+          if (!byMember.has(key)) byMember.set(key, []);
+          byMember.get(key)!.push(h);
+        }
+        byMember.forEach((records) => {
+          records.sort((a, b) => new Date(a.datePlayed).getTime() - new Date(b.datePlayed).getTime());
+          records.forEach((h, idx) => {
+            const id = ((h as any)._id || '').toString();
+            this.rowRecordNumber.set(id, idx + 1);
+          });
+        });
         this.applyFilter();
         this.loading = false;
         setTimeout(() => {
@@ -198,6 +232,7 @@ export class HcapListComponent implements OnInit {
   onPage(event: PageEvent) {
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
+    this.configService.updateSection('display', { hcapListPageSize: event.pageSize });
     this.updatePaged();
   }
 }

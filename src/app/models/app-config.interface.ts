@@ -8,7 +8,7 @@ export interface AppConfig {
 
 export interface DisplayConfig {
   matchListPageSize: number;
-  scoreListPageSize: number;
+  hcapListPageSize: number;
   memberListPageSize: number;
   showMemberPhotos: boolean;
   showScoreDetails: boolean;
