@@ -144,10 +144,19 @@
 
             &.action-cell {
               display: flex;
-              gap: 2px;
+              gap: 4px;
               align-items: center;
               height: 24px;
               border-right: none;
+
+              .action-sep {
+                display: inline-block;
+                width: 1px;
+                height: 14px;
+                background: #bdbdbd;
+                margin: 0 8px;
+                flex-shrink: 0;
+              }
 
               button {
                 min-width: auto;
@@ -278,8 +287,17 @@
 
       .action-cell {
         flex-direction: column;
-        gap: 1px;
-        height: 36px;
+        gap: 4px;
+        height: 40px;
+
+        .action-sep {
+          display: block;
+          width: 80%;
+          height: 1px;
+          background: #bdbdbd;
+          margin: 1px auto;
+          flex-shrink: 0;
+        }
 
         button {
           width: 100%;

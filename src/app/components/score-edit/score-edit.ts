@@ -23,6 +23,7 @@ import { Score } from '../../models/score';
 import { Scorecard } from '../../models/scorecard.interface';
 import * as ScorecardActions from '../../store/actions/scorecard.actions';
 import * as ScorecardSelectors from '../../store/selectors/scorecard.selectors';
+import { calculateCourseHandicap } from '../../utils/score-utils';
 
 @Component({
   selector: 'app-score-edit',
@@ -92,7 +93,7 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
       postedScore: [null, [Validators.required, Validators.min(0)]],
       scores: this.fb.array([]),
       scoresToPost: this.fb.array([]),
-      usgaIndex: [null, [Validators.min(-10), Validators.max(54)]],
+      usgaIndexB4Round: [null, [Validators.min(-10), Validators.max(54)]],
       usgaIndexAfterTodaysScore: [null, [Validators.min(-10), Validators.max(54)]],
       rochCapToday: [null, [Validators.required, Validators.min(0)]],
       usgaCapToday: [null, [Validators.required, Validators.min(0)]],
@@ -198,10 +199,10 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
       name: score.name,
       score: score.score,
       postedScore: score.postedScore,
-      usgaIndex: score.usgaIndexB4Round,
+      usgaIndexB4Round: score.usgaIndexB4Round,
       usgaDifferentialToday: score.differentialForRound,
-      rochCapToday: score.rochIndexB4Round,
-      usgaCapToday: score.usgaIndexB4Round,
+      rochCapToday: calculateCourseHandicap(score.rochIndexB4Round ?? 0, score.scSlope) || 0,
+      usgaCapToday: calculateCourseHandicap(score.usgaIndexB4Round ?? 0, score.scSlope) || 0,
       rochIndex: score.rochIndexB4Round,
       wonTwoBall: score.wonTwoBall,
       wonOneBall: score.wonOneBall,
