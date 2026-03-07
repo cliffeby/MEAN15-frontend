@@ -53,8 +53,13 @@
     </div>
   </div>
 
-
+<div class="form-actions">
   <button mat-raised-button color="primary" type="submit" [disabled]="loading || memberForm.invalid">
     {{ loading ? 'Saving...' : 'Save Member' }}
   </button>
+   <button mat-stroked-button type="button" (click)="onCancel()" [disabled]="loading ">
+      <mat-icon>cancel</mat-icon>
+      Cancel
+    </button>
+    </div>
 </form>
