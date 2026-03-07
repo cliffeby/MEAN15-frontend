@@ -7,6 +7,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MemberService } from '../../services/memberService';
 import { AuthService } from '../../services/authService';
 import { ScorecardService } from '../../services/scorecardService';
@@ -27,6 +28,7 @@ import { SortByCourseTeeNamePipe } from '../member-form/sort-by-course-tee-name.
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    MatIconModule,
     MatSnackBarModule,
     MatCheckbox,
     MatSelectModule,
@@ -138,6 +140,9 @@ export class MemberEditComponent implements OnInit {
         }
       }, 0);
     }
+  }
+   onCancel(): void {
+    this.router.navigate(['/members']);
   }
   submit() {
     if (this.memberForm.invalid || !this.memberId) return;

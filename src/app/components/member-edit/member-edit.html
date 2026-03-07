@@ -1,7 +1,7 @@
 <form [formGroup]="memberForm" (ngSubmit)="submit()" class="member-form">
   <mat-form-field appearance="fill">
     <mat-label>First Name</mat-label>
-  <input matInput formControlName="firstName" required placeholder="Enter first name" />
+    <input matInput formControlName="firstName" required placeholder="Enter first name" />
     <mat-error *ngIf="memberForm.get('firstName')?.hasError('required') && memberForm.get('firstName')?.touched">
       First name is required
     </mat-error>
@@ -9,7 +9,7 @@
 
   <mat-form-field appearance="fill">
     <mat-label>Last Name</mat-label>
-  <input matInput formControlName="lastName" required placeholder="Enter last name" />
+    <input matInput formControlName="lastName" required placeholder="Enter last name" />
     <mat-error *ngIf="memberForm.get('lastName')?.hasError('required') && memberForm.get('lastName')?.touched">
       Last name is required
     </mat-error>
@@ -17,7 +17,8 @@
 
   <mat-form-field appearance="fill">
     <mat-label>USGA Index</mat-label>
-  <input matInput formControlName="usgaIndex" type="number" step="0.1" min="-10" max="54" placeholder="Enter USGA index (e.g. 12.5)" />
+    <input matInput formControlName="usgaIndex" type="number" step="0.1" min="-10" max="54"
+      placeholder="Enter USGA index (e.g. 12.5)" />
     <mat-error *ngIf="isUsgaIndexMinError">
       USGA Index cannot be less than -10.0
     </mat-error>
@@ -33,7 +34,7 @@
 
   <mat-form-field appearance="fill">
     <mat-label>Email</mat-label>
-  <input matInput formControlName="Email" type="email" required placeholder="Enter email address" />
+    <input matInput formControlName="Email" type="email" required placeholder="Enter email address" />
     <mat-error *ngIf="memberForm.get('Email')?.hasError('required') && memberForm.get('Email')?.touched">
       Email is required
     </mat-error>
@@ -44,11 +45,13 @@
 
   <div class="default-course-tee-section">
     <h3>Default Course/Tee Combinations</h3>
-        <div class="course-tee-select-row">
+    <div class="course-tee-select-row">
       <mat-form-field appearance="fill" class="course-tee-select-field">
         <mat-label>Courses</mat-label>
-        <mat-select #courseSelect [formControl]="courseControl" multiple panelClass="hover-panel" (openedChange)="onDropdownOpened($event, courseSelect)">
-          <mat-option *ngFor="let sc of scorecards | sortByCourseTeeName" [value]="sc._id">{{ sc.courseTeeName || 'Unnamed Course' }}</mat-option>
+        <mat-select #courseSelect [formControl]="courseControl" multiple panelClass="hover-panel"
+          (openedChange)="onDropdownOpened($event, courseSelect)">
+          <mat-option *ngFor="let sc of scorecards | sortByCourseTeeName" [value]="sc._id">{{ sc.courseTeeName ||
+            'Unnamed Course' }}</mat-option>
         </mat-select>
       </mat-form-field>
     </div>
@@ -64,8 +67,13 @@
   <mat-checkbox formControlName="hidden" color="primary">
     Hide Member in Lists
   </mat-checkbox>
-
-  <button mat-raised-button color="primary" type="submit" [disabled]="loading || memberForm.invalid">
-    {{ loading ? 'Saving...' : 'Update Member' }}
-  </button>
+  <div class="form-actions">
+    <button mat-raised-button color="primary" type="submit" [disabled]="loading || memberForm.invalid">
+      {{ loading ? 'Saving...' : 'Update Member' }}
+    </button>
+    <button mat-stroked-button type="button" (click)="onCancel()" [disabled]="loading ">
+      <mat-icon>cancel</mat-icon>
+      Cancel
+    </button>
+  </div>
 </form>
