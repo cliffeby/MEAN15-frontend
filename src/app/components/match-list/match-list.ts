@@ -311,7 +311,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
               const memberScorecard = getMemberScorecard(finalScorecard.course, member.scorecardsId || [], scorecardList);
               return {
                 member,
-                rochIndexB4Round: this.hcapCalculationService.calculateCourseHandicap(
+                rochIndex: this.hcapCalculationService.calculateCourseHandicap(
                   member.usgaIndexB4Round || 0,
                   finalScorecard?.slope,
                 ),
