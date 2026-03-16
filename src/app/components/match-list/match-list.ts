@@ -30,6 +30,7 @@ import { Scorecard } from '../../models/scorecard.interface';
 import * as MatchActions from '../../store/actions/match.actions';
 import { parseStringData } from '../../utils/string-utils';
 import { getMemberScorecard } from '../../utils/score-entry-utils';
+import { getGroupSizes } from '../../utils/pair-utils';
 
 import {
   selectAllMatches,
@@ -347,14 +348,86 @@ export class MatchListComponent implements OnInit, OnDestroy {
         distances: finalScorecard.yards || Array(18).fill(0),
       };
      
-      // Generate PDF using the service
-      // Group players into foursomes
-      const groups: PrintablePlayer[][] = [];
-      for (let i = 0; i < players.length; i += 4) {
-        groups.push(players.slice(i, i + 4));
+      // Build print groups using foursomeIdsTEMP (saved pairings) if available,
+      // otherwise fall back to handicap-order grouping.
+      const foursomeIds: string[][] = (match.foursomeIdsTEMP || []) as string[][];
+      const playerMap = new Map<string, PrintablePlayer>(
+        (players as PrintablePlayer[]).map((p: PrintablePlayer) => [p.member._id!, p])
+      );
+      const foursomes: (PrintablePlayer | null)[][] = [];
+
+      if (foursomeIds.length > 0) {
+        for (const ids of foursomeIds) {
+          if (ids.length === 4) {
+            // Stored as [A1,A2,B1,B2]; Team1 = A1+B2, Team2 = A2+B1
+            foursomes.push([
+              playerMap.get(ids[0]) ?? null,
+              playerMap.get(ids[3]) ?? null,
+              playerMap.get(ids[1]) ?? null,
+              playerMap.get(ids[2]) ?? null,
+            ]);
+          } else if (ids.length === 3) {
+            // [A1,A2,B1] → A1+B1 paired, A2 lone
+            foursomes.push([
+              playerMap.get(ids[0]) ?? null,
+              playerMap.get(ids[2]) ?? null,
+              playerMap.get(ids[1]) ?? null,
+              null,
+            ]);
+          } else {
+            const group: (PrintablePlayer | null)[] = ids.map(id => playerMap.get(id) ?? null);
+            while (group.length < 4) group.push(null);
+            foursomes.push(group);
+          }
+        }
+      } else {
+        // Fallback: sort by rochIndex and pair using the standard A/B algorithm
+        const sorted = [...(players as PrintablePlayer[])].sort(
+          (a: PrintablePlayer, b: PrintablePlayer) => (a.rochIndex ?? 99) - (b.rochIndex ?? 99)
+        );
+        const groupSizes = getGroupSizes(sorted.length);
+        const numA = 2 * groupSizes.filter((s: number) => s >= 3).length;
+        const aPlayers = sorted.slice(0, numA);
+        const bPlayers = sorted.slice(numA);
+        let aIdx = 0, bIdx = 0;
+        for (const size of groupSizes) {
+          if (size === 4) {
+            const A1 = aPlayers[aIdx] ?? null;
+            const A2 = aPlayers[aIdx + 1] ?? null;
+            const B1 = bPlayers[bIdx] ?? null;
+            const B2 = bPlayers[bIdx + 1] ?? null;
+            aIdx += 2; bIdx += 2;
+            foursomes.push([A1, B2, A2, B1]);
+          } else if (size === 3) {
+            const A1 = aPlayers[aIdx] ?? null;
+            const A2 = aPlayers[aIdx + 1] ?? null;
+            const B1 = bPlayers[bIdx] ?? null;
+            aIdx += 2; bIdx += 1;
+            foursomes.push([A1, B1, A2, null]);
+          } else if (size === 2) {
+            foursomes.push([bPlayers[bIdx] ?? null, bPlayers[bIdx + 1] ?? null, null, null]);
+            bIdx += 2;
+          } else {
+            foursomes.push([bPlayers[bIdx] ?? null, null, null, null]);
+            bIdx += 1;
+          }
+        }
       }
 
-      await this.pdfService.generateScorecardPDF(matchData, scorecardData, groups, {
+      // Within each 2-man team, put the lower-handicap player on line 1.
+      // Team 1 = slots 0-1, Team 2 = slots 2-3.
+      for (const group of foursomes) {
+        for (const [i, j] of [[0, 1], [2, 3]] as [number, number][]) {
+          const p1 = group[i];
+          const p2 = group[j];
+          if (p1 !== null && p2 !== null && p1.rochIndex > p2.rochIndex) {
+            group[i] = p2;
+            group[j] = p1;
+          }
+        }
+      }
+
+      await this.pdfService.generateScorecardPDF(matchData, scorecardData, foursomes, {
         openInNewWindow: true,
       });
 

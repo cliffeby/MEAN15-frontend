@@ -21,9 +21,9 @@ export class ScorecardPdfService {
    * Generate a complete scorecard PDF
    */
   async generateScorecardPDF(
-    match: MatchData, 
-    scorecard: ScorecardData, 
-    players: PrintablePlayer[] | PrintablePlayer[][], 
+    match: MatchData,
+    scorecard: ScorecardData,
+    players: PrintablePlayer[] | (PrintablePlayer | null)[][],
     options: PdfGenerationOptions = {}
   ): Promise<void> {
     // Debug: log received players/groups
@@ -47,17 +47,11 @@ export class ScorecardPdfService {
     const tableY = 10;
 
     // Debug: log received players/groups
-    let groups: PrintablePlayer[][];
+    let groups: (PrintablePlayer | null)[][];
     if (Array.isArray(players[0])) {
-      groups = players as PrintablePlayer[][];
-      console.log('Scorecard PDF: Number of groups to print:', groups.length);
-      groups.forEach((g, idx) => {
-        console.log(`Group ${idx + 1}:`, g.map(p => `${p.member?.firstName || ''} ${p.member?.lastName || ''}`.trim() || p.member?._id));
-      });
+      groups = players as (PrintablePlayer | null)[][];
     } else {
       groups = [players as PrintablePlayer[]];
-      console.log('Scorecard PDF: Single group, length:', groups[0].length);
-      console.log('Group 1:', groups[0].map(p => `${p.member?.firstName || ''} ${p.member?.lastName || ''}`.trim() || p.member?._id));
     }
 
     for (let i = 0; i < groups.length; i++) {
@@ -105,13 +99,16 @@ export class ScorecardPdfService {
 
 
   /**
-   * Draw the complete scorecard table
+   * Draw the complete scorecard table.
+   * players is always treated as exactly 4 slots; null entries render as blank rows.
+   * Slot 0 = A-player team1, slot 1 = B-player team1, slot 2 = A-player team2, slot 3 = B-player team2.
+   * For a threesome: slot 1 = B-player, slot 2 = lone A, slot 3 = null (blank).
    */
   private drawTable(
-    pdf: jsPDF, 
-    scorecard: ScorecardData, 
-    players: PrintablePlayer[], 
-    startX: number, 
+    pdf: jsPDF,
+    scorecard: ScorecardData,
+    players: (PrintablePlayer | null)[],
+    startX: number,
     startY: number
   ): void {
     const playerColWidth = 32;
@@ -120,55 +117,68 @@ export class ScorecardPdfService {
 
     let currentY = startY;
 
-    // Draw hole numbers row
     currentY = this.drawHoleNumbersRow(pdf, startX, currentY, playerColWidth, holeColWidth, totalColWidth);
-
-    // Draw par row
     currentY = this.drawParRow(pdf, scorecard, startX, currentY, playerColWidth, holeColWidth, totalColWidth);
-
-    // Draw rochIndex row
     currentY = this.drawHandicapRow(pdf, scorecard, startX, currentY, playerColWidth, holeColWidth, totalColWidth);
 
-    // Draw player rows
-    const lowestHandicap = this.handicapService.getLowestHandicapInGroup(players);
-    
-    for (let i = 0; i < Math.min(players.length, 4); i++) {
-      if (players[i]) {
-        currentY = this.drawPlayerRow(pdf, players[i], players, lowestHandicap, scorecard, startX, currentY, playerColWidth, holeColWidth, totalColWidth);
-        // After the second player, insert three blank rows
-        if (i === 1) {
-          for (let r = 0; r < 3; r++) {
-            let blankX = startX;
-            const rowLabel = r === 0 ? 'One Ball' : '+/-';
-            const backgroundColor = r === 0 ? undefined : '#D3D3D3'; // Light gray for +/- rows
-            blankX = this.drawCell(pdf, blankX, currentY, playerColWidth, 8, rowLabel, false, backgroundColor);
-            for (let h = 0; h < 18; h++) {
-              blankX = this.drawCell(pdf, blankX, currentY, holeColWidth, 8, '', false, backgroundColor); // No numbers for +/- rows
-              if (h === 8) {
-                blankX = this.drawCell(pdf, blankX, currentY, totalColWidth, 8, '', false, backgroundColor);
-              }
-            }
-            for (let t = 0; t < 4; t++) {
-              blankX = this.drawCell(pdf, blankX, currentY, totalColWidth, 8, '', false, backgroundColor);
-            }
-            currentY += 8;
+    const realPlayers = players.filter((p): p is PrintablePlayer => p !== null);
+    const lowestHandicap = this.handicapService.getLowestHandicapInGroup(realPlayers);
+
+    for (let i = 0; i < 4; i++) {
+      const player = i < players.length ? players[i] : null;
+
+      if (player) {
+        currentY = this.drawPlayerRow(pdf, player, realPlayers, lowestHandicap, scorecard, startX, currentY, playerColWidth, holeColWidth, totalColWidth);
+      } else {
+        // Blank player slot (e.g. 4th slot in a threesome group)
+        let blankX = startX;
+        blankX = this.drawCell(pdf, blankX, currentY, playerColWidth, 8, '');
+        for (let h = 0; h < 18; h++) {
+          blankX = this.drawCell(pdf, blankX, currentY, holeColWidth, 8, '');
+          if (h === 8) {
+            blankX = this.drawCell(pdf, blankX, currentY, totalColWidth, 8, '');
           }
         }
-        // After the fourth player, insert one blank row
-        if (i === 3) {
+        for (let t = 0; t < 4; t++) {
+          blankX = this.drawCell(pdf, blankX, currentY, totalColWidth, 8, '');
+        }
+        currentY += 8;
+      }
+
+      // After slot 1 (2nd row): One Ball + two +/- rows separating the two teams
+      if (i === 1) {
+        for (let r = 0; r < 3; r++) {
           let blankX = startX;
-          blankX = this.drawCell(pdf, blankX, currentY, playerColWidth, 8, 'One Ball');
+          const rowLabel = r === 0 ? 'One Ball' : '+/-';
+          const backgroundColor = r === 0 ? undefined : '#D3D3D3';
+          blankX = this.drawCell(pdf, blankX, currentY, playerColWidth, 8, rowLabel, false, backgroundColor);
           for (let h = 0; h < 18; h++) {
-            blankX = this.drawCell(pdf, blankX, currentY, holeColWidth, 8, '');
+            blankX = this.drawCell(pdf, blankX, currentY, holeColWidth, 8, '', false, backgroundColor);
             if (h === 8) {
-              blankX = this.drawCell(pdf, blankX, currentY, totalColWidth, 8, '');
+              blankX = this.drawCell(pdf, blankX, currentY, totalColWidth, 8, '', false, backgroundColor);
             }
           }
           for (let t = 0; t < 4; t++) {
-            blankX = this.drawCell(pdf, blankX, currentY, totalColWidth, 8, '');
+            blankX = this.drawCell(pdf, blankX, currentY, totalColWidth, 8, '', false, backgroundColor);
           }
           currentY += 8;
         }
+      }
+
+      // After slot 3 (4th row): One Ball row at bottom
+      if (i === 3) {
+        let blankX = startX;
+        blankX = this.drawCell(pdf, blankX, currentY, playerColWidth, 8, 'One Ball');
+        for (let h = 0; h < 18; h++) {
+          blankX = this.drawCell(pdf, blankX, currentY, holeColWidth, 8, '');
+          if (h === 8) {
+            blankX = this.drawCell(pdf, blankX, currentY, totalColWidth, 8, '');
+          }
+        }
+        for (let t = 0; t < 4; t++) {
+          blankX = this.drawCell(pdf, blankX, currentY, totalColWidth, 8, '');
+        }
+        currentY += 8;
       }
     }
   }

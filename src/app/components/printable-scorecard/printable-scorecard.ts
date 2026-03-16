@@ -19,6 +19,7 @@ import { Member } from '../../models/member';
 import { PrintablePlayer } from '../../models/printable-player.interface';
 import { MatchData, ScorecardData } from '../../models/scorecard.interface';
 import { getMemberScorecard } from '../../utils/score-entry-utils';
+import { getGroupSizes } from '../../utils/pair-utils';
 
 @Component({
   selector: 'app-printable-scorecard',
@@ -120,9 +121,13 @@ export class PrintableScorecardComponent implements OnInit {
               const scorecardList: Scorecard[] = data.allScorecards?.scorecards || data.allScorecards || [];
               console.log('Members loaded:', members?.length || 0, 'members');
               
-              // Build players array
-              if (match.members && Array.isArray(match.members)) {
-                this.players = match.members.map((memberId: string) => {
+              // Build players array — support both field names (lineUps = current, members = legacy)
+              const lineupMemberIds: string[] = Array.isArray(match.lineUps)
+                ? match.lineUps
+                : Array.isArray(match.members) ? match.members : [];
+
+              if (lineupMemberIds.length > 0) {
+                this.players = lineupMemberIds.map((memberId: string) => {
                   const member = members.find((m: any) => m._id === memberId);
                   if (member) {
                     const memberScorecard = getMemberScorecard(finalScorecard.course, member.scorecardsId || [], scorecardList);
@@ -133,7 +138,7 @@ export class PrintableScorecardComponent implements OnInit {
                     };
                   }
                   return null;
-                }).filter(Boolean);
+                }).filter(p => p !== null) as PrintablePlayer[];
                 
                 console.log('Players built:', this.players.length);
               }
@@ -207,17 +212,84 @@ export class PrintableScorecardComponent implements OnInit {
       console.warn('No players found before grouping:', this.players);
     }
 
-    // Group players into foursomes (arrays of 4)
-    const foursomes: PrintablePlayer[][] = [];
-    for (let i = 0; i < this.players.length; i += 4) {
-      foursomes.push(this.players.slice(i, i + 4));
-    }
-    // Debug: log grouped foursomes
-    if (foursomes && foursomes.length) {
-      console.log('Foursomes:', foursomes.map(group => group.map(p => p.member && (p.member.firstName + ' ' + p.member.lastName))));
+    // Build print groups from foursomeIdsTEMP, ordering A before B within each team.
+    // foursomeIdsTEMP stores [A1,A2,B1,B2] for a foursome and [A1,A2,B1] for a threesome.
+    const playerMap = new Map<string, PrintablePlayer>(this.players.map(p => [p.member._id, p]));
+    const foursomes: (PrintablePlayer | null)[][] = [];
+    const foursomeIds: string[][] = (this.match.foursomeIdsTEMP || []) as string[][];
+
+    if (foursomeIds.length > 0) {
+      for (const ids of foursomeIds) {
+        if (ids.length === 4) {
+          // [A1,A2,B1,B2] → print: A1(line1), B2(line2=A1 partner), A2(line3), B1(line4=A2 partner)
+          foursomes.push([
+            playerMap.get(ids[0]) ?? null,
+            playerMap.get(ids[3]) ?? null,
+            playerMap.get(ids[1]) ?? null,
+            playerMap.get(ids[2]) ?? null,
+          ]);
+        } else if (ids.length === 3) {
+          // [A1,A2,B1] → A1+B1 paired, A2 lone; print: A1, B1, A2, blank
+          foursomes.push([
+            playerMap.get(ids[0]) ?? null,
+            playerMap.get(ids[2]) ?? null,
+            playerMap.get(ids[1]) ?? null,
+            null,
+          ]);
+        } else {
+          const group: (PrintablePlayer | null)[] = ids.map(id => playerMap.get(id) ?? null);
+          while (group.length < 4) group.push(null);
+          foursomes.push(group);
+        }
+      }
     } else {
-      console.warn('No foursomes created:', foursomes);
+      // Fallback: derive groups from handicap order using the same algorithm as pairFourballTeams.
+      // Sort ascending by course handicap (A players = lower indices).
+      const sorted = [...this.players].sort((a, b) => (a.rochIndex ?? 99) - (b.rochIndex ?? 99));
+      const groupSizes = getGroupSizes(sorted.length);
+      const numA = 2 * groupSizes.filter(s => s >= 3).length;
+      const aPlayers = sorted.slice(0, numA);
+      const bPlayers = sorted.slice(numA);
+      let aIdx = 0, bIdx = 0;
+      for (const size of groupSizes) {
+        if (size === 4) {
+          const A1 = aPlayers[aIdx] ?? null;
+          const A2 = aPlayers[aIdx + 1] ?? null;
+          const B1 = bPlayers[bIdx] ?? null;
+          const B2 = bPlayers[bIdx + 1] ?? null;
+          aIdx += 2; bIdx += 2;
+          // Snake: A1+B2 vs A2+B1; print: A1, B2, A2, B1
+          foursomes.push([A1, B2, A2, B1]);
+        } else if (size === 3) {
+          const A1 = aPlayers[aIdx] ?? null;
+          const A2 = aPlayers[aIdx + 1] ?? null;
+          const B1 = bPlayers[bIdx] ?? null;
+          aIdx += 2; bIdx += 1;
+          // A1+B1 paired, A2 lone; print: A1, B1, A2, blank
+          foursomes.push([A1, B1, A2, null]);
+        } else if (size === 2) {
+          foursomes.push([bPlayers[bIdx] ?? null, bPlayers[bIdx + 1] ?? null, null, null]);
+          bIdx += 2;
+        } else {
+          foursomes.push([bPlayers[bIdx] ?? null, null, null, null]);
+          bIdx += 1;
+        }
+      }
     }
+    // Within each group, put the lower-handicap player first on each 2-man team.
+    // Team 1 occupies slots 0-1, Team 2 occupies slots 2-3.
+    for (const group of foursomes) {
+      for (const [i, j] of [[0, 1], [2, 3]] as [number, number][]) {
+        const p1 = group[i];
+        const p2 = group[j];
+        if (p1 !== null && p2 !== null && p1.rochIndex > p2.rochIndex) {
+          group[i] = p2;
+          group[j] = p1;
+        }
+      }
+    }
+
+    console.log('Print groups:', foursomes.map(g => g.map(p => p ? `${p.member.firstName} ${p.member.lastName}` : '(blank)')));
 
     try {
       // Convert to interface types expected by the service
