@@ -325,6 +325,15 @@ export class ScoreListComponent implements OnInit {
     return scName || 'N/A';
   }
 
+  groupHasDetailedScores(group: GroupedScores): boolean {
+    return group.scores.some(s => s.scoreRecordType === 'byHole');
+  }
+
+  printScorecardForGroup(matchId: string | null): void {
+    if (!matchId) return;
+    this.router.navigate(['/matches', matchId, 'printable-scorecard']);
+  }
+
   toggleGroup(group: GroupedScores) {
     group.expanded = !group.expanded;
   }

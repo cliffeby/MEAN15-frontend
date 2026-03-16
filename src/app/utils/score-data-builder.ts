@@ -18,7 +18,7 @@ export function buildScoreData(
   playerScore: SimplePlayerScore,
   match: Match,
   scorecard: Scorecard,
-  entryMode: 'totalScore' | 'differential',
+  entryMode: 'totalScore' | 'differential' | 'byHole',
   author: any,
   // handicapCalculationService: HandicapCalculationService,
 ): Partial<Score> {
@@ -28,7 +28,7 @@ export function buildScoreData(
     postedScore: playerScore.totalScore || 0,
     scores: (playerScore.scores ? playerScore.scores.map(s => s == null ? 0 : s) : new Array(18).fill(0)),
     scoresToPost: (playerScore.scores ? playerScore.scores.map(s => s == null ? 0 : s) : new Array(18).fill(0)),
-    scoreRecordType: entryMode === 'differential' ? 'differential' : 'total',
+    scoreRecordType: entryMode === 'differential' ? 'differential' : entryMode === 'byHole' ? 'byHole' : 'total',
     usgaIndexB4Round: playerScore.member.usgaIndexB4Round,
     rochIndexB4Round: playerScore.member.rochIndexB4Round,
     // usgaCapToday: handicapCalculationService.calculateCourseHandicapFromIndex(

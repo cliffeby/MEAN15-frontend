@@ -29,6 +29,12 @@
               <span class="match-name" [ngClass]="{'orphaned-text': group.isOrphaned}">{{ group.matchName }}</span>
               <span class="score-count">({{ group.scores.length }} score{{ group.scores.length !== 1 ? 's' : '' }})</span>
               <mat-icon *ngIf="group.isOrphaned" class="warning-icon" matTooltip="This group contains orphaned records">warning</mat-icon>
+              <button *ngIf="group.matchId && groupHasDetailedScores(group)"
+                mat-stroked-button color="primary" class="print-scorecard-btn"
+                (click)="printScorecardForGroup(group.matchId); $event.stopPropagation()">
+                <mat-icon>print</mat-icon>
+                Print Scorecard
+              </button>
             </div>
           </mat-panel-title>
           <mat-panel-description *ngIf="group.matchDate">

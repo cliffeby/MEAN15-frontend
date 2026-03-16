@@ -490,7 +490,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       differentialForRound: undefined,
       courseAdjustedDifferentialForRound: 0,
       // Attach member's scorecard info for use in template or calculations
-      scorecardId: member.scorecard?._id,
+      scorecardId: member.memberScorecard?._id,
       tees: member.memberScorecard?.tees,
       teeAbreviation: member.memberScorecard?.teeAbreviation,
       rating: member.memberScorecard?.rating,
@@ -810,15 +810,30 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Guard against concurrent creates for the same player
+    if (!playerScore.existingScoreId && playerScore.creating) {
+      console.log(`Skipping auto-save for player ${playerIndex} — create already in progress`);
+      return;
+    }
+    if (!playerScore.existingScoreId) {
+      playerScore.creating = true;
+    }
+
     this.playerSaveStatus.set(playerIndex, 'saving');
 
     try {
       const simplePlayerScore = this.transformToSimplePlayerScore(playerScore);
       await this.savePlayerScore(simplePlayerScore);
+      // Propagate existingScoreId back so subsequent auto-saves do updates not creates
+      if (simplePlayerScore.existingScoreId && !playerScore.existingScoreId) {
+        playerScore.existingScoreId = simplePlayerScore.existingScoreId;
+      }
+      playerScore.creating = false;
       this.playerSaveStatus.set(playerIndex, 'saved');
       this.lastSaveTime.set(playerIndex, new Date());
       console.log(`✅ Auto-saved player ${playerIndex} at`, new Date().toLocaleTimeString());
     } catch (error) {
+      playerScore.creating = false;
       console.error(`❌ Auto-save failed for player ${playerIndex}:`, error);
       this.playerSaveStatus.set(playerIndex, 'error');
       this.snackBar.open(
@@ -850,6 +865,10 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
         console.log('About to save player', i, 'playerScore:', this.playerScores[i]);
         const simplePlayerScore = this.transformToSimplePlayerScore(this.playerScores[i]);
         await this.savePlayerScore(simplePlayerScore);
+        // Propagate existingScoreId back so subsequent saves (auto or manual) do updates not creates
+        if (simplePlayerScore.existingScoreId && !this.playerScores[i].existingScoreId) {
+          this.playerScores[i].existingScoreId = simplePlayerScore.existingScoreId;
+        }
         console.log('Saved player', this.playerScores[i], new Date().toLocaleTimeString());
         this.playerSaveStatus.set(i, 'saved');
         this.lastSaveTime.set(i, new Date());
@@ -867,7 +886,11 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   private transformToSimplePlayerScore(playerScore: PlayerScore): SimplePlayerScore {
     return {
       ...playerScore,
-      differentialForRound: playerScore.differentialForRound ?? 0, // Ensure it's defined
+      differentialForRound: playerScore.differentialForRound ?? 0,
+      // Map PlayerScore field names to SimplePlayerScore field names for buildScoreData
+      scRating: playerScore.rating,
+      scSlope: playerScore.slope,
+      scTees: playerScore.tees,
     };
   }
 
@@ -890,7 +913,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       playerScore,
       this.match!,
       this.scorecard!,
-      'totalScore',
+      'byHole',
       this.authService.getAuthorObject(),
     );
     console.log('savePlayerScore: scoreData to backend:', scoreData);

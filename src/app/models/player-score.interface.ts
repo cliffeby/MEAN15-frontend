@@ -15,6 +15,7 @@ export interface PlayerScore {
   wonOneBall: boolean;
   wonTwoBall: boolean;
   existingScoreId?: string;
+  creating?: boolean;
   scorecardId?: string;
   // Scorecard enrichment fields
   tees?: string;
