@@ -11,6 +11,7 @@ import { forkJoin } from 'rxjs';
 import { MatchService } from '../../services/matchService';
 import { MemberService } from '../../services/memberService';
 import { ScorecardService } from '../../services/scorecardService';
+import { ScoreService } from '../../services/scoreService';
 import { Scorecard } from '../../models/scorecard.interface';
 import { ScorecardPdfService } from '../../services/scorecard-pdf.service';
 import { HandicapCalculationService } from '../../services/handicap-calculation.service';
@@ -44,6 +45,7 @@ export class PrintableScorecardComponent implements OnInit {
   private scorecardService = inject(ScorecardService);
   private pdfService = inject(ScorecardPdfService);
   private handicapService = inject(HandicapCalculationService);
+  private scoreService = inject(ScoreService);
 
   matchId!: string;
   match: Match | null = null;
@@ -98,11 +100,12 @@ export class PrintableScorecardComponent implements OnInit {
           return;
         }
 
-        // Load both scorecard and members data
+        // Load scorecard, members, and existing scores
         forkJoin({
           scorecard: this.scorecardService.getById(finalScorecardId),
           members: this.memberService.getAll(),
-          allScorecards: this.scorecardService.getAll()
+          allScorecards: this.scorecardService.getAll(),
+          existingScores: this.scoreService.getScoresByMatch(this.matchId)
         }).subscribe({
           next: (data) => {
             console.log('Forkjoin response:', data);
@@ -126,6 +129,16 @@ export class PrintableScorecardComponent implements OnInit {
                 ? match.lineUps
                 : Array.isArray(match.members) ? match.members : [];
 
+              // Build a memberId → scores map from existing score records
+              const scoresByMember = new Map<string, (number | null)[]>();
+              const rawScores: any[] = data.existingScores?.scores || [];
+              for (const s of rawScores) {
+                if (s.scoreRecordType === 'byHole' && Array.isArray(s.scores)) {
+                  const mid = typeof s.memberId === 'object' ? s.memberId._id : s.memberId;
+                  if (mid) scoresByMember.set(mid, s.scores);
+                }
+              }
+
               if (lineupMemberIds.length > 0) {
                 this.players = lineupMemberIds.map((memberId: string) => {
                   const member = members.find((m: any) => m._id === memberId);
@@ -135,6 +148,7 @@ export class PrintableScorecardComponent implements OnInit {
                       member,
                       rochIndex: this.handicapService.calculateCourseHandicap(member.rochIndexB4Round || 0, memberScorecard?.slope || 113),
                       teeAbreviation: memberScorecard?.teeAbreviation || '',
+                      scores: member._id ? scoresByMember.get(member._id) : undefined,
                     };
                   }
                   return null;

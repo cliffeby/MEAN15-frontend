@@ -6,4 +6,5 @@ export interface PrintablePlayer {
   };
   rochIndex: number;
   teeAbreviation: string;
+  scores?: (number | null)[];
 }

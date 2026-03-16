@@ -242,11 +242,13 @@ export class ScorecardPdfService {
 
     const backNineData = [4, 4, 4, 4, 4, 4, 4, 4, 4]; // Default back nine pars
     let total = this.handicapService.getFrontNinePar(scorecard);
-    for (const par of backNineData) {
+    for (let hole = 9; hole < 18; hole++) {
+      const par = scorecard.pars[hole] || 4;
       total += par;
-      currentX = this.drawCell(pdf, currentX, currentY, totalColWidth, 8, par.toString(), true);
+      currentX = this.drawCell(pdf, currentX, currentY, holeColWidth, 8, par.toString(), true);
     }
-    currentX = this.drawCell(pdf, currentX, currentY, totalColWidth, 8, (total - this.handicapService.getFrontNinePar(scorecard)).toString(), true);
+    const backNineTotal = total - this.handicapService.getFrontNinePar(scorecard);
+    currentX = this.drawCell(pdf, currentX, currentY, totalColWidth, 8, backNineTotal.toString(), true);
     currentX = this.drawCell(pdf, currentX, currentY, totalColWidth, 8, total.toString(), true);
     currentX = this.drawCell(pdf, currentX, currentY, totalColWidth, 8, '-', true);
     currentX = this.drawCell(pdf, currentX, currentY, totalColWidth, 8, '-', true);
@@ -279,10 +281,10 @@ export class ScorecardPdfService {
       }
     }
 
-    // Back nine handicaps (using a default pattern)
-    const backNineHcps = [2, 4, 6, 8, 10, 12, 14, 16, 18];
-    for (const hcp of backNineHcps) {
-      currentX = this.drawCell(pdf, currentX, currentY, totalColWidth, 8, hcp.toString(), true);
+    // Back nine handicaps from scorecard data
+    for (let hole = 9; hole < 18; hole++) {
+      const hcp = this.handicapService.getHoleHandicap(scorecard, hole);
+      currentX = this.drawCell(pdf, currentX, currentY, holeColWidth, 8, hcp.toString(), true);
     }
     currentX = this.drawCell(pdf, currentX, currentY, totalColWidth, 8, '-', true);
     currentX = this.drawCell(pdf, currentX, currentY, totalColWidth, 8, '-', true);
@@ -312,23 +314,45 @@ export class ScorecardPdfService {
 
     currentX = this.drawCell(pdf, currentX, y, playerColWidth, 8, playerName);
 
+    // Pre-compute totals from existing scores if present
+    const holeScores = player.scores || [];
+    let frontNineTotal = 0;
+    let backNineTotal = 0;
+    let hasAnyScore = false;
+    for (let h = 0; h < 18; h++) {
+      const v = holeScores[h];
+      if (v != null && v > 0) {
+        hasAnyScore = true;
+        if (h < 9) frontNineTotal += v; else backNineTotal += v;
+      }
+    }
+    const grossTotal = frontNineTotal + backNineTotal;
+    const netTotal = grossTotal - Math.round(player.rochIndex);
+
     for (let hole = 0; hole < 18; hole++) {
       const playerHandicap = player.rochIndex;
       const holeHandicap = this.handicapService.getHoleHandicap(scorecard, hole);
-      // Individual strokes (x's)
       const strokeCount = this.handicapService.getStrokeCountOnHole(playerHandicap, holeHandicap);
-      // Differential strokes (slashes)
       const lowestHandicapStrokeCount = this.handicapService.getStrokeCountOnHole(lowestHandicap, holeHandicap);
       const differentialStrokeCount = Math.max(0, strokeCount - lowestHandicapStrokeCount);
-      currentX = this.drawCell(pdf, currentX, y, holeColWidth, 8, undefined, false, undefined, undefined, strokeCount, differentialStrokeCount);
+      const scoreVal = holeScores[hole];
+      const scoreText = (scoreVal != null && scoreVal > 0) ? scoreVal.toString() : undefined;
+      currentX = this.drawCell(pdf, currentX, y, holeColWidth, 8, scoreText, true, undefined, undefined, strokeCount, differentialStrokeCount, !!scoreText);
       if (hole === 8) {
-        currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8);
+        const outText = hasAnyScore && frontNineTotal > 0 ? frontNineTotal.toString() : undefined;
+        currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, outText, true, undefined, undefined, 0, 0, !!outText);
       }
     }
 
-    for (let i = 0; i < 4; i++) {
-      currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8);
-    }
+    // IN, TOT, HCP, NET
+    const inText  = hasAnyScore && backNineTotal  > 0 ? backNineTotal.toString()  : undefined;
+    const totText = hasAnyScore && grossTotal      > 0 ? grossTotal.toString()     : undefined;
+    const hcpText = player.rochIndex > 0 ? Math.round(player.rochIndex).toString() : undefined;
+    const netText = hasAnyScore && grossTotal > 0 ? netTotal.toString() : undefined;
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, inText,  true, undefined, undefined, 0, 0, !!inText);
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, totText, true, undefined, undefined, 0, 0, !!totText);
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, hcpText, true);
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, netText, true, undefined, undefined, 0, 0, !!netText);
 
     return y + 8;
   }
@@ -347,7 +371,8 @@ export class ScorecardPdfService {
     backgroundColor?: string, 
     textColor?: string, 
     strokeCount: number = 0, 
-    differentialStrokeCount: number = 0
+    differentialStrokeCount: number = 0,
+    bold: boolean = false
   ): number {
     if (backgroundColor) {
       pdf.setFillColor(backgroundColor);
@@ -388,17 +413,26 @@ export class ScorecardPdfService {
       if (textColor) {
         pdf.setTextColor(textColor);
       }
-      
+
+      const prevFontSize = pdf.getFontSize();
+      if (bold) {
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(prevFontSize + 1.5);
+      }
+
       let textX = x + 1;
-      
       if (centered) {
         const textWidth = pdf.getTextWidth(text);
         textX = x + (width - textWidth) / 2;
       }
-      
+
       const textY = y + (height / 2) + 1;
       pdf.text(text, textX, textY);
-      
+
+      if (bold) {
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(prevFontSize);
+      }
       if (textColor) {
         pdf.setTextColor(0, 0, 0);
       }
