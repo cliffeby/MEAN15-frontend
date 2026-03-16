@@ -4,7 +4,7 @@ import { FormArray } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { Member } from '../../models/member';
-import { pairFourballTeams, getTeamIndexSum, PairedGroup } from '../../utils/pair-utils';
+import { pairFourballTeams, pairFourballTeamsRandom, getTeamIndexSum, PairedGroup, RandomPairingCandidate } from '../../utils/pair-utils';
 
 @Component({
   selector: 'app-match-lineup',
@@ -74,6 +74,35 @@ export class MatchLineupComponent {
   onPairButton() {
     this.pairFourballTeams();
   }
+
+  // Random pairing state
+  randomCandidates: RandomPairingCandidate[] = [];
+  randomCandidateIndex = 0;
+  hasRandomPaired = false;
+
+  onPairRandomButton() {
+    if (!this.members || !this.lineUpsArray) return;
+
+    if (!this.hasRandomPaired) {
+      // First press: run 500 trials and store top 3 candidates
+      this.randomCandidates = pairFourballTeamsRandom(this.getMemberById.bind(this), this.lineUpsArray);
+      this.randomCandidateIndex = 0;
+      this.hasRandomPaired = true;
+    } else {
+      // Subsequent presses: cycle through 2nd and 3rd best
+      this.randomCandidateIndex = (this.randomCandidateIndex + 1) % this.randomCandidates.length;
+    }
+
+    const candidate = this.randomCandidates[this.randomCandidateIndex];
+    this.pairingMode = true;
+    this.pairedTeams = candidate.pairedTeams;
+    this.foursomeIdsTEMP = candidate.foursomeIdsTEMP;
+    this.partnerIdsTEMP = candidate.partnerIdsTEMP;
+    this.pairingUpdated.emit({
+      foursomeIdsTEMP: candidate.foursomeIdsTEMP,
+      partnerIdsTEMP: candidate.partnerIdsTEMP,
+    });
+  }
   @Input() foursomeIdsTEMP: string[][] = [];
   @Input() partnerIdsTEMP: string[][] = [];
   getTeamIndexSum(team: string[]): number {
@@ -84,6 +113,9 @@ export class MatchLineupComponent {
   exitPairing() {
     this.pairingMode = false;
     this.pairedTeams = [];
+    this.hasRandomPaired = false;
+    this.randomCandidates = [];
+    this.randomCandidateIndex = 0;
   }
   @Output() addMembers = new EventEmitter<void>();
 

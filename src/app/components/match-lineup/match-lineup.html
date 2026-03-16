@@ -69,7 +69,10 @@
 		Add Members
 	</button>
 	<button mat-raised-button color="primary" type="button" (click)="pairFourballTeams()" class="pair-teams-btn">
-		Pair Teams
+		Pair Teams Snake
+	</button>
+	<button mat-raised-button color="primary" type="button" (click)="onPairRandomButton()" class="pair-teams-btn">
+		{{ hasRandomPaired ? 'Re Pair' : 'Pair Teams Random' }}
 	</button>
 	<button *ngIf="pairingMode" mat-button type="button" (click)="exitPairing()">Exit Pairing</button>
 </div>
