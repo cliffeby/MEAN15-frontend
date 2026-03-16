@@ -4,7 +4,7 @@ import { FormArray } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { Member } from '../../models/member';
-import { pairFourballTeams, getTeamIndexSum } from '../../utils/pair-utils';
+import { pairFourballTeams, getTeamIndexSum, PairedGroup } from '../../utils/pair-utils';
 
 @Component({
   selector: 'app-match-lineup',
@@ -19,29 +19,33 @@ export class MatchLineupComponent {
     if (this.pairingMode && this.foursomeIdsTEMP && this.foursomeIdsTEMP.length > 0) {
       // Reconstruct pairedTeams from foursomeIdsTEMP
       this.pairedTeams = [];
-      for (const foursome of this.foursomeIdsTEMP) {
-        if (foursome.length === 4) {
-          // Two teams of two (normal foursome)
+      for (const group of this.foursomeIdsTEMP) {
+        if (group.length === 4) {
+          // Stored as [A1, A2, B1, B2]; snake: A1+B2 vs A2+B1
+          const teamAIds = [group[0], group[3]];
+          const teamBIds = [group[1], group[2]];
           this.pairedTeams.push({
-            teamA: [foursome[0], foursome[1]],
-            teamB: [foursome[2], foursome[3]],
-            combinedA: this.getTeamIndexSum([foursome[0], foursome[1]]),
-            combinedB: this.getTeamIndexSum([foursome[2], foursome[3]])
+            teamA: teamAIds,
+            teamB: teamBIds,
+            combinedA: this.getTeamIndexSum(teamAIds),
+            combinedB: this.getTeamIndexSum(teamBIds)
           });
-        } else if (foursome.length === 3) {
-          // Trio: teamA of 3, teamB empty
+        } else if (group.length === 3) {
+          // Stored as [A1, A2, B1]; A1+B1 paired, A2 is loneA
+          const pairIds = [group[0], group[2]];
           this.pairedTeams.push({
-            teamA: [foursome[0], foursome[1], foursome[2]],
+            teamA: pairIds,
             teamB: [],
-            combinedA: this.getTeamIndexSum([foursome[0], foursome[1], foursome[2]]),
-            combinedB: 0
+            combinedA: this.getTeamIndexSum(pairIds),
+            combinedB: 0,
+            loneA: group[1]
           });
-        } else if (foursome.length === 2) {
-          // Odd team out
+        } else {
+          // Duo or solo: show as-is
           this.pairedTeams.push({
-            teamA: [foursome[0], foursome[1]],
+            teamA: [...group],
             teamB: [],
-            combinedA: this.getTeamIndexSum([foursome[0], foursome[1]]),
+            combinedA: this.getTeamIndexSum([...group]),
             combinedB: 0
           });
         }
@@ -53,7 +57,7 @@ export class MatchLineupComponent {
     partnerIdsTEMP: string[][];
   }>();
   // Stores the result of fourball pairing
-  pairedTeams: { teamA: string[]; teamB: string[]; combinedA: number; combinedB: number }[] = [];
+  pairedTeams: PairedGroup[] = [];
 
   // Pairing logic for fourball
   pairFourballTeams() {
@@ -100,22 +104,10 @@ export class MatchLineupComponent {
   @Output() removeGroup = new EventEmitter<number>();
 
   getMemberById(memberId: string): Member | undefined {
-    const found = this.members.find((m) => m._id === memberId);
-    if (found) return found;
-    // If not found and is dummy, return MEMBER_B_DUMMY
-    if (memberId === '00000000000000000000B001') {
-      // Import MEMBER_B_DUMMY at top if not already
-      // @ts-ignore
-      return require('../../models/member-b-dummy').MEMBER_B_DUMMY;
-    }
-    return undefined;
+    return this.members.find((m) => m._id === memberId);
   }
 
   getCompactNameWithIndex(member: Member): string {
-    // If dummy, show 'B.Dummy' only
-    if (member._id === '00000000000000000000B001') {
-      return `B.Dummy(${typeof member.rochIndexB4Round === 'number' ? member.rochIndexB4Round.toFixed(1) : 'NA'})`;
-    }
     const firstInitial = member.firstName ? member.firstName.charAt(0).toUpperCase() : '';
     const lastName = member.lastName || 'Unknown';
     const index = typeof member.rochIndexB4Round === 'number' ? member.rochIndexB4Round.toFixed(1) : 'NA';

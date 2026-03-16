@@ -1,34 +1,66 @@
 <!-- Pair Teams button will be moved to lineup-header -->
 
+<!-- Pair Teams button will be moved to lineup-header -->
+
 <div *ngIf="pairingMode" class="paired-teams-layout">
 	<div *ngFor="let group of pairedTeams; let gIdx = index" class="paired-group-row">
-		<div class="paired-team-col left">
-			<span class="ab-label">A:</span>
-			<ng-container *ngIf="getMemberById(group.teamA[0]) as memberA; else showIdA">
-				{{ getCompactNameWithIndex(memberA) }}
+
+		<!-- Foursome: two partner-teams facing off (teamB has 2 players) -->
+		<ng-container *ngIf="group.teamB.length > 0; else nonFoursomeGroup">
+			<div class="paired-team-col left">
+				<span class="ab-label">A:</span>
+				<ng-container *ngIf="getMemberById(group.teamA[0]) as m; else rawA0">{{ getCompactNameWithIndex(m) }}</ng-container>
+				<ng-template #rawA0>{{ group.teamA[0] }}</ng-template>
+				<span class="ab-label">B:</span>
+				<ng-container *ngIf="getMemberById(group.teamA[1]) as m; else rawA1">{{ getCompactNameWithIndex(m) }}</ng-container>
+				<ng-template #rawA1>{{ group.teamA[1] }}</ng-template>
+				<span class="team-index">({{ group.combinedA }})</span>
+			</div>
+			<div class="vs-label">vs</div>
+			<div class="paired-team-col right">
+				<span class="ab-label">A:</span>
+				<ng-container *ngIf="getMemberById(group.teamB[0]) as m; else rawB0">{{ getCompactNameWithIndex(m) }}</ng-container>
+				<ng-template #rawB0>{{ group.teamB[0] }}</ng-template>
+				<span class="ab-label">B:</span>
+				<ng-container *ngIf="getMemberById(group.teamB[1]) as m; else rawB1">{{ getCompactNameWithIndex(m) }}</ng-container>
+				<ng-template #rawB1>{{ group.teamB[1] }}</ng-template>
+				<span class="team-index">({{ group.combinedB }})</span>
+			</div>
+		</ng-container>
+
+		<!-- Threesome: one A+B pair and one unpaired A player -->
+		<ng-template #nonFoursomeGroup>
+			<ng-container *ngIf="group.loneA; else simpleGroup">
+				<div class="paired-team-col left">
+					<span class="ab-label">A:</span>
+					<ng-container *ngIf="getMemberById(group.teamA[0]) as m; else rawTA0">{{ getCompactNameWithIndex(m) }}</ng-container>
+					<ng-template #rawTA0>{{ group.teamA[0] }}</ng-template>
+					<span class="ab-label">B:</span>
+					<ng-container *ngIf="getMemberById(group.teamA[1]) as m; else rawTA1">{{ getCompactNameWithIndex(m) }}</ng-container>
+					<ng-template #rawTA1>{{ group.teamA[1] }}</ng-template>
+					<span class="team-index">({{ group.combinedA }})</span>
+				</div>
+				<div class="vs-label"></div>
+				<div class="paired-team-col right">
+					<ng-container *ngIf="getMemberById(group.loneA!) as lone; else rawLone">{{ getCompactNameWithIndex(lone) }}</ng-container>
+					<ng-template #rawLone>{{ group.loneA }}</ng-template>
+					<span class="no-partner-label">(no partner)</span>
+				</div>
 			</ng-container>
-			<ng-template #showIdA>{{ group.teamA[0] }}</ng-template>
-			<span class="ab-label">B:</span>
-			<ng-container *ngIf="getMemberById(group.teamA[1]) as memberB; else showIdB">
-				{{ getCompactNameWithIndex(memberB) }}
-			</ng-container>
-			<ng-template #showIdB>{{ group.teamA[1] }}</ng-template>
-			<span class="team-index">({{ group.combinedA }})</span>
-		</div>
-		<div class="vs-label">vs</div>
-		<div class="paired-team-col right">
-			<span class="ab-label">A:</span>
-			<ng-container *ngIf="getMemberById(group.teamB[0]) as memberA2; else showIdA2">
-				{{ getCompactNameWithIndex(memberA2) }}
-			</ng-container>
-			<ng-template #showIdA2>{{ group.teamB[0] }}</ng-template>
-			<span class="ab-label">B:</span>
-			<ng-container *ngIf="getMemberById(group.teamB[1]) as memberB2; else showIdB2">
-				{{ getCompactNameWithIndex(memberB2) }}
-			</ng-container>
-			<ng-template #showIdB2>{{ group.teamB[1] }}</ng-template>
-			<span class="team-index">({{ group.combinedB }})</span>
-		</div>
+
+			<!-- Duo or solo: show all players inline -->
+			<ng-template #simpleGroup>
+				<div class="paired-team-col center">
+					<ng-container *ngFor="let pid of group.teamA; let pidIdx = index">
+						<ng-container *ngIf="getMemberById(pid) as m; else rawPid">{{ getCompactNameWithIndex(m) }}</ng-container>
+						<ng-template #rawPid>{{ pid }}</ng-template>
+						<span *ngIf="pidIdx < group.teamA.length - 1"> : </span>
+					</ng-container>
+					<span class="team-index">({{ group.combinedA }})</span>
+				</div>
+			</ng-template>
+		</ng-template>
+
 	</div>
 </div>
 <div class="lineup-header">

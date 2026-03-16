@@ -23,6 +23,16 @@
 .paired-team-col.right {
   text-align: right;
 }
+.paired-team-col.center {
+  text-align: left;
+  flex: 1;
+}
+.no-partner-label {
+  font-style: italic;
+  color: #888;
+  font-size: 0.85em;
+  margin-left: 0.25em;
+}
 .lineup-container {
   margin: 1rem 0;
 }
