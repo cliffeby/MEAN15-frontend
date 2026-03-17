@@ -248,7 +248,7 @@ export class ConfigurationService {
         { value: 'roch', label: 'Roch System' },
         { value: 'custom', label: 'Custom Method' }
       ],
-      defaultValue: 'usga'
+      defaultValue: 'roch'
     },
     {
       key: 'scoreEntryMode',
