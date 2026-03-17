@@ -48,6 +48,28 @@
   font-weight: bold;
 }
 
+.posted-score {
+  font-weight: normal;
+  font-size: 0.78em;
+  color: #e65100;
+}
+
+.posting-legend {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 4px;
+  font-size: 0.8em;
+}
+
+.legend-raw {
+  font-weight: bold;
+  color: #333;
+}
+
+.legend-posted {
+  color: #e65100;
+}
+
 .hole-label-col {
   display: flex;
   flex-direction: column;

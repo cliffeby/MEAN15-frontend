@@ -49,6 +49,12 @@
 
   <div class="array-section">
     <h3>Individual Hole Scores</h3>
+    @if (hasPostingAdjustment) {
+      <div class="posting-legend">
+        <span class="legend-raw">Played</span>
+        <span class="legend-posted">Posted (capped)</span>
+      </div>
+    }
     <div class="hole-scores-block">
       <div class="hole-scores-table">
         <!-- Hole numbers and scores -->
@@ -56,22 +62,34 @@
           <div class="hole-col">
             <span class="hole-number">{{ i + 1 }}</span>
             <span class="hole-score">{{ scoreForm.get('scores')?.value[i] }}</span>
+            @if (hasPostingAdjustment) {
+              <span class="hole-score posted-score">{{ scoresToPostArray.length > i ? scoresToPostArray.at(i).value : '' }}</span>
+            }
           </div>
           <!-- Insert Front/Back labels after 9 and 18 -->
           <ng-container *ngIf="i === 8">
             <div class="hole-label-col front-label">
               <span class="hole-label">Front</span>
               <span class="hole-score front-score">{{ frontNineSum }}</span>
+              @if (hasPostingAdjustment) {
+                <span class="hole-score posted-score">{{ frontNinePostSum }}</span>
+              }
             </div>
           </ng-container>
           <ng-container *ngIf="i === 17">
             <div class="hole-label-col back-label">
               <span class="hole-label">Back</span>
               <span class="hole-score back-score">{{ backNineSum }}</span>
+              @if (hasPostingAdjustment) {
+                <span class="hole-score posted-score">{{ backNinePostSum }}</span>
+              }
             </div>
             <div class="hole-label-col total-label">
               <span class="hole-label">Total</span>
               <span class="hole-score total-score">{{ totalSum }}</span>
+              @if (hasPostingAdjustment) {
+                <span class="hole-score posted-score">{{ totalPostSum }}</span>
+              }
             </div>
           </ng-container>
         </ng-container>

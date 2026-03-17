@@ -64,6 +64,30 @@ export class ScoreEditComponent implements OnInit, OnDestroy {
       if (!Array.isArray(scores)) return 0;
       return scores.reduce((a, b) => a + (Number(b) || 0), 0);
     }
+
+    get hasPostingAdjustment(): boolean {
+      const raw = this.scoreForm.get('score')?.value;
+      const posted = this.scoreForm.get('postedScore')?.value;
+      return typeof raw === 'number' && typeof posted === 'number' && raw !== posted;
+    }
+
+    get frontNinePostSum(): number {
+      const vals = this.scoresToPostArray.value as number[];
+      if (!Array.isArray(vals)) return 0;
+      return vals.slice(0, 9).reduce((a, b) => a + (Number(b) || 0), 0);
+    }
+
+    get backNinePostSum(): number {
+      const vals = this.scoresToPostArray.value as number[];
+      if (!Array.isArray(vals)) return 0;
+      return vals.slice(9, 18).reduce((a, b) => a + (Number(b) || 0), 0);
+    }
+
+    get totalPostSum(): number {
+      const vals = this.scoresToPostArray.value as number[];
+      if (!Array.isArray(vals)) return 0;
+      return vals.reduce((a, b) => a + (Number(b) || 0), 0);
+    }
   scoreForm: FormGroup;
   loading = false;
   scoreId: string | null = null;
