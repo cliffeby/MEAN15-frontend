@@ -16,11 +16,13 @@ import { forkJoin, of, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, delay, take } from 'rxjs/operators';
 import { buildScoreData } from '../../utils/score-data-builder';
 import { calculateDifferential } from '../../utils/score-utils';
+import { adjustScoresForPosting } from '../../utils/score-posting-adjustments';
 
 import { MatchService } from '../../services/matchService';
 import { MemberService } from '../../services/memberService';
 import { ScoreService } from '../../services/scoreService';
 import { ScorecardService } from '../../services/scorecardService';
+import { ConfigurationService } from '../../services/configuration.service';
 import { Scorecard } from '../../models/scorecard.interface';
 import { AuthService } from '../../services/authService';
 import { Match } from '../../models/match';
@@ -107,6 +109,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   private scoreService = inject(ScoreService);
   private scorecardService = inject(ScorecardService);
   private authService = inject(AuthService);
+  private configService = inject(ConfigurationService);
 
   matchId!: string;
   match: Match | null = null;
@@ -916,6 +919,14 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       'byHole',
       this.authService.getAuthorObject(),
     );
+
+    // Apply posting adjustments (e.g. double-bogey max) to scoresToPost / postedScore.
+    const pars: number[] = this.scorecard?.pars ?? new Array(18).fill(4);
+    const method = this.configService.scoringConfig().handicapCalculationMethod;
+    const { scoresToPost, postedScore } = adjustScoresForPosting(playerScore.scores, pars, method);
+    scoreData.scoresToPost = scoresToPost;
+    scoreData.postedScore = postedScore;
+
     console.log('savePlayerScore: scoreData to backend:', scoreData);
     // Only create if no existingScoreId, otherwise update
     let response;

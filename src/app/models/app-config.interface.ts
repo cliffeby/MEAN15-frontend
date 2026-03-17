@@ -29,7 +29,7 @@ export interface ScoringConfig {
   maxScore: number;
   minScore: number;
   defaultHandicap: number;
-  handicapCalculationMethod: 'usga' | 'ega' | 'custom';
+  handicapCalculationMethod: 'usga' | 'roch' | 'custom';
   roundingPrecision: number;
   scoreEntryMode: 'detailed' | 'simple';
 }
