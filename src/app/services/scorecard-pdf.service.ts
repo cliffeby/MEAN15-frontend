@@ -7,6 +7,7 @@ import { PrintPreviewService } from './print-preview.service';
 import { ScorecardFormatterService } from './scorecard-formatter.service';
 import { getMatchCourseName } from '../utils/score-entry-utils';
 import { calculateOneBall, formatOneBallValue, OneBallResult } from '../utils/one-ball.utils';
+import { calculateFourballNassau, NassauStatus } from '../utils/nassau-fourball.utils';
 
 @Injectable({
   providedIn: 'root'
@@ -127,18 +128,24 @@ export class ScorecardPdfService {
 
     // Pre-compute one-ball (net better-ball) results for each two-man team.
     // Team 1 = slots 0 & 1, Team 2 = slots 2 & 3.
+    // Pass lowestHandicap so differential strokes (the slash marks) are used.
     const oneBallTeam1 = calculateOneBall(
       players[0] ?? null,
       players[1] ?? null,
       scorecard,
-      this.handicapService
+      this.handicapService,
+      lowestHandicap
     );
     const oneBallTeam2 = calculateOneBall(
       players[2] ?? null,
       players[3] ?? null,
       scorecard,
-      this.handicapService
+      this.handicapService,
+      lowestHandicap
     );
+
+    // Pre-compute Nassau (fourball match-play) status from the two teams' one-ball results.
+    const nassau = calculateFourballNassau(oneBallTeam1, oneBallTeam2);
 
     for (let i = 0; i < 4; i++) {
       const player = i < players.length ? players[i] : null;
@@ -161,24 +168,13 @@ export class ScorecardPdfService {
         currentY += 8;
       }
 
-      // After slot 1 (2nd row): One Ball (Team 1) + two +/- rows separating the two teams
+      // After slot 1 (2nd row): One Ball (Team 1) + Nassau row + blank +/- row
       if (i === 1) {
         currentY = this.drawOneBallRow(pdf, oneBallTeam1, startX, currentY, playerColWidth, holeColWidth, totalColWidth);
-        for (let r = 0; r < 2; r++) {
-          let blankX = startX;
-          const backgroundColor = '#D3D3D3';
-          blankX = this.drawCell(pdf, blankX, currentY, playerColWidth, 8, '+/-', false, backgroundColor);
-          for (let h = 0; h < 18; h++) {
-            blankX = this.drawCell(pdf, blankX, currentY, holeColWidth, 8, '', false, backgroundColor);
-            if (h === 8) {
-              blankX = this.drawCell(pdf, blankX, currentY, totalColWidth, 8, '', false, backgroundColor);
-            }
-          }
-          for (let t = 0; t < 4; t++) {
-            blankX = this.drawCell(pdf, blankX, currentY, totalColWidth, 8, '', false, backgroundColor);
-          }
-          currentY += 8;
-        }
+        // First +/- row: Nassau fourball match-play status
+        currentY = this.drawNassauRow(pdf, nassau, startX, currentY, playerColWidth, holeColWidth, totalColWidth);
+        // Second +/- row: 18-hole automatic press (blank until triggered)
+        currentY = this.drawOverallPressRow(pdf, nassau, startX, currentY, playerColWidth, holeColWidth, totalColWidth);
       }
 
       // After slot 3 (4th row): One Ball row (Team 2) at bottom
@@ -186,6 +182,87 @@ export class ScorecardPdfService {
         currentY = this.drawOneBallRow(pdf, oneBallTeam2, startX, currentY, playerColWidth, holeColWidth, totalColWidth);
       }
     }
+  }
+
+  /**
+   * Draw the 18-hole automatic press row.
+   * Cells are blank until the press activates (after the overall bet is closed out).
+   * Once active, shows the cumulative press status per hole.
+   * TOT column shows the final press value; OUT/IN/HCP/NET are blank.
+   */
+  private drawOverallPressRow(
+    pdf: jsPDF,
+    nassau: NassauStatus,
+    x: number,
+    y: number,
+    playerColWidth: number,
+    holeColWidth: number,
+    totalColWidth: number
+  ): number {
+    const backgroundColor = '#D3D3D3';
+    const baseFontSize = pdf.getFontSize();
+    let currentX = x;
+    currentX = this.drawCell(pdf, currentX, y, playerColWidth, 8, 'Press', false, backgroundColor);
+    for (let h = 0; h < 18; h++) {
+      const val = nassau.overallPressHoles[h] ?? undefined;
+      currentX = this.drawCell(pdf, currentX, y, holeColWidth, 8, val, true, backgroundColor, undefined, 0, 0, !!val);
+      if (h === 8) {
+        // OUT column: blank for the press row
+        currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, '', false, backgroundColor);
+      }
+    }
+    const totVal = nassau.overallPressFinal ?? undefined;
+    // IN: blank, TOT: press final, HCP: blank, NET: blank
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, '',     false, backgroundColor);
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, totVal, true,  backgroundColor, undefined, 0, 0, !!totVal);
+    pdf.setFontSize(baseFontSize);
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, '', false, backgroundColor);
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, '', false, backgroundColor);
+    return y + 8;
+  }
+
+  /**
+   * Draw the Nassau fourball match-play status row with two-down press values.
+   * Holes 1-9  show the cumulative front-nine bet status (+ any presses).
+   * Holes 10-18 show the cumulative back-nine bet status (resets at hole 10).
+   * OUT = front-nine final, IN = back-nine final, TOT = overall 18-hole final.
+   * Combined press values (e.g. "+4/+2/0") use a smaller font to fit the cell.
+   */
+  private drawNassauRow(
+    pdf: jsPDF,
+    nassau: NassauStatus,
+    x: number,
+    y: number,
+    playerColWidth: number,
+    holeColWidth: number,
+    totalColWidth: number
+  ): number {
+    const backgroundColor = '#D3D3D3';
+    const baseFontSize = pdf.getFontSize();
+    let currentX = x;
+    currentX = this.drawCell(pdf, currentX, y, playerColWidth, 8, 'Nassau', false, backgroundColor);
+    for (let h = 0; h < 18; h++) {
+      const val = nassau.holeStatus[h] ?? undefined;
+      if (val?.includes('/')) pdf.setFontSize(5.5);
+      currentX = this.drawCell(pdf, currentX, y, holeColWidth, 8, val, true, backgroundColor, undefined, 0, 0, !!val);
+      pdf.setFontSize(baseFontSize);
+      if (h === 8) {
+        const outVal = nassau.frontNineStatus ?? undefined;
+        if (outVal?.includes('/')) pdf.setFontSize(5.5);
+        currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, outVal, true, backgroundColor, undefined, 0, 0, !!outVal);
+        pdf.setFontSize(baseFontSize);
+      }
+    }
+    const inVal  = nassau.backNineStatus  ?? undefined;
+    const totVal = nassau.overallStatus   ?? undefined;
+    if (inVal?.includes('/'))  pdf.setFontSize(5.5);
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, inVal,  true, backgroundColor, undefined, 0, 0, !!inVal);
+    pdf.setFontSize(baseFontSize);
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, totVal, true, backgroundColor, undefined, 0, 0, !!totVal);
+    pdf.setFontSize(baseFontSize);
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, '', false, backgroundColor);
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, '', false, backgroundColor);
+    return y + 8;
   }
 
   /**
@@ -382,7 +459,7 @@ export class ScorecardPdfService {
       const differentialStrokeCount = Math.max(0, strokeCount - lowestHandicapStrokeCount);
       const scoreVal = holeScores[hole];
       const scoreText = (scoreVal != null && scoreVal > 0) ? scoreVal.toString() : undefined;
-      currentX = this.drawCell(pdf, currentX, y, holeColWidth, 8, scoreText, true, undefined, undefined, strokeCount, differentialStrokeCount, !!scoreText);
+      currentX = this.drawCell(pdf, currentX, y, holeColWidth, 8, scoreText, true, undefined, undefined, strokeCount, differentialStrokeCount, false, !!scoreText);
       if (hole === 8) {
         const outText = hasAnyScore && frontNineTotal > 0 ? frontNineTotal.toString() : undefined;
         currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, outText, true, undefined, undefined, 0, 0, !!outText);
@@ -417,7 +494,8 @@ export class ScorecardPdfService {
     textColor?: string, 
     strokeCount: number = 0, 
     differentialStrokeCount: number = 0,
-    bold: boolean = false
+    bold: boolean = false,
+    scoreStyle: boolean = false
   ): number {
     if (backgroundColor) {
       pdf.setFillColor(backgroundColor);
@@ -460,23 +538,34 @@ export class ScorecardPdfService {
       }
 
       const prevFontSize = pdf.getFontSize();
-      if (bold) {
+      if (scoreStyle) {
+        // Score digits: bold, slightly larger, left-centre positioning
         pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(prevFontSize + 1.5);
-      }
-
-      let textX = x + 1;
-      if (centered) {
-        const textWidth = pdf.getTextWidth(text);
-        textX = x + (width - textWidth) / 2;
-      }
-
-      const textY = y + (height / 2) + 1;
-      pdf.text(text, textX, textY);
-
-      if (bold) {
+        pdf.setFontSize(prevFontSize + 3);
+        const textX = x + 1.5;
+        const textY = y + (height / 2) + 1.5;
+        pdf.text(text, textX, textY);
         pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(prevFontSize);
+      } else {
+        if (bold) {
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(prevFontSize + 1.5);
+        }
+
+        let textX = x + 1;
+        if (centered) {
+          const textWidth = pdf.getTextWidth(text);
+          textX = x + (width - textWidth) / 2;
+        }
+
+        const textY = y + (height / 2) + 1;
+        pdf.text(text, textX, textY);
+
+        if (bold) {
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(prevFontSize);
+        }
       }
       if (textColor) {
         pdf.setTextColor(0, 0, 0);

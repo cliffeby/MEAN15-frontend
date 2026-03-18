@@ -33,9 +33,13 @@ export function formatOneBallValue(relToPar: number | null): string | undefined 
  * Calculate the one-ball (net better-ball) values for a two-man team.
  *
  * Per-hole logic:
- *   net score  = gross score - strokes received on that hole
+ *   differential strokes = player strokes on hole - lowest handicap player strokes on hole
+ *   net score  = gross score - differential strokes received on that hole
  *   best net   = minimum net score among team members who have entered a score
  *   one-ball value = best net - par
+ *
+ * lowestHandicap is the lowest course handicap in the entire group (all 4 players),
+ * matching what the slash marks on the scorecard indicate.
  *
  * Returns null for any hole where neither player has recorded a score.
  */
@@ -43,21 +47,24 @@ export function calculateOneBall(
   player1: PrintablePlayer | null,
   player2: PrintablePlayer | null,
   scorecard: ScorecardData,
-  handicapService: HandicapCalculationService
+  handicapService: HandicapCalculationService,
+  lowestHandicap: number = 0
 ): OneBallResult {
   const holes: OneBallHoleResult[] = [];
 
   for (let h = 0; h < 18; h++) {
     const par = scorecard.pars?.[h] ?? 4;
     const holeHcp = handicapService.getHoleHandicap(scorecard, h);
+    const lowestStrokes = handicapService.getStrokeCountOnHole(lowestHandicap, holeHcp);
     let bestNet: number | null = null;
 
     for (const player of [player1, player2]) {
       if (!player) continue;
       const gross = player.scores?.[h];
       if (gross == null || gross <= 0) continue;
-      const strokes = handicapService.getStrokeCountOnHole(player.rochIndex, holeHcp);
-      const net = gross - strokes;
+      const playerStrokes = handicapService.getStrokeCountOnHole(player.rochIndex, holeHcp);
+      const differentialStrokes = Math.max(0, playerStrokes - lowestStrokes);
+      const net = gross - differentialStrokes;
       if (bestNet === null || net < bestNet) {
         bestNet = net;
       }
