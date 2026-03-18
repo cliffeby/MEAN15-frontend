@@ -73,6 +73,7 @@ export class PrintPreviewService {
       controls.innerHTML = `
         <button onclick="window.print()" title="Print PDF">Print</button>
         <button id="download-btn" title="Download PDF">Download</button>
+        <button id="email-btn" title="Email to players">Email</button>
         <button onclick="window.close()" title="Close Window">Close</button>
       `;
       previewWindow.document.body.appendChild(controls);
@@ -82,6 +83,17 @@ export class PrintPreviewService {
       if (downloadBtn) {
         downloadBtn.addEventListener('click', () => {
           this.downloadBlob(pdfBlob, filename);
+        });
+      }
+
+      const emailBtn = previewWindow.document.getElementById('email-btn');
+      if (emailBtn) {
+        emailBtn.addEventListener('click', () => {
+          const cb = (previewWindow.opener as any)?.__scorecardEmail;
+          if (typeof cb === 'function') {
+            cb();
+            previewWindow.opener?.focus();
+          }
         });
       }
     });

@@ -15,6 +15,7 @@ import { ScoreService } from '../../services/scoreService';
 import { Scorecard } from '../../models/scorecard.interface';
 import { ScorecardPdfService } from '../../services/scorecard-pdf.service';
 import { HandicapCalculationService } from '../../services/handicap-calculation.service';
+import { EmailService } from '../../services/email.service';
 import { Match } from '../../models/match';
 import { Member } from '../../models/member';
 import { PrintablePlayer } from '../../models/printable-player.interface';
@@ -46,12 +47,20 @@ export class PrintableScorecardComponent implements OnInit {
   private pdfService = inject(ScorecardPdfService);
   private handicapService = inject(HandicapCalculationService);
   private scoreService = inject(ScoreService);
+  private emailService = inject(EmailService);
 
   matchId!: string;
   match: Match | null = null;
   scorecard: Scorecard | null = null;
   players: PrintablePlayer[] = [];
   loading = false;
+
+  // Email draft state
+  showEmailPreview = false;
+  emailSending = false;
+  emailSubject = '';
+  emailHtml = '';
+  emailRecipients: { name: string; email: string; memberId: string }[] = [];
 
   ngOnInit(): void {
     this.matchId = this.route.snapshot.params['id'];
@@ -326,6 +335,9 @@ export class PrintableScorecardComponent implements OnInit {
         distances: this.scorecard.yards || Array(18).fill(0)
       };
 
+      // Expose email callback so the PDF preview window can trigger it
+      (window as any).__scorecardEmail = () => this.prepareEmail();
+
       // Generate PDF using the service for all foursomes
       await this.pdfService.generateScorecardPDF(
         matchData,
@@ -340,6 +352,70 @@ export class PrintableScorecardComponent implements OnInit {
       console.error('Error generating scorecard:', error);
       this.snackBar.open('Error generating scorecard', 'Close', { duration: 3000 });
     }
+  }
+
+  prepareEmail(): void {
+    if (!this.match || !this.scorecard || this.players.length === 0) return;
+
+    this.emailRecipients = this.players
+      .filter(p => p.member.Email)
+      .map(p => ({
+        name: `${p.member.firstName} ${p.member.lastName || ''}`.trim(),
+        email: p.member.Email!,
+        memberId: p.member._id ?? '',
+      }));
+
+    const matchName = this.match.name || this.scorecard.course || 'Golf Match';
+    const datePlayed = this.match.datePlayed
+      ? new Date(this.match.datePlayed).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+      : 'recent round';
+
+    this.emailSubject = `Your Scorecard – ${matchName} (${datePlayed})`;
+
+    const playerRows = this.players
+      .map(p => `<li>${p.member.firstName} ${p.member.lastName || ''} – Handicap ${p.rochIndex ?? 'N/A'}</li>`)
+      .join('');
+
+    this.emailHtml = `
+<p>Hi,</p>
+<p>Your scorecard for <strong>${matchName}</strong> on ${datePlayed} is ready.</p>
+<p><strong>Players in this match:</strong></p>
+<ul>${playerRows}</ul>
+<p>To view the scorecard, visit the match page and click <em>Generate Scorecard</em>.</p>
+<p>Good golfing!</p>
+`.trim();
+
+    this.showEmailPreview = true;
+  }
+
+  sendEmail(): void {
+    if (this.emailRecipients.length === 0) {
+      this.snackBar.open('No player email addresses found', 'Close', { duration: 3000 });
+      return;
+    }
+
+    this.emailSending = true;
+    this.emailService.sendToMembers({
+      memberIds: this.emailRecipients.map(r => r.memberId).filter(Boolean),
+      subject: this.emailSubject,
+      htmlContent: this.emailHtml,
+      personalize: false,
+    }).subscribe({
+      next: (res) => {
+        this.emailSending = false;
+        this.showEmailPreview = false;
+        const count = res.recipientCount ?? this.emailRecipients.length;
+        this.snackBar.open(`Email sent to ${count} player(s)`, 'Close', { duration: 4000 });
+      },
+      error: (err) => {
+        this.emailSending = false;
+        this.snackBar.open(err.message || 'Failed to send email', 'Close', { duration: 4000 });
+      },
+    });
+  }
+
+  cancelEmail(): void {
+    this.showEmailPreview = false;
   }
 
   goBack(): void {

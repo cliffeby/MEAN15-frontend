@@ -40,7 +40,54 @@
             <mat-icon>picture_as_pdf</mat-icon>
             Generate Scorecard
           </button>
+          <button mat-raised-button color="accent" (click)="prepareEmail()" [disabled]="showEmailPreview">
+            <mat-icon>email</mat-icon>
+            Email Players
+          </button>
         </div>
+
+        <!-- Email draft preview panel -->
+        @if (showEmailPreview) {
+          <div class="email-preview-panel">
+            <h3>
+              <mat-icon>drafts</mat-icon>
+              Email Draft Preview
+            </h3>
+
+            <div class="email-field">
+              <span class="email-label">To:</span>
+              <span class="email-value">
+                @for (r of emailRecipients; track r.memberId) {
+                  <span class="recipient-chip">{{ r.name }} &lt;{{ r.email }}&gt;</span>
+                }
+                @if (emailRecipients.length === 0) {
+                  <em class="no-recipients">No player emails on file</em>
+                }
+              </span>
+            </div>
+
+            <div class="email-field">
+              <span class="email-label">Subject:</span>
+              <span class="email-value subject-text">{{ emailSubject }}</span>
+            </div>
+
+            <div class="email-field email-body-field">
+              <span class="email-label">Body:</span>
+              <div class="email-body" [innerHTML]="emailHtml"></div>
+            </div>
+
+            <div class="email-actions">
+              <button mat-raised-button color="primary" (click)="sendEmail()" [disabled]="emailSending || emailRecipients.length === 0">
+                <mat-icon>send</mat-icon>
+                {{ emailSending ? 'Sending…' : 'Send Email' }}
+              </button>
+              <button mat-button (click)="cancelEmail()" [disabled]="emailSending">
+                <mat-icon>cancel</mat-icon>
+                Cancel
+              </button>
+            </div>
+          </div>
+        }
         
         <p class="help-text">
           Creates professional tournament scorecard with Download, Email, and Print options.

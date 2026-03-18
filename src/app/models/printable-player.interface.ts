@@ -3,6 +3,7 @@ export interface PrintablePlayer {
     _id: string;
     firstName: string;
     lastName: string;
+    Email?: string;
   };
   rochIndex: number;
   teeAbreviation: string;
