@@ -6,6 +6,7 @@ import { HandicapCalculationService } from './handicap-calculation.service';
 import { PrintPreviewService } from './print-preview.service';
 import { ScorecardFormatterService } from './scorecard-formatter.service';
 import { getMatchCourseName } from '../utils/score-entry-utils';
+import { calculateOneBall, formatOneBallValue, OneBallResult } from '../utils/one-ball.utils';
 
 @Injectable({
   providedIn: 'root'
@@ -124,6 +125,21 @@ export class ScorecardPdfService {
     const realPlayers = players.filter((p): p is PrintablePlayer => p !== null);
     const lowestHandicap = this.handicapService.getLowestHandicapInGroup(realPlayers);
 
+    // Pre-compute one-ball (net better-ball) results for each two-man team.
+    // Team 1 = slots 0 & 1, Team 2 = slots 2 & 3.
+    const oneBallTeam1 = calculateOneBall(
+      players[0] ?? null,
+      players[1] ?? null,
+      scorecard,
+      this.handicapService
+    );
+    const oneBallTeam2 = calculateOneBall(
+      players[2] ?? null,
+      players[3] ?? null,
+      scorecard,
+      this.handicapService
+    );
+
     for (let i = 0; i < 4; i++) {
       const player = i < players.length ? players[i] : null;
 
@@ -145,13 +161,13 @@ export class ScorecardPdfService {
         currentY += 8;
       }
 
-      // After slot 1 (2nd row): One Ball + two +/- rows separating the two teams
+      // After slot 1 (2nd row): One Ball (Team 1) + two +/- rows separating the two teams
       if (i === 1) {
-        for (let r = 0; r < 3; r++) {
+        currentY = this.drawOneBallRow(pdf, oneBallTeam1, startX, currentY, playerColWidth, holeColWidth, totalColWidth);
+        for (let r = 0; r < 2; r++) {
           let blankX = startX;
-          const rowLabel = r === 0 ? 'One Ball' : '+/-';
-          const backgroundColor = r === 0 ? undefined : '#D3D3D3';
-          blankX = this.drawCell(pdf, blankX, currentY, playerColWidth, 8, rowLabel, false, backgroundColor);
+          const backgroundColor = '#D3D3D3';
+          blankX = this.drawCell(pdf, blankX, currentY, playerColWidth, 8, '+/-', false, backgroundColor);
           for (let h = 0; h < 18; h++) {
             blankX = this.drawCell(pdf, blankX, currentY, holeColWidth, 8, '', false, backgroundColor);
             if (h === 8) {
@@ -165,22 +181,51 @@ export class ScorecardPdfService {
         }
       }
 
-      // After slot 3 (4th row): One Ball row at bottom
+      // After slot 3 (4th row): One Ball row (Team 2) at bottom
       if (i === 3) {
-        let blankX = startX;
-        blankX = this.drawCell(pdf, blankX, currentY, playerColWidth, 8, 'One Ball');
-        for (let h = 0; h < 18; h++) {
-          blankX = this.drawCell(pdf, blankX, currentY, holeColWidth, 8, '');
-          if (h === 8) {
-            blankX = this.drawCell(pdf, blankX, currentY, totalColWidth, 8, '');
-          }
-        }
-        for (let t = 0; t < 4; t++) {
-          blankX = this.drawCell(pdf, blankX, currentY, totalColWidth, 8, '');
-        }
-        currentY += 8;
+        currentY = this.drawOneBallRow(pdf, oneBallTeam2, startX, currentY, playerColWidth, holeColWidth, totalColWidth);
       }
     }
+  }
+
+  /**
+   * Draw a One Ball row showing net better-ball values relative to par for each hole.
+   * OUT and IN cells show front/back nine totals; TOT shows the overall total.
+   */
+  private drawOneBallRow(
+    pdf: jsPDF,
+    result: OneBallResult,
+    x: number,
+    y: number,
+    playerColWidth: number,
+    holeColWidth: number,
+    totalColWidth: number
+  ): number {
+    let currentX = x;
+    currentX = this.drawCell(pdf, currentX, y, playerColWidth, 8, 'One Ball');
+
+    // Track whether any score has been entered; only show cumulative once scoring starts.
+    let hasStarted = false;
+    let runningTotal = 0;
+
+    for (let h = 0; h < 18; h++) {
+      const holeRel = result.holes[h]?.relToPar ?? null;
+      if (holeRel !== null) {
+        hasStarted = true;
+        runningTotal += holeRel;
+      }
+      const val = hasStarted ? formatOneBallValue(runningTotal) : undefined;
+      currentX = this.drawCell(pdf, currentX, y, holeColWidth, 8, val, true, undefined, undefined, 0, 0, !!val);
+      if (h === 8) {
+        currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, '');
+      }
+    }
+    const totVal = formatOneBallValue(result.total);
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, '');
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, totVal, true, undefined, undefined, 0, 0, !!totVal);
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, '');
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, '');
+    return y + 8;
   }
 
   /**
