@@ -22,6 +22,8 @@ import { PrintablePlayer } from '../../models/printable-player.interface';
 import { MatchData, ScorecardData } from '../../models/scorecard.interface';
 import { getMemberScorecard } from '../../utils/score-entry-utils';
 import { getGroupSizes } from '../../utils/pair-utils';
+import { calculateOneBall } from '../../utils/one-ball.utils';
+import { calculateMatchWinners, MatchWinnersResult } from '../../utils/match-winners.utils';
 
 @Component({
   selector: 'app-printable-scorecard',
@@ -54,6 +56,10 @@ export class PrintableScorecardComponent implements OnInit {
   scorecard: Scorecard | null = null;
   players: PrintablePlayer[] = [];
   loading = false;
+
+  private foursomes: (PrintablePlayer | null)[][] = [];
+  private rawScoreByMember: Map<string, any> = new Map();
+  private groupWinners: MatchWinnersResult[] = [];
 
   // Email draft state
   showEmailPreview = false;
@@ -145,6 +151,15 @@ export class PrintableScorecardComponent implements OnInit {
                 if (s.scoreRecordType === 'byHole' && Array.isArray(s.scores)) {
                   const mid = typeof s.memberId === 'object' ? s.memberId._id : s.memberId;
                   if (mid) scoresByMember.set(mid, s.scores);
+                }
+              }
+
+              // Keep full raw score objects keyed by member ID for winner persistence
+              this.rawScoreByMember = new Map();
+              for (const s of rawScores) {
+                if (s.scoreRecordType === 'byHole') {
+                  const mid = typeof s.memberId === 'object' ? s.memberId._id : s.memberId;
+                  if (mid) this.rawScoreByMember.set(mid, s);
                 }
               }
 
@@ -335,6 +350,21 @@ export class PrintableScorecardComponent implements OnInit {
         distances: this.scorecard.yards || Array(18).fill(0)
       };
 
+      // Compute & persist match winners for each group
+      this.foursomes = foursomes;
+      this.groupWinners = [];
+      for (const group of foursomes) {
+        const realPlayers = group.filter((p): p is PrintablePlayer => p !== null);
+        const lowestHcp = realPlayers.length > 0
+          ? this.handicapService.getLowestHandicapInGroup(realPlayers)
+          : 0;
+        const ob1 = calculateOneBall(group[0] ?? null, group[1] ?? null, scorecardData, this.handicapService, lowestHcp);
+        const ob2 = calculateOneBall(group[2] ?? null, group[3] ?? null, scorecardData, this.handicapService, lowestHcp);
+        const winners = calculateMatchWinners(group, scorecardData, this.handicapService, ob1, ob2);
+        this.groupWinners.push(winners);
+        this.persistWinners(group, winners);
+      }
+
       // Expose email callback so the PDF preview window can trigger it
       (window as any).__scorecardEmail = () => this.prepareEmail();
 
@@ -372,16 +402,19 @@ export class PrintableScorecardComponent implements OnInit {
 
     this.emailSubject = `Your Scorecard – ${matchName} (${datePlayed})`;
 
-    const playerRows = this.players
-      .map(p => `<li>${p.member.firstName} ${p.member.lastName || ''} – Handicap ${p.rochIndex ?? 'N/A'}</li>`)
-      .join('');
+    const winnersHtml = this.groupWinners.map((w, i) => {
+      const label = this.foursomes.length > 1 ? `Group ${i + 1} — ` : '';
+      const line = (title: string, names: string[]) =>
+        `<p><strong>${label}${title}:</strong> ${names.length ? names.join(', ') : 'No scores yet'}</p>`;
+      return line('1-Ball', w.oneBallWinnerNames)
+           + line('2-Ball', w.twoBallWinnerNames)
+           + line('Individual Net', w.indoWinnerNames);
+    }).join('');
 
     this.emailHtml = `
 <p>Hi,</p>
-<p>Your scorecard for <strong>${matchName}</strong> on ${datePlayed} is ready.</p>
-<p><strong>Players in this match:</strong></p>
-<ul>${playerRows}</ul>
-<p>To view the scorecard, visit the match page and click <em>Generate Scorecard</em>.</p>
+<p>Results for <strong>${matchName}</strong> on ${datePlayed}:</p>
+${winnersHtml}
 <p>Good golfing!</p>
 `.trim();
 
@@ -416,6 +449,28 @@ export class PrintableScorecardComponent implements OnInit {
 
   cancelEmail(): void {
     this.showEmailPreview = false;
+  }
+
+  private persistWinners(
+    group: (PrintablePlayer | null)[],
+    winners: MatchWinnersResult,
+  ): void {
+    for (const player of group) {
+      if (!player) continue;
+      const mid = player.member._id;
+      if (!mid) continue;
+      const rawScore = this.rawScoreByMember.get(mid);
+      if (!rawScore?._id) continue;
+      const updated = {
+        ...rawScore,
+        wonOneBall: winners.oneBallWinners.includes(mid),
+        wonTwoBall: winners.twoBallWinners.includes(mid),
+        wonIndo: winners.indoWinners.includes(mid),
+      };
+      this.scoreService.update(rawScore._id, updated).subscribe({
+        error: (err: any) => console.warn(`Failed to persist winner flags for ${mid}:`, err),
+      });
+    }
   }
 
   goBack(): void {
