@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostBinding } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormBuilder, Validators, FormsModule } from '@angular/forms';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -44,6 +44,9 @@ import { AppConfig, ConfigSection, ConfigField } from '../../models/app-config.i
   styleUrls: ['./admin-configuration.component.scss']
 })
 export class AdminConfigurationComponent implements OnInit, OnDestroy {
+  @HostBinding('class.dark-theme') isDarkTheme = false;
+  private mqListener: ((e: MediaQueryListEvent) => void) | null = null;
+
   defaultName: string = '';
   configForm!: FormGroup;
   selectedTab = 0;
@@ -69,6 +72,10 @@ export class AdminConfigurationComponent implements OnInit, OnDestroy {
     this.buildForm();
     this.setupAutoSave();
     this.loadDefaultName();
+    try { this.applyTheme(this.configService.displayConfig().theme); } catch { /* ignore in tests */ }
+    this.configService.config$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(cfg => this.applyTheme(cfg.display.theme));
   }
 
   loadDefaultName(): void {
@@ -84,7 +91,32 @@ export class AdminConfigurationComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    if (this.mqListener && typeof window !== 'undefined' && (window as any).matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', this.mqListener);
+      this.mqListener = null;
+    }
   }
+
+  private applyTheme(theme: string) {
+    if (!theme) theme = 'auto';
+    if (theme === 'dark') {
+      this.setDark(true);
+    } else if (theme === 'light') {
+      this.setDark(false);
+    } else {
+      if (typeof window !== 'undefined' && (window as any).matchMedia) {
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        this.setDark(!!mq.matches);
+        if (this.mqListener) mq.removeEventListener('change', this.mqListener);
+        this.mqListener = (e: MediaQueryListEvent) => this.setDark(!!e.matches);
+        mq.addEventListener('change', this.mqListener);
+      } else {
+        this.setDark(false);
+      }
+    }
+  }
+
+  private setDark(val: boolean) { this.isDarkTheme = val; }
 
   onTabChange(event: any): void {
     this.selectedTab = event.index;

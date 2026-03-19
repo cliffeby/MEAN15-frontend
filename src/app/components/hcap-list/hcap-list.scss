@@ -78,3 +78,47 @@
   color: #d32f2f;
   font-weight: 500;
 }
+
+:host(.dark-theme) {
+  background: #0f1113;
+  color: #e6eef8;
+
+  .column-selector-dropdown-content {
+    background: #1e2328;
+    border-color: rgba(255,255,255,0.12);
+    color: #e6eef8;
+    mat-checkbox { color: #e6eef8; }
+  }
+
+  .hcap-list {
+    table { background: #161a1e; }
+  }
+
+  .mat-mdc-header-cell {
+    background-color: #1e2328;
+    color: #a9bfdb;
+    border-bottom-color: rgba(255,255,255,0.08);
+  }
+
+  .mat-mdc-cell {
+    color: #e6eef8;
+    border-bottom-color: rgba(255,255,255,0.06);
+  }
+
+  .mat-mdc-row:hover .mat-mdc-cell {
+    background-color: rgba(255,255,255,0.04);
+  }
+
+  .hcap-low-count .hcap-value { color: #ef9a9a; }
+
+  h2 { color: #cde7ff; }
+
+  button, .mat-mdc-button-base { color: #e6eef8; }
+  .mat-mdc-raised-button { background-color: #0d47a1; color: #ffffff; }
+  .mat-mdc-raised-button:hover { background-color: #0b3b86; }
+
+  mat-form-field {
+    input.mat-mdc-input-element { color: #e6eef8; }
+    input::placeholder { color: rgba(230,238,248,0.5); }
+  }
+}

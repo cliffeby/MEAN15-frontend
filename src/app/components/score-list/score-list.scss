@@ -314,3 +314,79 @@
     }
   }
 }
+
+:host(.dark-theme) {
+  .score-list {
+    background: #0f1113;
+    color: #e6eef8;
+
+    h2 { color: #cde7ff; }
+
+    .header {
+      .search-info {
+        background-color: #0d2a45;
+        color: #a9d0f5;
+      }
+    }
+
+    .grouped-scores {
+      .match-group,
+      .member-group {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+
+        &.orphaned-group {
+          background-color: #2a1f0a;
+          border-left-color: #f59e0b;
+          mat-expansion-panel-header { background-color: #2e2208; }
+        }
+
+        mat-expansion-panel-header {
+          background-color: #1e2328;
+          .group-title {
+            .match-name, .member-name { color: #e6eef8; }
+            .score-count, .round-count { background: #0d2a45; color: #a9d0f5; }
+          }
+        }
+
+        .scores-table {
+          background: #161a1e;
+
+          th {
+            background-color: #1e2328;
+            color: #a9bfdb;
+            border-bottom-color: rgba(255,255,255,0.08);
+            border-right-color: rgba(255,255,255,0.06);
+          }
+
+          td {
+            color: #e6eef8;
+            border-bottom-color: rgba(255,255,255,0.06);
+            border-right-color: rgba(255,255,255,0.06);
+          }
+
+          .mat-mdc-header-row { background-color: #1e2328; }
+
+          .mat-mdc-row {
+            &:nth-child(odd) { background-color: #161a1e; }
+            &:nth-child(even) { background-color: #191e24; }
+            &:hover { background-color: rgba(255,255,255,0.06) !important; }
+            &.orphaned-row {
+              background-color: #2a1f0a !important;
+              &:hover { background-color: #332509 !important; }
+            }
+          }
+
+          tr:hover { background-color: rgba(255,255,255,0.06) !important; }
+
+          .orphaned-cell { color: #f59e0b; }
+        }
+      }
+    }
+
+    .no-data { color: #a9bfdb; }
+
+    button, .mat-mdc-button-base { color: #e6eef8; }
+    .mat-mdc-raised-button { background-color: #0d47a1; color: #ffffff; }
+    .mat-mdc-raised-button:hover { background-color: #0b3b86; }
+  }
+}

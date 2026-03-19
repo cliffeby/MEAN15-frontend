@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostBinding } from '@angular/core';
 import { MatListModule } from '@angular/material/list';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -23,6 +23,8 @@ import { Member } from '../../models/member';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../services/authService';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
+import { ConfigurationService } from '../../services/configuration.service';
+import { Subscription } from 'rxjs';
 import { calculateCourseHandicap } from '../../utils/score-utils';
 
 interface GroupedScores {
@@ -65,7 +67,10 @@ interface GroupedByMember {
     FormsModule,
   ],
 })
-export class ScoreListComponent implements OnInit {
+export class ScoreListComponent implements OnInit, OnDestroy {
+  @HostBinding('class.dark-theme') isDarkTheme = false;
+  private mqListener: ((e: MediaQueryListEvent) => void) | null = null;
+  private configSub: Subscription | null = null;
   scores: Score[] = [];
   groupedScores: GroupedScores[] = [];
   filteredGroupedScores: GroupedScores[] = [];
@@ -106,6 +111,7 @@ export class ScoreListComponent implements OnInit {
     private snackBar: MatSnackBar,
     private authService: AuthService,
     private confirmDialog: ConfirmDialogService,
+    private configService: ConfigurationService,
   ) {}
 
   get isAuthorized(): boolean {
@@ -116,6 +122,8 @@ export class ScoreListComponent implements OnInit {
   }
 
   ngOnInit() {
+    try { this.applyTheme(this.configService.displayConfig().theme); } catch { /* ignore in tests */ }
+    this.configSub = this.configService.config$.subscribe(cfg => this.applyTheme(cfg.display.theme));
     this.loadMembers();
     this.loadMatches();
   }
@@ -461,4 +469,33 @@ export class ScoreListComponent implements OnInit {
     }
     return score.memberId || null;
   }
+
+  ngOnDestroy(): void {
+    this.configSub?.unsubscribe();
+    if (this.mqListener && typeof window !== 'undefined' && (window as any).matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', this.mqListener);
+      this.mqListener = null;
+    }
+  }
+
+  private applyTheme(theme: string) {
+    if (!theme) theme = 'auto';
+    if (theme === 'dark') {
+      this.setDark(true);
+    } else if (theme === 'light') {
+      this.setDark(false);
+    } else {
+      if (typeof window !== 'undefined' && (window as any).matchMedia) {
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        this.setDark(!!mq.matches);
+        if (this.mqListener) mq.removeEventListener('change', this.mqListener);
+        this.mqListener = (e: MediaQueryListEvent) => this.setDark(!!e.matches);
+        mq.addEventListener('change', this.mqListener);
+      } else {
+        this.setDark(false);
+      }
+    }
+  }
+
+  private setDark(val: boolean) { this.isDarkTheme = val; }
 }

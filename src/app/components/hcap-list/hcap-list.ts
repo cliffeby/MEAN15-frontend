@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy, HostBinding } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
@@ -15,6 +15,7 @@ import { calculateCourseHandicap } from '../../utils/score-utils';
 import { HCap } from '../../models/hcap';
 import { UserPreferencesService, ColumnPreference } from '../../services/user-preferences.service';
 import { ConfigurationService } from '../../services/configuration.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-hcap-list',
@@ -35,7 +36,11 @@ import { ConfigurationService } from '../../services/configuration.service';
     MatCheckboxModule,
   ],
 })
-export class HcapListComponent implements OnInit {
+export class HcapListComponent implements OnInit, OnDestroy {
+  @HostBinding('class.dark-theme') isDarkTheme = false;
+  private mqListener: ((e: MediaQueryListEvent) => void) | null = null;
+  private configSub: Subscription | null = null;
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -138,6 +143,8 @@ export class HcapListComponent implements OnInit {
 
   ngOnInit() {
     this.loadColumnPreferences();
+    try { this.applyTheme(this.configService.displayConfig().theme); } catch { /* ignore in tests */ }
+    this.configSub = this.configService.config$.subscribe(cfg => this.applyTheme(cfg.display.theme));
     this.loadHcaps();
   }
 
@@ -235,4 +242,33 @@ export class HcapListComponent implements OnInit {
     this.configService.updateSection('display', { hcapListPageSize: event.pageSize });
     this.updatePaged();
   }
+
+  ngOnDestroy(): void {
+    this.configSub?.unsubscribe();
+    if (this.mqListener && typeof window !== 'undefined' && (window as any).matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', this.mqListener);
+      this.mqListener = null;
+    }
+  }
+
+  private applyTheme(theme: string) {
+    if (!theme) theme = 'auto';
+    if (theme === 'dark') {
+      this.setDark(true);
+    } else if (theme === 'light') {
+      this.setDark(false);
+    } else {
+      if (typeof window !== 'undefined' && (window as any).matchMedia) {
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        this.setDark(!!mq.matches);
+        if (this.mqListener) mq.removeEventListener('change', this.mqListener);
+        this.mqListener = (e: MediaQueryListEvent) => this.setDark(!!e.matches);
+        mq.addEventListener('change', this.mqListener);
+      } else {
+        this.setDark(false);
+      }
+    }
+  }
+
+  private setDark(val: boolean) { this.isDarkTheme = val; }
 }

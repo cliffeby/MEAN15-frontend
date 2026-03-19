@@ -203,3 +203,81 @@
   border: 0 !important;
 }
 }
+
+:host(.dark-theme) {
+  .admin-configuration {
+    background: #0f1113;
+    color: #e6eef8;
+  }
+
+  .header h1 { color: #cde7ff; }
+  .subtitle { color: #a9bfdb; }
+
+  .actions-bar {
+    background: #1e2328;
+    border-color: rgba(255,255,255,0.08);
+  }
+
+  .config-tabs {
+    background: #161a1e;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  }
+
+  ::ng-deep .config-tabs {
+    .mat-mdc-tab-header { background: #1e2328; }
+    .mdc-tab__text-label { color: #a9bfdb; }
+    .mat-mdc-tab.mdc-tab--active .mdc-tab__text-label { color: #cde7ff; }
+    .mat-mdc-tab-header-pagination-chevron { border-color: #a9bfdb; }
+    .mdc-tab-indicator__content--underline { border-color: #5ba3f5; }
+    .mat-mdc-tab:hover .mdc-tab__text-label { color: #e6eef8; }
+  }
+
+  .section-header {
+    border-bottom-color: rgba(255,255,255,0.08);
+    h2 { color: #e6eef8; }
+    mat-icon { color: #5ba3f5; }
+  }
+
+  .section-description { color: #a9bfdb; }
+
+  .field-card {
+    background: #1e2328;
+    &:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+  }
+
+  .field-label { color: #e6eef8; }
+  .info-icon { color: #a9bfdb; }
+
+  .field-actions {
+    background: rgba(22,26,30,0.95);
+  }
+
+  .auto-save-status {
+    background: #1e2328;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  }
+
+  .save-indicator {
+    color: #e6eef8;
+    &.saving { color: #5ba3f5; }
+  }
+
+  .admin-default-name-section .default-name-current { color: #a9bfdb; }
+
+  ::ng-deep mat-form-field {
+    input.mat-mdc-input-element { color: #e6eef8; }
+    input::placeholder { color: rgba(230,238,248,0.5); }
+    .mat-mdc-select-value,
+    .mat-mdc-select-min-line,
+    .mat-mdc-select-placeholder { color: #e6eef8; }
+    .mdc-floating-label,
+    .mat-mdc-floating-label { color: #a9bfdb; }
+    .mdc-line-ripple::before { border-bottom-color: rgba(255,255,255,0.3); }
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing { border-color: rgba(255,255,255,0.3); }
+  }
+
+  button.mat-mdc-raised-button { background-color: #0d47a1; color: #ffffff; }
+  button.mat-mdc-raised-button:hover { background-color: #0b3b86; }
+}
