@@ -202,10 +202,11 @@ export class ScorecardPdfService {
     const backgroundColor = '#D3D3D3';
     const baseFontSize = pdf.getFontSize();
     let currentX = x;
+    const negColor = (v?: string): string | undefined => v?.startsWith('-') ? '#CC0000' : undefined;
     currentX = this.drawCell(pdf, currentX, y, playerColWidth, 8, 'Press', false, backgroundColor);
     for (let h = 0; h < 18; h++) {
       const val = nassau.overallPressHoles[h] ?? undefined;
-      currentX = this.drawCell(pdf, currentX, y, holeColWidth, 8, val, true, backgroundColor, undefined, 0, 0, !!val);
+      currentX = this.drawCell(pdf, currentX, y, holeColWidth, 8, val, true, backgroundColor, negColor(val), 0, 0, !!val);
       if (h === 8) {
         // OUT column: blank for the press row
         currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, '', false, backgroundColor);
@@ -214,7 +215,7 @@ export class ScorecardPdfService {
     const totVal = nassau.overallPressFinal ?? undefined;
     // IN: blank, TOT: press final, HCP: blank, NET: blank
     currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, '',     false, backgroundColor);
-    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, totVal, true,  backgroundColor, undefined, 0, 0, !!totVal);
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, totVal, true,  backgroundColor, negColor(totVal), 0, 0, !!totVal);
     pdf.setFontSize(baseFontSize);
     currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, '', false, backgroundColor);
     currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, '', false, backgroundColor);
@@ -240,25 +241,26 @@ export class ScorecardPdfService {
     const backgroundColor = '#D3D3D3';
     const baseFontSize = pdf.getFontSize();
     let currentX = x;
+    const negColor = (v?: string): string | undefined => v?.startsWith('-') ? '#CC0000' : undefined;
     currentX = this.drawCell(pdf, currentX, y, playerColWidth, 8, 'Nassau', false, backgroundColor);
     for (let h = 0; h < 18; h++) {
       const val = nassau.holeStatus[h] ?? undefined;
       if (val?.includes('/')) pdf.setFontSize(5.5);
-      currentX = this.drawCell(pdf, currentX, y, holeColWidth, 8, val, true, backgroundColor, undefined, 0, 0, !!val);
+      currentX = this.drawCell(pdf, currentX, y, holeColWidth, 8, val, true, backgroundColor, negColor(val), 0, 0, !!val);
       pdf.setFontSize(baseFontSize);
       if (h === 8) {
         const outVal = nassau.frontNineStatus ?? undefined;
         if (outVal?.includes('/')) pdf.setFontSize(5.5);
-        currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, outVal, true, backgroundColor, undefined, 0, 0, !!outVal);
+        currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, outVal, true, backgroundColor, negColor(outVal), 0, 0, !!outVal);
         pdf.setFontSize(baseFontSize);
       }
     }
     const inVal  = nassau.backNineStatus  ?? undefined;
     const totVal = nassau.overallStatus   ?? undefined;
     if (inVal?.includes('/'))  pdf.setFontSize(5.5);
-    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, inVal,  true, backgroundColor, undefined, 0, 0, !!inVal);
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, inVal,  true, backgroundColor, negColor(inVal), 0, 0, !!inVal);
     pdf.setFontSize(baseFontSize);
-    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, totVal, true, backgroundColor, undefined, 0, 0, !!totVal);
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, totVal, true, backgroundColor, negColor(totVal), 0, 0, !!totVal);
     pdf.setFontSize(baseFontSize);
     currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, '', false, backgroundColor);
     currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, '', false, backgroundColor);
@@ -284,6 +286,7 @@ export class ScorecardPdfService {
     // Track whether any score has been entered; only show cumulative once scoring starts.
     let hasStarted = false;
     let runningTotal = 0;
+    const negColor = (v?: string): string | undefined => v?.startsWith('-') ? '#CC0000' : undefined;
 
     for (let h = 0; h < 18; h++) {
       const holeRel = result.holes[h]?.relToPar ?? null;
@@ -292,14 +295,14 @@ export class ScorecardPdfService {
         runningTotal += holeRel;
       }
       const val = hasStarted ? formatOneBallValue(runningTotal) : undefined;
-      currentX = this.drawCell(pdf, currentX, y, holeColWidth, 8, val, true, undefined, undefined, 0, 0, !!val);
+      currentX = this.drawCell(pdf, currentX, y, holeColWidth, 8, val, true, undefined, negColor(val), 0, 0, !!val);
       if (h === 8) {
         currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, '');
       }
     }
     const totVal = formatOneBallValue(result.total);
     currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, '');
-    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, totVal, true, undefined, undefined, 0, 0, !!totVal);
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, totVal, true, undefined, negColor(totVal), 0, 0, !!totVal);
     currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, '');
     currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, '');
     return y + 8;
@@ -472,9 +475,9 @@ export class ScorecardPdfService {
     const hcpText = player.rochIndex > 0 ? Math.round(player.rochIndex).toString() : undefined;
     const netText = hasAnyScore && grossTotal > 0 ? netTotal.toString() : undefined;
     currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, inText,  true, undefined, undefined, 0, 0, !!inText);
-    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, totText, true, undefined, undefined, 0, 0, !!totText);
-    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, hcpText, true);
-    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, netText, true, undefined, undefined, 0, 0, !!netText);
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, totText, true, undefined, undefined, 0, 0, false, false, !!totText);
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, hcpText, true, undefined, undefined, 0, 0, false, false, !!hcpText);
+    currentX = this.drawCell(pdf, currentX, y, totalColWidth, 8, netText, true, undefined, undefined, 0, 0, false, false, !!netText);
 
     return y + 8;
   }
@@ -495,7 +498,8 @@ export class ScorecardPdfService {
     strokeCount: number = 0, 
     differentialStrokeCount: number = 0,
     bold: boolean = false,
-    scoreStyle: boolean = false
+    scoreStyle: boolean = false,
+    totalStyle: boolean = false
   ): number {
     if (backgroundColor) {
       pdf.setFillColor(backgroundColor);
@@ -538,7 +542,22 @@ export class ScorecardPdfService {
       }
 
       const prevFontSize = pdf.getFontSize();
-      if (scoreStyle) {
+      if (totalStyle) {
+        // Summary column (TOT/HCP/NET): auto-fit largest bold font that fills the cell
+        pdf.setFont('helvetica', 'bold');
+        let fs = 13;
+        pdf.setFontSize(fs);
+        while (fs > 5 && pdf.getTextWidth(text) > width - 1.5) {
+          fs -= 0.5;
+          pdf.setFontSize(fs);
+        }
+        const tw = pdf.getTextWidth(text);
+        const textX = x + (width - tw) / 2;
+        const textY = y + (height / 2) + 1.5;
+        pdf.text(text, textX, textY);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(prevFontSize);
+      } else if (scoreStyle) {
         // Score digits: bold, slightly larger, left-centre positioning
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(prevFontSize + 3);

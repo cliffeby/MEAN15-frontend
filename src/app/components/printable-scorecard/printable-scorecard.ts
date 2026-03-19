@@ -23,7 +23,7 @@ import { MatchData, ScorecardData } from '../../models/scorecard.interface';
 import { getMemberScorecard } from '../../utils/score-entry-utils';
 import { getGroupSizes } from '../../utils/pair-utils';
 import { calculateOneBall } from '../../utils/one-ball.utils';
-import { calculateMatchWinners, MatchWinnersResult } from '../../utils/match-winners.utils';
+import { calculateMatchWinners, MatchWinnersResult, calculatePlayerScoreToPar, calculateSkins, SkinResult } from '../../utils/match-winners.utils';
 
 @Component({
   selector: 'app-printable-scorecard',
@@ -60,6 +60,11 @@ export class PrintableScorecardComponent implements OnInit {
   private foursomes: (PrintablePlayer | null)[][] = [];
   private rawScoreByMember: Map<string, any> = new Map();
   private groupWinners: MatchWinnersResult[] = [];
+  private globalIndoWinnerIds: string[] = [];
+  private globalIndoWinnerNames: string[] = [];
+  private globalIndoScore: number | null = null;
+  private grossSkins: SkinResult[] = [];
+  private netSkins: SkinResult[] = [];
 
   // Email draft state
   showEmailPreview = false;
@@ -350,9 +355,10 @@ export class PrintableScorecardComponent implements OnInit {
         distances: this.scorecard.yards || Array(18).fill(0)
       };
 
-      // Compute & persist match winners for each group
+      // Pass 1: compute 1-ball and 2-ball winners per group (indo will be replaced globally)
       this.foursomes = foursomes;
       this.groupWinners = [];
+      this.clearWinnersForAllPlayers();
       for (const group of foursomes) {
         const realPlayers = group.filter((p): p is PrintablePlayer => p !== null);
         const lowestHcp = realPlayers.length > 0
@@ -360,10 +366,53 @@ export class PrintableScorecardComponent implements OnInit {
           : 0;
         const ob1 = calculateOneBall(group[0] ?? null, group[1] ?? null, scorecardData, this.handicapService, lowestHcp);
         const ob2 = calculateOneBall(group[2] ?? null, group[3] ?? null, scorecardData, this.handicapService, lowestHcp);
-        const winners = calculateMatchWinners(group, scorecardData, this.handicapService, ob1, ob2);
-        this.groupWinners.push(winners);
-        this.persistWinners(group, winners);
+        this.groupWinners.push(calculateMatchWinners(group, scorecardData, this.handicapService, ob1, ob2));
       }
+
+      // Pass 2: cross-group indo — single lowest individual net-to-par wins; if tied all share 1st; no 2nd place
+      this.globalIndoWinnerIds = [];
+      this.globalIndoWinnerNames = [];
+      this.globalIndoScore = null;
+      const allNets: { p: PrintablePlayer; score: number }[] = [];
+      for (const group of foursomes) {
+        for (const p of group) {
+          if (!p) continue;
+          const score = calculatePlayerScoreToPar(p, scorecardData, this.handicapService);
+          if (score !== null) allNets.push({ p, score });
+        }
+      }
+      if (allNets.length > 0) {
+        const globalBest = Math.min(...allNets.map(x => x.score));
+        this.globalIndoScore = globalBest;
+        for (const { p, score } of allNets) {
+          if (score === globalBest) {
+            this.globalIndoWinnerIds.push(p.member._id);
+            this.globalIndoWinnerNames.push(`${p.member.firstName} ${p.member.lastName || ''}`.trim());
+          }
+        }
+        // Replace each group's per-group indo with the global result
+        for (let i = 0; i < this.groupWinners.length; i++) {
+          const groupIds = foursomes[i].filter((p): p is PrintablePlayer => p !== null).map(p => p.member._id);
+          const thisIds = this.globalIndoWinnerIds.filter(id => groupIds.includes(id));
+          const thisNames = thisIds.map(id => {
+            const p = foursomes[i].find(pl => pl?.member._id === id);
+            return p ? `${p.member.firstName} ${p.member.lastName || ''}`.trim() : '';
+          }).filter(Boolean);
+          this.groupWinners[i] = { ...this.groupWinners[i], indoWinners: thisIds, indoWinnerNames: thisNames };
+        }
+      }
+
+      // Persist winner flags (with global indo applied)
+      for (let i = 0; i < foursomes.length; i++) {
+        this.persistWinners(foursomes[i], this.groupWinners[i]);
+      }
+
+      // Compute skins across all players
+      const allPlayersFlat = foursomes.flat().filter((p): p is PrintablePlayer => p !== null);
+      const uniquePlayers = allPlayersFlat.filter((p, idx, arr) => arr.findIndex(q => q.member._id === p.member._id) === idx);
+      const skins = calculateSkins(uniquePlayers, scorecardData, this.handicapService);
+      this.grossSkins = skins.grossSkins;
+      this.netSkins = skins.netSkins;
 
       // Expose email callback so the PDF preview window can trigger it
       (window as any).__scorecardEmail = () => this.prepareEmail();
@@ -402,20 +451,66 @@ export class PrintableScorecardComponent implements OnInit {
 
     this.emailSubject = `Your Scorecard – ${matchName} (${datePlayed})`;
 
-    const winnersHtml = this.groupWinners.map((w, i) => {
-      const label = this.foursomes.length > 1 ? `Group ${i + 1} — ` : '';
-      const line = (title: string, names: string[]) =>
-        `<p><strong>${label}${title}:</strong> ${names.length ? names.join(', ') : 'No scores yet'}</p>`;
-      return line('1-Ball', w.oneBallWinnerNames)
-           + line('2-Ball', w.twoBallWinnerNames)
-           + line('Individual Net', w.indoWinnerNames);
+    const fmt = (score: number | null): string => {
+      if (score === null) return '';
+      if (score === 0) return ' (E)';
+      return score > 0 ? ` (+${score})` : ` (${score})`;
+    };
+    const teamStr = (names: string[]) => names.join(' + ');
+
+    // 2-Ball: one line per group — winning team name(s) + combined score-to-par
+    const twoBallLines = this.groupWinners.map(w =>
+      w.twoBallWinnerNames.length
+        ? `<p>${teamStr(w.twoBallWinnerNames)}${fmt(w.twoBallScore)}</p>`
+        : '<p>No scores yet</p>'
+    ).join('');
+
+    // 1-Ball: per group — 1st place, then optional 2nd (only when 1st was not a tie)
+    const oneBallLines = this.groupWinners.map(w => {
+      if (w.oneBallFirstNames.length === 0) return '<p>No scores yet</p>';
+      let html = `<p>${teamStr(w.oneBallFirstNames)}${fmt(w.oneBallFirstScore)}</p>`;
+      if (w.oneBallSecondNames.length > 0) {
+        html += `<p style="padding-left:1em;color:#666">${teamStr(w.oneBallSecondNames)}${fmt(w.oneBallSecondScore)}</p>`;
+      }
+      return html;
     }).join('');
 
+    // Individual Net: global winner(s) + score-to-par
+    const indoLine = this.globalIndoWinnerNames.length
+      ? `<p>${this.globalIndoWinnerNames.join(', ')}${fmt(this.globalIndoScore)}</p>`
+      : '<p>No scores yet</p>';
+
+    // Skins — group multiple holes under one player entry
+    const skinLines = (skins: SkinResult[]) => {
+      if (!skins.length) return '<p>No skins</p>';
+      const map = new Map<string, number[]>();
+      for (const s of skins) {
+        if (!map.has(s.playerName)) map.set(s.playerName, []);
+        map.get(s.playerName)!.push(s.hole);
+      }
+      return Array.from(map.entries())
+        .map(([name, holes]) => {
+          const sorted = holes.slice().sort((a, b) => a - b);
+          const label = sorted.length === 1 ? 'Hole' : 'Holes';
+          return `<p>${name} — ${label} ${sorted.join(', ')}</p>`;
+        })
+        .join('');
+    };
+
+    const winnersHtml =
+      `<p><strong>2-Ball</strong></p>${twoBallLines}` +
+      `<p><strong>1-Ball</strong></p>${oneBallLines}` +
+      `<p><strong>Individual Net</strong></p>${indoLine}` +
+      `<p><strong>Gross Skins</strong></p>${skinLines(this.grossSkins)}` +
+      `<p><strong>Net Skins</strong></p>${skinLines(this.netSkins)}`;
+
+
     this.emailHtml = `
-<p>Hi,</p>
 <p>Results for <strong>${matchName}</strong> on ${datePlayed}:</p>
 ${winnersHtml}
-<p>Good golfing!</p>
+<p></p>
+<p></p>
+<p>Protect the field!</p>
 `.trim();
 
     this.showEmailPreview = true;
@@ -449,6 +544,15 @@ ${winnersHtml}
 
   cancelEmail(): void {
     this.showEmailPreview = false;
+  }
+
+  private clearWinnersForAllPlayers(): void {
+    this.rawScoreByMember.forEach((rawScore) => {
+      if (!rawScore?._id) return;
+      this.scoreService.update(rawScore._id, { ...rawScore, wonOneBall: false, wonTwoBall: false, wonIndo: false }).subscribe({
+        error: (err: any) => console.warn('Failed to clear winner flags:', err),
+      });
+    });
   }
 
   private persistWinners(
