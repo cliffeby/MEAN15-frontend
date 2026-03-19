@@ -19,8 +19,6 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
 
 import { ConfigurationService } from '../../services/configuration.service';
 import { AppConfig, ConfigSection, ConfigField } from '../../models/app-config.interface';
-import { UserService} from '../../services/userService';
-import { User } from '../../models/users';
 
 @Component({
   selector: 'app-admin-configuration',
@@ -51,14 +49,6 @@ export class AdminConfigurationComponent implements OnInit, OnDestroy {
   apiUrl = environment.apiUrl;
   dbLabel = 'Azure Cosmos DB (MongoDB API)'; // Static label, update as needed
   defaultName: string = '';
-  users: User[] = [];
-  selectedUser: User | null = null;
-  leagueOptions = [
-    { value: 'Premier', label: 'Friday' },
-    { value: 'Championship', label: 'Swindle' },
-    { value: 'League One', label: 'Rochester' }
-  ];
-  isUpdatingLeague = false;
   configForm!: FormGroup;
   selectedTab = 0;
   autoSaveEnabled = true;
@@ -70,8 +60,7 @@ export class AdminConfigurationComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private configService: ConfigurationService,
-    private snackBar: MatSnackBar,
-    private userService: UserService
+    private snackBar: MatSnackBar
   ) {
     this.originalConfig = this.configService.getCurrentConfig();
   }
@@ -83,7 +72,6 @@ export class AdminConfigurationComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.buildForm();
     this.setupAutoSave();
-    this.loadUsers();
     this.loadDefaultName();
   }
 
@@ -95,37 +83,6 @@ export class AdminConfigurationComponent implements OnInit, OnDestroy {
   saveDefaultName(name: string): void {
     this.defaultName = name;
     localStorage.setItem('defaultMatchName', name);
-  }
-
-  loadUsers(): void {
-    this.userService.getAll().subscribe({
-      next: (res) => {
-        this.users = res.users || [];
-      },
-      error: () => {
-        this.snackBar.open('Failed to load users', 'Close', { duration: 3000 });
-      }
-    });
-  }
-
-  selectUser(user: User): void {
-    this.selectedUser = user;
-  }
-
-  updateLeague(league: string): void {
-    if (!this.selectedUser?._id) return;
-    this.isUpdatingLeague = true;
-    this.userService.updateLeague(this.selectedUser._id, league).subscribe({
-      next: (res) => {
-        this.selectedUser = res.user;
-        this.isUpdatingLeague = false;
-        this.snackBar.open('League updated', 'Close', { duration: 2000 });
-      },
-      error: () => {
-        this.isUpdatingLeague = false;
-        this.snackBar.open('Failed to update league', 'Close', { duration: 3000 });
-      }
-    });
   }
 
   ngOnDestroy(): void {

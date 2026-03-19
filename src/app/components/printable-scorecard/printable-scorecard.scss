@@ -189,6 +189,23 @@
               font-size: 12px;
             }
 
+            .attachment-chip {
+              display: inline-flex;
+              align-items: center;
+              gap: 3px;
+              background: #fce4ec;
+              border-radius: 4px;
+              padding: 2px 8px;
+              font-size: 12px;
+
+              mat-icon {
+                font-size: 14px;
+                width: 14px;
+                height: 14px;
+                color: #c62828;
+              }
+            }
+
             .no-recipients {
               color: #999;
             }

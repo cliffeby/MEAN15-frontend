@@ -27,7 +27,7 @@ export class ScorecardPdfService {
     scorecard: ScorecardData,
     players: PrintablePlayer[] | (PrintablePlayer | null)[][],
     options: PdfGenerationOptions = {}
-  ): Promise<void> {
+  ): Promise<string | undefined> {
     // Debug: log received players/groups
     console.log('generateScorecardPDF called. Players param:', Array.isArray(players[0]) ? (players as PrintablePlayer[][]).map(group => group.length) : (players as PrintablePlayer[]).length);
     const pdf = new jsPDF({
@@ -85,10 +85,14 @@ export class ScorecardPdfService {
       new Date(match.teeTime)
     );
     
+    const base64 = options.returnBase64
+      ? (pdf.output('datauristring') as string).split(',')[1]
+      : undefined;
+
     if (options.openInNewWindow) {
       const pdfBlob = pdf.output('blob');
       const previewWindow = this.printService.openPdfPreview(pdfBlob, filename);
-      
+
       if (!previewWindow) {
         // Fallback if popup blocked
         pdf.save(filename);
@@ -96,6 +100,8 @@ export class ScorecardPdfService {
     } else {
       pdf.save(filename);
     }
+
+    return base64;
   }
 
 

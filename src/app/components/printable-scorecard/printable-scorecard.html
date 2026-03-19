@@ -76,6 +76,17 @@
               <div class="email-body" [innerHTML]="emailHtml"></div>
             </div>
 
+            <div class="email-field">
+              <span class="email-label">Attach:</span>
+              <span class="email-value">
+                @if (pdfBase64) {
+                  <span class="attachment-chip"><mat-icon>picture_as_pdf</mat-icon>scorecard.pdf</span>
+                } @else {
+                  <em class="no-recipients">Scorecard not generated yet — generate it first</em>
+                }
+              </span>
+            </div>
+
             <div class="email-actions">
               <button mat-raised-button color="primary" (click)="sendEmail()" [disabled]="emailSending || emailRecipients.length === 0">
                 <mat-icon>send</mat-icon>

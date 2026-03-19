@@ -65,6 +65,7 @@ export class PrintableScorecardComponent implements OnInit {
   private globalIndoScore: number | null = null;
   private grossSkins: SkinResult[] = [];
   private netSkins: SkinResult[] = [];
+  protected pdfBase64: string | null = null;
 
   // Email draft state
   showEmailPreview = false;
@@ -418,12 +419,13 @@ export class PrintableScorecardComponent implements OnInit {
       (window as any).__scorecardEmail = () => this.prepareEmail();
 
       // Generate PDF using the service for all foursomes
-      await this.pdfService.generateScorecardPDF(
+      const pdfBase64 = await this.pdfService.generateScorecardPDF(
         matchData,
         scorecardData,
         foursomes,
-        { openInNewWindow: true }
+        { openInNewWindow: true, returnBase64: true }
       );
+      this.pdfBase64 = pdfBase64 ?? null;
 
       this.snackBar.open('Scorecards ready - choose Download, Email, or Print from the preview window!', 'Close', { duration: 5000 });
 
@@ -528,6 +530,9 @@ ${winnersHtml}
       subject: this.emailSubject,
       htmlContent: this.emailHtml,
       personalize: false,
+      ...(this.pdfBase64 ? {
+        attachments: [{ name: 'scorecard.pdf', contentType: 'application/pdf', contentInBase64: this.pdfBase64 }],
+      } : {}),
     }).subscribe({
       next: (res) => {
         this.emailSending = false;

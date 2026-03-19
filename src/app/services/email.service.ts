@@ -13,6 +13,12 @@ export interface EmailStatus {
   senderAddress: string;
 }
 
+export interface EmailAttachment {
+  name: string;
+  contentType: string;
+  contentInBase64: string;
+}
+
 export interface SendEmailRequest {
   memberIds: string[];
   subject: string;
@@ -20,6 +26,7 @@ export interface SendEmailRequest {
   plainTextContent?: string;
   personalize?: boolean;
   cc?: string[];
+  attachments?: EmailAttachment[];
 }
 
 export interface SendAllEmailRequest {

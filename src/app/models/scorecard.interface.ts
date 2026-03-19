@@ -52,4 +52,6 @@ export interface ScorecardData {
 export interface PdfGenerationOptions {
   filename?: string;
   openInNewWindow?: boolean;
+  /** When true, the method returns the PDF as a raw base64 string (no data-URI prefix). */
+  returnBase64?: boolean;
 }
