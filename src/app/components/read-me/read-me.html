@@ -35,9 +35,9 @@
                     Tees are determined by defaults set in the members profile.</li>
                 <li>Set the match date.
                 <li>Add players by opening the Member Selection dialog.</li>
-                <li>Create pairings. Snake pairings match the worst and best golfers together. Radom offers three 
+                <li>Create pairings. Snake pairings match the worst and best golfers together. Radom offers three
                     options to balance the teams based on player handicaps.</li>
-                
+
                 <li>Save the match. The match appears in the list and is ready for scoring or editing.</li>
             </ol>
             <h4>Print Scorecards and Score a Match</h4>
@@ -83,6 +83,11 @@
                     triggers audit logging, and updates any downstream calculations (rochIndex updates if enabled).</li>
                 <li>To correct a score later: open the match → edit the player's entry → change hole values → save.
                     Corrections are audited.</li>
+                <li>If detailed scores were entered, the system rcalculates
+                    net scores, nassau, one-ball, two-ball, and indo status 
+                    and updates winners accordingly. An email to all participants can be sent with the final results. In addition to the winners,
+                    it includes skins and net skins by player.  A marked up scorecard for the match is included.</li>
+
             </ol>
 
             <h4>Tips & Best Practices</h4>
@@ -156,9 +161,11 @@
                 <span class="match-detail-indent">
                     - Add Match: This create a new match by selecting players, course/tee (scorecard),<br>
                     and date. Pairings and foresomes are based on player handicaps using an A and B player<br>
-                    method with aggregate two-man team hanicaps as balanced as possible. The match name is partially <br>
+                    method with aggregate two-man team hanicaps as balanced as possible. The match name is partially
+                    <br>
                     pre-filled based on a default value and the week number, but can be edited.<br>
-                    Use the buttons to add members and create pairs and foursomes. The Re Pair option offersoptionsto equalize the handicap differential between teams.<br><br>
+                    Use the buttons to add members and create pairs and foursomes. The Re Pair option offersoptionsto
+                    equalize the handicap differential between teams.<br><br>
                     The match date defaults to the current date.
                 </span>
             </p>
@@ -173,8 +180,7 @@
             <p>
                 The Scores section allows you to view and manage individual score entries. You can filter scores by
                 member, match, or date range. Score details include hole-by-hole breakdowns, net scores, and
-                adjustments. You can edit scores to correct errors or update handicaps, with all changes logged for
-                audit purposes.
+                adjustments.
             <h4>HCaps Features</h4>
             <p>
                 The HCaps section provides a view of player handicaps and indexes. Columns are selectable and
@@ -197,12 +203,12 @@
             <p>
                 The Users section allows you to manage user accounts, roles, and permissions. You can create new user
                 accounts, assign roles (e.g., admin, user), and control access to different features of the application
-                based on these roles. 
-                    <strong>Developer</strong> has full access.  It also sees the code documents.
-                    <strong>Admin</strong> has access to all features but is relieved from seeing the code documents. 
-                    <strong>Fieldhand</strong> can create matches and add members.  It cannot delete anything.  
-                    Fieldhand and User roles do not have access to the Users to for changing role permissions.
-                    <strong>User</strong> has view-only access to matches, members, and scores.    
+                based on these roles.
+                <strong>Developer</strong> has full access. It also sees the code documents.
+                <strong>Admin</strong> has access to all features but is relieved from seeing the code documents.
+                <strong>Fieldhand</strong> can create matches and add members. It cannot delete anything.
+                Fieldhand and User roles do not have access to the Users to for changing role permissions.
+                <strong>User</strong> has view-only access to matches, members, and scores.
             </p>
             <h4>Application Configuration</h4>
             <p>
@@ -210,11 +216,13 @@
             <p>
                 The Admin section provides tools for managing system settings, user roles, and permissions. You can
                 The Configuration section allows you to manage application settings, user roles, and permissions. You
-                can configure default values for matches, set up email templates, and adjust other system-wide settings to
+                can configure default values for matches, set up email templates, and adjust other system-wide settings
+                to
                 tailor the application to your club's needs.
             </p>
             <p>
-                The audit log tracks all changes to matches, scores, and handicaps, including who made the change and when. This is
+                The audit log tracks all changes to matches, scores, and handicaps, including who made the change and
+                when. This is
                 useful for accountability and troubleshooting.
             </p>
         </div>
