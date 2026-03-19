@@ -9,7 +9,6 @@ export interface DisplayConfig {
   hcapListPageSize: number;
   memberListPageSize: number;
   showMemberPhotos: boolean;
-  showScoreDetails: boolean;
   defaultDateFormat: string;
   timeZone: string;
   theme: 'light' | 'dark' | 'auto';

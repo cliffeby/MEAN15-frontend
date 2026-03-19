@@ -82,7 +82,6 @@ describe('MemberListComponent', () => {
       matchListPageSize: 20,
       hcapListPageSize: 20,
       showMemberPhotos: true,
-      showScoreDetails: true,
       defaultDateFormat: 'MM/dd/yyyy',
       timeZone: 'America/New_York',
       theme: 'light'

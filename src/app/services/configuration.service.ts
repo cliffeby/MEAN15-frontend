@@ -18,7 +18,6 @@ export class ConfigurationService {
       hcapListPageSize: 20,
       memberListPageSize: 15,
       showMemberPhotos: true,
-      showScoreDetails: true,
       defaultDateFormat: 'MM/dd/yyyy',
       timeZone: 'America/New_York',
       theme: 'auto'
@@ -128,14 +127,6 @@ export class ConfigurationService {
       key: 'showMemberPhotos',
       label: 'Show member photos',
       description: 'Display member photos in lists and forms',
-      type: 'boolean',
-      section: 'display',
-      defaultValue: true
-    },
-    {
-      key: 'showScoreDetails',
-      label: 'Show score details',
-      description: 'Display detailed score information in expanded views',
       type: 'boolean',
       section: 'display',
       defaultValue: true
