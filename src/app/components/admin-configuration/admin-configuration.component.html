@@ -52,20 +52,6 @@
           <form [formGroup]="configForm">
             <div [formGroupName]="section.key">
               <div class="fields-grid">
-                <!-- API/DB info tile for Data Management group -->
-                <ng-container *ngIf="section.key === 'data'">
-                  <mat-card class="field-card info-tile">
-                    <mat-card-content>
-                      <div class="field-header">
-                        <label class="field-label">Current API and database in use</label>
-                      </div>
-                      <div class="info-content">
-                        <div><strong>API Server:</strong> <span>{{ apiUrl }}</span></div>
-                        <div><strong>Database:</strong> <span>{{ dbLabel }}</span></div>
-                      </div>
-                    </mat-card-content>
-                  </mat-card>
-                </ng-container>
                 <mat-card *ngFor="let field of getFieldsForSection(section.key)" class="field-card">
                   <mat-card-content>
                     <div class="field-header">

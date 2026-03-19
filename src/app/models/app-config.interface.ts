@@ -3,7 +3,6 @@ export interface AppConfig {
   pagination: PaginationConfig;
   scoring: ScoringConfig;
   ui: UIConfig;
-  data: DataConfig;
 }
 
 export interface DisplayConfig {
@@ -43,13 +42,7 @@ export interface UIConfig {
   sessionTimeout: number; // in minutes
 }
 
-export interface DataConfig {
-  enableDataCaching: boolean;
-  cacheExpirationTime: number; // in minutes
-  autoRefreshInterval: number; // in seconds
-  enableBackups: boolean;
-  maxBackupFiles: number;
-}
+
 
 export interface ConfigSection {
   key: keyof AppConfig;

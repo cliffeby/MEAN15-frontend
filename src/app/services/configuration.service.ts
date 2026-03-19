@@ -46,13 +46,6 @@ export class ConfigurationService {
       autoSaveInterval: 30,
       sessionTimeout: 60
     },
-    data: {
-      enableDataCaching: true,
-      cacheExpirationTime: 15,
-      autoRefreshInterval: 300,
-      enableBackups: true,
-      maxBackupFiles: 5
-    }
   };
 
   // Reactive configuration state
@@ -87,7 +80,6 @@ export class ConfigurationService {
   public paginationConfig = computed(() => this.configSignal().pagination);
   public scoringConfig = computed(() => this.configSignal().scoring);
   public uiConfig = computed(() => this.configSignal().ui);
-  public dataConfig = computed(() => this.configSignal().data);
 
   // Configuration sections for the admin UI
   public configSections: ConfigSection[] = [
@@ -115,12 +107,6 @@ export class ConfigurationService {
       description: 'Customize the look and feel of the application',
       icon: 'palette'
     },
-    {
-      key: 'data',
-      title: 'Data Management',
-      description: 'Configure data caching, backups, and refresh settings',
-      icon: 'storage'
-    }
   ];
 
   // Configuration fields for dynamic form generation
@@ -311,34 +297,6 @@ export class ConfigurationService {
       defaultValue: 60
     },
 
-    // Data settings
-    {
-      key: 'enableDataCaching',
-      label: 'Enable data caching',
-      description: 'Cache frequently accessed data for better performance',
-      type: 'boolean',
-      section: 'data',
-      defaultValue: true
-    },
-    {
-      key: 'cacheExpirationTime',
-      label: 'Cache expiration (minutes)',
-      description: 'How long to keep cached data before refreshing',
-      type: 'number',
-      section: 'data',
-      validation: { min: 1, max: 120, required: true },
-      defaultValue: 15
-    },
-    {
-      key: 'autoRefreshInterval',
-      label: 'Auto refresh interval (seconds)',
-      description: 'Automatically refresh data every X seconds (0 = disabled)',
-      type: 'number',
-      section: 'data',
-      validation: { min: 0, max: 3600, required: true },
-      defaultValue: 300
-    },
-
   ];
 
   constructor() {
@@ -504,7 +462,7 @@ export class ConfigurationService {
       if (!config || typeof config !== 'object') return false;
       
       // Validate each section exists
-      const requiredSections: (keyof AppConfig)[] = ['display', 'pagination', 'scoring', 'ui', 'data'];
+      const requiredSections: (keyof AppConfig)[] = ['display', 'pagination', 'scoring', 'ui'];
       for (const section of requiredSections) {
         if (!config[section] || typeof config[section] !== 'object') {
           return false;
