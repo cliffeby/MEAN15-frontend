@@ -2,7 +2,6 @@ export interface AppConfig {
   display: DisplayConfig;
   pagination: PaginationConfig;
   scoring: ScoringConfig;
-  ui: UIConfig;
 }
 
 export interface DisplayConfig {
@@ -13,6 +12,7 @@ export interface DisplayConfig {
   showScoreDetails: boolean;
   defaultDateFormat: string;
   timeZone: string;
+  theme: 'light' | 'dark' | 'auto';
 }
 
 export interface PaginationConfig {
@@ -33,14 +33,7 @@ export interface ScoringConfig {
   scoreEntryMode: 'detailed' | 'simple';
 }
 
-export interface UIConfig {
-  theme: 'light' | 'dark' | 'auto';
-  enableAnimations: boolean;
-  showTooltips: boolean;
-  confirmDeletions: boolean;
-  autoSaveInterval: number; // in seconds
-  sessionTimeout: number; // in minutes
-}
+
 
 
 

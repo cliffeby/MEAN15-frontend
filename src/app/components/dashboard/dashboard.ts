@@ -105,7 +105,7 @@ export class Dashboard implements OnInit, AfterViewInit {
   });
 
   // Update the currentTheme property to use the uiConfig computed property.
-  currentTheme = this.configService.uiConfig().theme;
+  currentTheme = this.configService.displayConfig().theme;
 
   constructor() {
     // Add effect to debug signal changes

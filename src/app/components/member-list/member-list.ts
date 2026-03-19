@@ -132,14 +132,14 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
     
     // Apply theme from configuration and listen for changes
     try {
-      const ui = this.configService.uiConfig();
-      this.applyTheme(ui.theme);
+      const display = this.configService.displayConfig();
+      this.applyTheme(display.theme);
     } catch (e) {
       // ignore in test environments if signals are unavailable
     }
 
     this.configSub = this.configService.config$.subscribe((cfg) => {
-      this.applyTheme(cfg.ui.theme);
+      this.applyTheme(cfg.display.theme);
       // Ensure dynamic updates for pagination
       this.pageSize = cfg.display.memberListPageSize;
       this.pageSizeOptions = cfg.pagination.pageSizeOptions;

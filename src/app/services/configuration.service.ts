@@ -20,7 +20,8 @@ export class ConfigurationService {
       showMemberPhotos: true,
       showScoreDetails: true,
       defaultDateFormat: 'MM/dd/yyyy',
-      timeZone: 'America/New_York'
+      timeZone: 'America/New_York',
+      theme: 'auto'
     },
     pagination: {
       enablePagination: true,
@@ -37,14 +38,6 @@ export class ConfigurationService {
       handicapCalculationMethod: 'usga',
       roundingPrecision: 1,
       scoreEntryMode: 'detailed'
-    },
-    ui: {
-      theme: 'auto',
-      enableAnimations: true,
-      showTooltips: true,
-      confirmDeletions: true,
-      autoSaveInterval: 30,
-      sessionTimeout: 60
     },
   };
 
@@ -79,8 +72,6 @@ export class ConfigurationService {
   public displayConfig = computed(() => this.configSignal().display);
   public paginationConfig = computed(() => this.configSignal().pagination);
   public scoringConfig = computed(() => this.configSignal().scoring);
-  public uiConfig = computed(() => this.configSignal().ui);
-
   // Configuration sections for the admin UI
   public configSections: ConfigSection[] = [
     {
@@ -100,12 +91,6 @@ export class ConfigurationService {
       title: 'Scoring Configuration',
       description: 'Set up scoring rules and rochIndex calculations',
       icon: 'emoji_events'
-    },
-    {
-      key: 'ui',
-      title: 'User Interface',
-      description: 'Customize the look and feel of the application',
-      icon: 'palette'
     },
   ];
 
@@ -249,52 +234,18 @@ export class ConfigurationService {
       defaultValue: 'simple'
     },
 
-    // UI settings
     {
       key: 'theme',
       label: 'Theme',
       description: 'Visual theme for the application',
       type: 'select',
-      section: 'ui',
+      section: 'display',
       options: [
         { value: 'light', label: 'Light Theme' },
         { value: 'dark', label: 'Dark Theme' },
         { value: 'auto', label: 'Auto (System)' }
       ],
       defaultValue: 'auto'
-    },
-    {
-      key: 'enableAnimations',
-      label: 'Enable animations',
-      description: 'Use smooth transitions and animations in the UI',
-      type: 'boolean',
-      section: 'ui',
-      defaultValue: true
-    },
-    {
-      key: 'showTooltips',
-      label: 'Show tooltips',
-      description: 'Display helpful tooltips on hover',
-      type: 'boolean',
-      section: 'ui',
-      defaultValue: true
-    },
-    {
-      key: 'confirmDeletions',
-      label: 'Confirm deletions',
-      description: 'Ask for confirmation before deleting items',
-      type: 'boolean',
-      section: 'ui',
-      defaultValue: true
-    },
-    {
-      key: 'sessionTimeout',
-      label: 'Session timeout (minutes)',
-      description: 'Automatically log out after this period of inactivity',
-      type: 'number',
-      section: 'ui',
-      validation: { min: 15, max: 480, required: true },
-      defaultValue: 60
     },
 
   ];
@@ -462,7 +413,7 @@ export class ConfigurationService {
       if (!config || typeof config !== 'object') return false;
       
       // Validate each section exists
-      const requiredSections: (keyof AppConfig)[] = ['display', 'pagination', 'scoring', 'ui'];
+      const requiredSections: (keyof AppConfig)[] = ['display', 'pagination', 'scoring'];
       for (const section of requiredSections) {
         if (!config[section] || typeof config[section] !== 'object') {
           return false;

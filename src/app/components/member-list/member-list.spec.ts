@@ -72,8 +72,8 @@ describe('MemberListComponent', () => {
     preferencesSpy.getMemberListColumnPreferences.and.returnValue([]);
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    configServiceSpy = jasmine.createSpyObj('ConfigurationService', ['displayConfig', 'paginationConfig', 'uiConfig'], {
-      config$: of({ ui: { theme: 'light' }, display: { memberListPageSize: 20 }, pagination: { pageSizeOptions: [10, 20, 50] } })
+    configServiceSpy = jasmine.createSpyObj('ConfigurationService', ['displayConfig', 'paginationConfig'], {
+      config$: of({ display: { memberListPageSize: 20, theme: 'light' }, pagination: { pageSizeOptions: [10, 20, 50] } })
     });
     
     // Set up spy return values with all required properties
@@ -84,7 +84,8 @@ describe('MemberListComponent', () => {
       showMemberPhotos: true,
       showScoreDetails: true,
       defaultDateFormat: 'MM/dd/yyyy',
-      timeZone: 'America/New_York'
+      timeZone: 'America/New_York',
+      theme: 'light'
     });
     configServiceSpy.paginationConfig.and.returnValue({ 
       pageSizeOptions: [10, 20, 50, 100],
@@ -93,14 +94,7 @@ describe('MemberListComponent', () => {
       showFirstLastButtons: true,
       defaultPageSize: 10 // Added to satisfy PaginationConfig interface
     });
-    configServiceSpy.uiConfig.and.returnValue({ 
-      theme: 'light',
-      enableAnimations: true,
-      showTooltips: true,
-      confirmDeletions: true,
-      autoSaveInterval: 30,
-      sessionTimeout: 60
-    });
+
     
     memberServiceSpy.getAll.and.returnValue(of(mockMembers));
     memberServiceSpy.delete.and.returnValue(of({}));
