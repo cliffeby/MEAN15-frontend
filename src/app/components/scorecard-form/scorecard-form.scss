@@ -134,3 +134,52 @@ form {
     font-size: 16px;
   }
 }
+
+:host(.dark-theme) {
+  .scorecard-form-container {
+    background: #0f1113;
+    color: #e6eef8;
+  }
+
+  mat-card {
+    background: #161a1e;
+    color: #e6eef8;
+  }
+
+  .form-section {
+    h3 { color: #cde7ff; }
+    .section-description { color: #a9bfdb; }
+  }
+
+  .form-actions {
+    border-top-color: rgba(255,255,255,0.08);
+  }
+
+  .mat-mdc-form-field {
+    .mat-mdc-input-element,
+    input.mat-mdc-input-element {
+      color: #e6eef8;
+    }
+    input::placeholder { color: rgba(230,238,248,0.5); }
+    .mat-mdc-form-field-hint { color: rgba(230,238,248,0.6); }
+  }
+
+  button,
+  .mat-mdc-button-base {
+    color: #e6eef8;
+  }
+
+  .mat-mdc-raised-button {
+    background-color: #0d47a1;
+    color: #ffffff;
+  }
+
+  .mat-mdc-raised-button:hover {
+    background-color: #0b3b86;
+  }
+
+  .mat-mdc-stroked-button {
+    border-color: rgba(255,255,255,0.2);
+    color: #dbeeff;
+  }
+}

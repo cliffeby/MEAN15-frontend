@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostBinding } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -13,6 +13,7 @@ import { Store } from '@ngrx/store';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Scorecard } from '../../models/scorecard.interface';
+import { ConfigurationService } from '../../services/configuration.service';
 import * as ScorecardActions from '../../store/actions/scorecard.actions';
 import * as ScorecardSelectors from '../../store/selectors/scorecard.selectors';
 
@@ -34,6 +35,9 @@ import * as ScorecardSelectors from '../../store/selectors/scorecard.selectors';
   styleUrls: ['./scorecard-form.scss']
 })
 export class ScorecardFormComponent implements OnInit, OnDestroy {
+  @HostBinding('class.dark-theme') isDarkTheme = false;
+  private mqListener: ((e: MediaQueryListEvent) => void) | null = null;
+
   scorecardForm: FormGroup;
   isEditMode = false;
   scorecardId: string | null = null;
@@ -46,7 +50,8 @@ export class ScorecardFormComponent implements OnInit, OnDestroy {
     private store: Store,
     private router: Router,
     private route: ActivatedRoute,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private configService: ConfigurationService
   ) {
     this.scorecardForm = this.fb.group({
       course: ['', [Validators.required, Validators.minLength(2)]],
@@ -65,6 +70,13 @@ export class ScorecardFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    try {
+      this.applyTheme(this.configService.displayConfig().theme);
+    } catch { /* ignore in test environments */ }
+    this.configService.config$.pipe(takeUntil(this.destroy$)).subscribe(cfg => {
+      this.applyTheme(cfg.display.theme);
+    });
+
     this.scorecardId = this.route.snapshot.paramMap.get('id');
     this.isEditMode = !!this.scorecardId;
 
@@ -130,9 +142,38 @@ export class ScorecardFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.mqListener && typeof window !== 'undefined' && (window as any).matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', this.mqListener);
+      this.mqListener = null;
+    }
     this.destroy$.next();
     this.destroy$.complete();
     // Clear current scorecard when leaving the form
     this.store.dispatch(ScorecardActions.clearCurrentScorecard());
+  }
+
+  private applyTheme(theme: string) {
+    if (!theme) theme = 'auto';
+    if (theme === 'dark') {
+      this.setDark(true);
+    } else if (theme === 'light') {
+      this.setDark(false);
+    } else {
+      if (typeof window !== 'undefined' && (window as any).matchMedia) {
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        this.setDark(!!mq.matches);
+        if (this.mqListener) {
+          mq.removeEventListener('change', this.mqListener);
+        }
+        this.mqListener = (e: MediaQueryListEvent) => this.setDark(!!e.matches);
+        mq.addEventListener('change', this.mqListener);
+      } else {
+        this.setDark(false);
+      }
+    }
+  }
+
+  private setDark(val: boolean) {
+    this.isDarkTheme = val;
   }
 }

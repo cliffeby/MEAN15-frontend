@@ -75,3 +75,54 @@
     }
   }
 }
+
+:host(.dark-theme) {
+  .scorecard-list-container {
+    background: #0f1113;
+    color: #e6eef8;
+  }
+
+  mat-card {
+    background: #161a1e;
+    color: #e6eef8;
+  }
+
+  .table-container {
+    table {
+      background: #161a1e;
+
+      th {
+        background-color: #1e2328;
+        color: #a9bfdb;
+      }
+
+      td {
+        color: #e6eef8;
+        border-bottom-color: rgba(255,255,255,0.06);
+      }
+
+      tr:hover td {
+        background-color: rgba(255,255,255,0.04);
+      }
+    }
+  }
+
+  .no-data {
+    color: #a9bfdb;
+    mat-icon { opacity: 0.6; color: #a9bfdb; }
+  }
+
+  button,
+  .mat-mdc-button-base {
+    color: #e6eef8;
+  }
+
+  .mat-mdc-raised-button {
+    background-color: #0d47a1;
+    color: #ffffff;
+  }
+
+  .mat-mdc-raised-button:hover {
+    background-color: #0b3b86;
+  }
+}

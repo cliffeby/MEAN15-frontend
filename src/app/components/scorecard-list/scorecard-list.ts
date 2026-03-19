@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostBinding } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,9 +8,10 @@ import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { Scorecard } from '../../models/scorecard.interface';
 import { AuthService } from '../../services/authService';
+import { ConfigurationService } from '../../services/configuration.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 import * as ScorecardActions from '../../store/actions/scorecard.actions';
 import * as ScorecardSelectors from '../../store/selectors/scorecard.selectors';
@@ -31,7 +32,11 @@ import { map } from 'rxjs/operators';
   templateUrl: './scorecard-list.html',
   styleUrls: ['./scorecard-list.scss']
 })
-export class ScorecardListComponent implements OnInit {
+export class ScorecardListComponent implements OnInit, OnDestroy {
+  @HostBinding('class.dark-theme') isDarkTheme = false;
+  private mqListener: ((e: MediaQueryListEvent) => void) | null = null;
+  private configSub: Subscription | null = null;
+
   scorecards$: Observable<Scorecard[]>;
   sortedScorecards$: Observable<Scorecard[]>;
   loading$: Observable<boolean>;
@@ -43,7 +48,8 @@ export class ScorecardListComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private snackBar: MatSnackBar,
-    private confirmDialog: ConfirmDialogService
+    private confirmDialog: ConfirmDialogService,
+    private configService: ConfigurationService
   ) {
     this.scorecards$ = this.store.select(ScorecardSelectors.selectAllScorecards);
     this.sortedScorecards$ = this.scorecards$.pipe(
@@ -64,11 +70,24 @@ export class ScorecardListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Dispatch action to load scorecards
     this.store.dispatch(ScorecardActions.loadScorecards());
+    try {
+      this.applyTheme(this.configService.displayConfig().theme);
+    } catch { /* ignore in test environments */ }
+    this.configSub = this.configService.config$.subscribe(cfg => {
+      this.applyTheme(cfg.display.theme);
+    });
   }
 
- get isAuthorized(): boolean {
+  ngOnDestroy(): void {
+    this.configSub?.unsubscribe();
+    if (this.mqListener && typeof window !== 'undefined' && (window as any).matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', this.mqListener);
+      this.mqListener = null;
+    }
+  }
+
+  get isAuthorized(): boolean {
     return this.authService.hasMinRole('fieldhand');
   }
   get isAuthorizedToDelete(): boolean {
@@ -115,5 +134,30 @@ export class ScorecardListComponent implements OnInit {
         });
       }
     });
+  }
+
+  private applyTheme(theme: string) {
+    if (!theme) theme = 'auto';
+    if (theme === 'dark') {
+      this.setDark(true);
+    } else if (theme === 'light') {
+      this.setDark(false);
+    } else {
+      if (typeof window !== 'undefined' && (window as any).matchMedia) {
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        this.setDark(!!mq.matches);
+        if (this.mqListener) {
+          mq.removeEventListener('change', this.mqListener);
+        }
+        this.mqListener = (e: MediaQueryListEvent) => this.setDark(!!e.matches);
+        mq.addEventListener('change', this.mqListener);
+      } else {
+        this.setDark(false);
+      }
+    }
+  }
+
+  private setDark(val: boolean) {
+    this.isDarkTheme = val;
   }
 }
