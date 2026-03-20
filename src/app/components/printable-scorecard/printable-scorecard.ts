@@ -365,8 +365,9 @@ export class PrintableScorecardComponent implements OnInit {
         const lowestHcp = realPlayers.length > 0
           ? this.handicapService.getLowestHandicapInGroup(realPlayers)
           : 0;
-        const ob1 = calculateOneBall(group[0] ?? null, group[1] ?? null, scorecardData, this.handicapService, lowestHcp);
-        const ob2 = calculateOneBall(group[2] ?? null, group[3] ?? null, scorecardData, this.handicapService, lowestHcp);
+        // useFullNet=true: winners use each player's own full handicap strokes (not Nassau differential)
+        const ob1 = calculateOneBall(group[0] ?? null, group[1] ?? null, scorecardData, this.handicapService, lowestHcp, true);
+        const ob2 = calculateOneBall(group[2] ?? null, group[3] ?? null, scorecardData, this.handicapService, lowestHcp, true);
         this.groupWinners.push(calculateMatchWinners(group, scorecardData, this.handicapService, ob1, ob2));
       }
 
@@ -460,22 +461,26 @@ export class PrintableScorecardComponent implements OnInit {
     };
     const teamStr = (names: string[]) => names.join(' + ');
 
-    // 2-Ball: one line per group — winning team name(s) + combined score-to-par
-    const twoBallLines = this.groupWinners.map(w =>
-      w.twoBallWinnerNames.length
-        ? `<p>${teamStr(w.twoBallWinnerNames)}${fmt(w.twoBallScore)}</p>`
-        : '<p>No scores yet</p>'
-    ).join('');
+    // 2-Ball: sorted lowest score first (best result on top)
+    const twoBallLines = [...this.groupWinners]
+      .sort((a, b) => (a.twoBallScore ?? Infinity) - (b.twoBallScore ?? Infinity))
+      .map(w =>
+        w.twoBallWinnerNames.length
+          ? `<p>${teamStr(w.twoBallWinnerNames)}${fmt(w.twoBallScore)}</p>`
+          : '<p>No scores yet</p>'
+      ).join('');
 
-    // 1-Ball: per group — 1st place, then optional 2nd (only when 1st was not a tie)
-    const oneBallLines = this.groupWinners.map(w => {
-      if (w.oneBallFirstNames.length === 0) return '<p>No scores yet</p>';
-      let html = `<p>${teamStr(w.oneBallFirstNames)}${fmt(w.oneBallFirstScore)}</p>`;
-      if (w.oneBallSecondNames.length > 0) {
-        html += `<p style="padding-left:1em;color:#666">${teamStr(w.oneBallSecondNames)}${fmt(w.oneBallSecondScore)}</p>`;
-      }
-      return html;
-    }).join('');
+    // 1-Ball: sorted lowest score first (best result on top)
+    const oneBallLines = [...this.groupWinners]
+      .sort((a, b) => (a.oneBallFirstScore ?? Infinity) - (b.oneBallFirstScore ?? Infinity))
+      .map(w => {
+        if (w.oneBallFirstNames.length === 0) return '<p>No scores yet</p>';
+        let html = `<p>${teamStr(w.oneBallFirstNames)}${fmt(w.oneBallFirstScore)}</p>`;
+        if (w.oneBallSecondNames.length > 0) {
+          html += `<p style="padding-left:1em;color:#666">${teamStr(w.oneBallSecondNames)}${fmt(w.oneBallSecondScore)}</p>`;
+        }
+        return html;
+      }).join('');
 
     // Individual Net: global winner(s) + score-to-par
     const indoLine = this.globalIndoWinnerNames.length

@@ -134,20 +134,23 @@ export class ScorecardPdfService {
 
     // Pre-compute one-ball (net better-ball) results for each two-man team.
     // Team 1 = slots 0 & 1, Team 2 = slots 2 & 3.
-    // Pass lowestHandicap so differential strokes (the slash marks) are used.
+    // useFullNet=true: One Ball row uses each player's own full handicap strokes.
+    // (Slash marks on player rows are drawn separately in drawPlayerRow using lowestHandicap.)
     const oneBallTeam1 = calculateOneBall(
       players[0] ?? null,
       players[1] ?? null,
       scorecard,
       this.handicapService,
-      lowestHandicap
+      lowestHandicap,
+      true
     );
     const oneBallTeam2 = calculateOneBall(
       players[2] ?? null,
       players[3] ?? null,
       scorecard,
       this.handicapService,
-      lowestHandicap
+      lowestHandicap,
+      true
     );
 
     // Pre-compute Nassau (fourball match-play) status from the two teams' one-ball results.

@@ -74,7 +74,7 @@ export function calculatePlayerScoreToPar(
  * Determine winners across 1-ball, 2-ball, and individual net for one foursome group.
  *
  * group layout: [team1player1, team1player2, team2player1, team2player2] (nulls OK).
- * oneBallTeam1/2 must already be computed with differential strokes (totals are rel-to-par).
+ * oneBallTeam1/2 must be computed with useFullNet=true (full individual net strokes, not Nassau differential).
  *
  * Sweep rule: if one team wins 2-ball OUTRIGHT (not tied), they are excluded from
  * 1-ball contention entirely. The remaining team(s) compete for 1-ball normally.
