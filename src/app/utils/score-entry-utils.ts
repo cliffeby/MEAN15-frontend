@@ -60,6 +60,57 @@ export function getMatchCourseName(match: Match): string {
 }
 
 /**
+ * Re-orders members to match foursome/team display order:
+ * For each foursome group: Team1-A, Team1-B, Team2-A, Team2-B
+ * stored format [A1, A2, B1, B2] → display order [A1, B2, A2, B1]
+ */
+export function sortMembersByFoursomeTeamOrder<T extends { _id?: string }>(
+  members: T[],
+  foursomeIdsTEMP: string[][] | undefined,
+): T[] {
+  if (!foursomeIdsTEMP || foursomeIdsTEMP.length === 0) {
+    return members;
+  }
+
+  const ordered: T[] = [];
+  const used = new Set<string>();
+
+  for (const group of foursomeIdsTEMP) {
+    let displayOrder: string[];
+    if (group.length === 4) {
+      // Team A = [group[0], group[3]], Team B = [group[1], group[2]]
+      // Order: Team1-A, Team1-B, Team2-A, Team2-B
+      displayOrder = [group[0], group[3], group[1], group[2]];
+    } else if (group.length === 3) {
+      // Team A = [group[0], group[2]], loneA = group[1]
+      // Order: Team1-A, Team1-B, lone-A
+      displayOrder = [group[0], group[2], group[1]];
+    } else {
+      displayOrder = [...group];
+    }
+
+    for (const id of displayOrder) {
+      if (id && !used.has(id)) {
+        const member = members.find((m) => m._id === id);
+        if (member) {
+          ordered.push(member);
+          used.add(id);
+        }
+      }
+    }
+  }
+
+  // Append any members not covered by foursomeIdsTEMP (e.g. no pairing set)
+  for (const member of members) {
+    if (member._id && !used.has(member._id)) {
+      ordered.push(member);
+    }
+  }
+
+  return ordered;
+}
+
+/**
  * Maps members to playerScores with optional memberScorecard enrichment.
  * Used in both score-entry and simple-score-entry.
  */

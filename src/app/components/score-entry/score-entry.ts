@@ -37,7 +37,7 @@ import {
   getBackNinePar,
   calculatePlayerTotals,
 } from '../../utils/score-utils';
-import { getMemberScorecard, getMatchScorecard } from '../../utils/score-entry-utils';
+import { getMemberScorecard, getMatchScorecard, sortMembersByFoursomeTeamOrder } from '../../utils/score-entry-utils';
 
 @Component({
   selector: 'app-score-entry',
@@ -448,8 +448,9 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
           return { ...member, memberScorecard };
         });
         this.setupHoleColumns();
-        console.log('Members with course scorecard!!!!!!!!!:', membersWithCourseScorecard);
-        this.setupPlayerScores(membersWithCourseScorecard);
+        const sortedMembers = sortMembersByFoursomeTeamOrder(membersWithCourseScorecard, match.foursomeIdsTEMP);
+        console.log('Members with course scorecard (sorted):', sortedMembers);
+        this.setupPlayerScores(sortedMembers);
         this.loadExistingScores();
       },
       error: (error) => {

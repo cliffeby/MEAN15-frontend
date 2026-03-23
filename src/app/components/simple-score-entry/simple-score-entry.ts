@@ -24,7 +24,7 @@ import { AuthService } from '../../services/authService';
 import { Match } from '../../models/match';
 import { Member } from '../../models/member';
 import { Score } from '../../models/score';
-import { getMemberScorecard, getMatchScorecard } from '../../utils/score-entry-utils';
+import { getMemberScorecard, getMatchScorecard, sortMembersByFoursomeTeamOrder } from '../../utils/score-entry-utils';
 import { calculateDifferential } from '../../utils/score-utils';
 import { buildScoreData } from '../../utils/score-data-builder';
 import { HandicapCalculationService } from '../../services/handicap-calculation.service';
@@ -184,8 +184,11 @@ export class SimpleScoreEntryComponent implements OnInit {
           return { ...member, memberScorecard };
         });
 
+        // Sort members into foursome/team display order before building playerScores
+        const sortedMembersWithScorecard = sortMembersByFoursomeTeamOrder(membersWithCourseScorecard, match.foursomeIdsTEMP);
+
         // Setup player scores with member-specific tees/rating/slope
-        this.playerScores = membersWithCourseScorecard.map(({ memberScorecard, ...member }) => ({
+        this.playerScores = sortedMembersWithScorecard.map(({ memberScorecard, ...member }) => ({
           member, // Adding the missing `member` property
           totalScore: null,
           scores: [], //Added to get score-entry working with by-hole scores in simple mode
