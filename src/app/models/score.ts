@@ -13,10 +13,6 @@ export interface Score {
   rochIndexAfterRound: number;
   differentialForRound: number | undefined;
   courseAdjustedDifferentialForRound: number | undefined;
-  
-  // rochIndex: number;
-  // rochCapToday?: number;
-  // usgaCapToday?: number;
   netScore: number;
   wonTwoBall?: boolean;
   wonOneBall?: boolean;

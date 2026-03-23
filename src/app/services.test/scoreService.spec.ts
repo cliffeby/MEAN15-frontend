@@ -18,13 +18,16 @@ const mockScores: Score[] = [
     scoresToPost: [],
     postedScore: 70,
     scores: [],
-    rochIndex: 10,
-    usgaIndex: 12.5,
+    rochIndexB4Round: 10,
+    usgaIndexB4Round: 12.5,
     scoringMethod: 'byHole',
     author: { id: 'test-id', email: 'test@example.com', name: 'Test User' },
-    usgaDifferentialToday: 0,
-    rochDifferentialToday: 0,
-    othersDifferentialToday: 0,
+    usgaIndexAfterRound: 0,
+    rochIndexAfterRound: 0,
+    differentialForRound: 0,
+    courseAdjustedDifferentialForRound: 0,
+    netScore: 72
+
   },
   {
     _id: 's2',
@@ -34,13 +37,15 @@ const mockScores: Score[] = [
     scoresToPost: [],
     postedScore: 70,
     scores: [],
-    rochIndex: 10,
-    usgaIndex: 12.5,
+    rochIndexB4Round: 10,
+    usgaIndexB4Round: 12.5,
     scoringMethod: 'byHole',
     author: { id: 'test-id', email: 'test@example.com', name: 'Test User' },
-    usgaDifferentialToday: 0,
-    rochDifferentialToday: 0,
-    othersDifferentialToday: 0,
+    usgaIndexAfterRound: 0,
+    rochIndexAfterRound: 0,
+    differentialForRound: 0,
+    courseAdjustedDifferentialForRound: 0,
+    netScore: 66
   },
 ];
 

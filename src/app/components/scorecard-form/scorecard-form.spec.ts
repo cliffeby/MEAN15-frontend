@@ -3,7 +3,8 @@ import { ScorecardFormComponent } from './scorecard-form';
 import { Store } from '@ngrx/store';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { of } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ConfigurationService } from '../../services/configuration.service';
 
 const mockScorecard = {
   _id: '1',
@@ -21,10 +22,17 @@ describe('ScorecardFormComponent', () => {
   let fixture: ComponentFixture<ScorecardFormComponent>;
   let storeSpy: jasmine.SpyObj<Store<any>>;
   let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
+  let routerSpy: jasmine.SpyObj<Router>;
+  let configServiceSpy: jasmine.SpyObj<ConfigurationService>;
 
   beforeEach(async () => {
     storeSpy = jasmine.createSpyObj('Store', ['select', 'dispatch']);
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
+    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    configServiceSpy = jasmine.createSpyObj('ConfigurationService', ['displayConfig', 'paginationConfig'], {
+      config$: of({ display: { theme: 'light' }, pagination: { pageSizeOptions: [10, 20, 50] } })
+    });
+    configServiceSpy.displayConfig.and.returnValue({ theme: 'light' } as any);
     const activatedRouteStub = { snapshot: { paramMap: { get: (k: string) => null } } } as unknown as ActivatedRoute;
 
     storeSpy.select.and.callFake((selector: any) => {
@@ -38,7 +46,9 @@ describe('ScorecardFormComponent', () => {
       providers: [
         { provide: Store, useValue: storeSpy },
         { provide: MatSnackBar, useValue: snackBarSpy },
-        { provide: ActivatedRoute, useValue: activatedRouteStub }
+        { provide: ActivatedRoute, useValue: activatedRouteStub },
+        { provide: Router, useValue: routerSpy },
+        { provide: ConfigurationService, useValue: configServiceSpy }
       ]
     }).compileComponents();
 

@@ -33,6 +33,7 @@ describe('MemberListComponent', () => {
       usgaIndex: 10,
       fullName: 'Alice Smith',
       user: 'user1',
+      usgaIndexB4Round: 10,
     },
     {
       _id: '2',
@@ -42,6 +43,8 @@ describe('MemberListComponent', () => {
       usgaIndex: 20,
       fullName: 'Bob Jones',
       user: 'user2',
+      usgaIndexB4Round: 20,
+
     },
   ];
 
@@ -147,7 +150,7 @@ describe('MemberListComponent', () => {
     component.sortField = 'usgaIndex';
     component.sortDirection = 'desc';
     component.applyFilter();
-    expect(component.filteredMembers[0].usgaIndex).toBe(20);
+    expect(component.filteredMembers[0].usgaIndexB4Round).toBe(20);
   });
 
   it('should show snackbar if member loading fails', fakeAsync(() => {

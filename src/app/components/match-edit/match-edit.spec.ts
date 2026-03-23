@@ -11,6 +11,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MemberService } from '../../services/memberService';
 import { AuthService } from '../../services/authService';
 import { ScorecardService } from '../../services/scorecardService';
+import { MatchService } from '../../services/matchService';
 
 const mockMatch = {
   _id: '1',
@@ -34,6 +35,7 @@ describe('MatchEditComponent', () => {
   let memberServiceSpy: jasmine.SpyObj<MemberService>;
   let authServiceSpy: jasmine.SpyObj<AuthService>;
   let scorecardServiceSpy: jasmine.SpyObj<ScorecardService>;
+  let matchServiceSpy: jasmine.SpyObj<MatchService>;
   let routerSpy: jasmine.SpyObj<Router>;
   let activatedRouteStub: any;
 
@@ -42,10 +44,13 @@ describe('MatchEditComponent', () => {
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
     dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
     memberServiceSpy = jasmine.createSpyObj('MemberService', ['getAll']);
-    authServiceSpy = jasmine.createSpyObj('AuthService', ['hasRole', 'getAuthorObject']);
+    authServiceSpy = jasmine.createSpyObj('AuthService', ['hasRole', 'getAuthorObject', 'token']);
     authServiceSpy.hasRole.and.returnValue(false);
     authServiceSpy.getAuthorObject.and.returnValue({ id: 'u1', email: 'test@example.com', name: 'Test User' });
+    authServiceSpy.token.and.returnValue('mock-token');
     scorecardServiceSpy = jasmine.createSpyObj('ScorecardService', ['getAll']);
+    matchServiceSpy = jasmine.createSpyObj('MatchService', ['update']);
+    matchServiceSpy.update.and.returnValue(of({}));
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
     activatedRouteStub = { snapshot: { paramMap: { get: (k: string) => k === 'id' ? '1' : null }, queryParams: {} } };
 
@@ -67,6 +72,7 @@ describe('MatchEditComponent', () => {
         { provide: MemberService, useValue: memberServiceSpy },
         { provide: AuthService, useValue: authServiceSpy },
         { provide: ScorecardService, useValue: scorecardServiceSpy },
+        { provide: MatchService, useValue: matchServiceSpy },
         { provide: Router, useValue: routerSpy },
         { provide: ActivatedRoute, useValue: activatedRouteStub },
         FormBuilder

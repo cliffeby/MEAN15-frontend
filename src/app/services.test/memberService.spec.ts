@@ -12,7 +12,7 @@ const mockMembers: Member[] = [
     lastName: 'Doe',
     Email: 'john@example.com',
     author: { id: 'cce', email: 'cce@example.com', name: 'CCE' },
-    usgaIndex: 10,
+    usgaIndexB4Round: 10,
     hidden: false,
   },
   {
@@ -21,7 +21,7 @@ const mockMembers: Member[] = [
     lastName: 'Smith',
     Email: 'jane@example.com',
     author: { id: 'cce', email: 'cce@example.com', name: 'CCE' },
-    usgaIndex: 12,
+    usgaIndexB4Round: 12,
     hidden: false,
   },
 ];
@@ -123,7 +123,7 @@ describe('MemberService', () => {
         lastName: 'Brown',
         Email: 'alice@example.com',
         author: { id: 'test-id', email: 'test@example.com', name: 'Test User' },
-        usgaIndex: 15,
+        usgaIndexB4Round: 15,
         hidden: false,
       };
 
@@ -147,7 +147,7 @@ describe('MemberService', () => {
         lastName: 'Doe',
         Email: 'john@example.com',
         author: { id: 'cce', email: 'cce@example.com', name: 'CCE' },
-        usgaIndex: 10,
+        usgaIndexB4Round: 10,
         hidden: false,
       };
 
@@ -170,7 +170,7 @@ describe('MemberService', () => {
         lastName: 'Brown',
         Email: 'alice@example.com',
         author: { id: 'cce', email: 'cce@example.com', name: 'CCE' },
-        usgaIndex: 15,
+        usgaIndexB4Round: 15,
         hidden: false,
       };
 

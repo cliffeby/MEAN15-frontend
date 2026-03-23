@@ -3,6 +3,9 @@ import { ScorecardListComponent } from './scorecard-list';
 import { Store } from '@ngrx/store';
 import { AuthService } from '../../services/authService';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
+import { ConfigurationService } from '../../services/configuration.service';
+import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 import { of } from 'rxjs';
 
 const mockScorecards = [
@@ -34,11 +37,22 @@ describe('ScorecardListComponent', () => {
   let storeSpy: jasmine.SpyObj<Store<any>>;
   let authServiceSpy: jasmine.SpyObj<AuthService>;
   let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
+  let routerSpy: jasmine.SpyObj<Router>;
+  let configServiceSpy: jasmine.SpyObj<ConfigurationService>;
+  let confirmDialogSpy: jasmine.SpyObj<ConfirmDialogService>;
 
   beforeEach(async () => {
     storeSpy = jasmine.createSpyObj('Store', ['select', 'dispatch']);
     authServiceSpy = jasmine.createSpyObj('AuthService', ['hasMinRole']);
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
+    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    configServiceSpy = jasmine.createSpyObj('ConfigurationService', ['displayConfig', 'paginationConfig'], {
+      config$: of({ display: { theme: 'light' }, pagination: { pageSizeOptions: [10, 20, 50] } })
+    });
+    configServiceSpy.displayConfig.and.returnValue({ theme: 'light' } as any);
+    confirmDialogSpy = jasmine.createSpyObj('ConfirmDialogService', ['confirmDelete', 'confirmAction']);
+    confirmDialogSpy.confirmDelete.and.returnValue(of(true));
+    confirmDialogSpy.confirmAction.and.returnValue(of(true));
 
     storeSpy.select.and.callFake((selector: any) => {
       if (selector.name === 'selectAllScorecards') return of(mockScorecards);
@@ -53,7 +67,10 @@ describe('ScorecardListComponent', () => {
       providers: [
         { provide: Store, useValue: storeSpy },
         { provide: AuthService, useValue: authServiceSpy },
-        { provide: MatSnackBar, useValue: snackBarSpy }
+        { provide: MatSnackBar, useValue: snackBarSpy },
+        { provide: Router, useValue: routerSpy },
+        { provide: ConfigurationService, useValue: configServiceSpy },
+        { provide: ConfirmDialogService, useValue: confirmDialogSpy }
       ]
     }).compileComponents();
 

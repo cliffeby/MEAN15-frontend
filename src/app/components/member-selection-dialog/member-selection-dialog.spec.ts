@@ -8,8 +8,8 @@ describe('MemberSelectionDialogComponent', () => {
   let dialogRefSpy: jasmine.SpyObj<MatDialogRef<MemberSelectionDialogComponent>>;
 
   const members = [
-    { _id: 'm1', firstName: 'Alice', lastName: 'Smith', Email: 'alice@example.com', usgaIndex: 10 },
-    { _id: 'm2', firstName: 'Bob', lastName: 'Jones', Email: 'bob@example.com', usgaIndex: 20 }
+    { _id: 'm1', firstName: 'Alice', lastName: 'Smith', Email: 'alice@example.com', usgaIndexB4Round: 10 },
+    { _id: 'm2', firstName: 'Bob', lastName: 'Jones', Email: 'bob@example.com', usgaIndexB4Round: 20 }
   ] as any;
 
   const data: MemberSelectionDialogData = {
