@@ -38,6 +38,14 @@ body {
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
+// Global dark-theme chip overrides — component ::ng-deep cannot reliably pierce M3 chip encapsulation
+.dark-theme {
+  .mat-mdc-chip .mdc-evolution-chip__text-label { color: #e6eef8 !important; }
+  .mat-mdc-chip.mat-primary .mdc-evolution-chip__text-label { color: #ffffff !important; }
+  .mat-mdc-chip.mat-accent .mdc-evolution-chip__text-label { color: #e6fff9 !important; }
+  .mat-mdc-chip.mat-warn .mdc-evolution-chip__text-label { color: #ffe0e0 !important; }
+}
+
 /* Global: make icons and action buttons inside table rows inherit the row text color
    This ensures icons match row text in light, dark and hover/highlight states
    without duplicating color rules in every component. Targets both MDC and legacy

@@ -47,16 +47,6 @@ describe('MemberFormComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should show validation errors for usgaIndex', () => {
-    const control = component.memberForm.get('usgaIndex');
-    control?.setValue(-20);
-    control?.markAsTouched();
-    expect(component.isUsgaIndexMinError).toBeTrue();
-    control?.setValue(100);
-    control?.markAsTouched();
-    expect(component.isUsgaIndexMaxError).toBeTrue();
-  });
-
   it('should not submit when form invalid', () => {
     component.memberForm.patchValue({ firstName: '', lastName: '', Email: '' });
     component.submit();

@@ -147,3 +147,61 @@
     margin: 16px 0;
   }
 }
+
+:host(.dark-theme) {
+  background: #0f1113;
+  color: #e6eef8;
+
+  // MDC CSS custom properties for Angular Material components
+  --mdc-list-list-item-container-color: #161a1e;
+  --mdc-list-list-item-label-text-color: #e6eef8;
+  --mdc-list-list-item-supporting-text-color: #c4d4e8;
+  --mdc-list-list-item-trailing-supporting-text-color: #a9bfdb;
+  --mdc-list-list-item-leading-icon-color: #e6eef8;
+  --mat-paginator-container-background-color: #1a1e22;
+  --mat-paginator-container-text-color: #e6eef8;
+  --mat-paginator-select-trigger-text-color: #e6eef8;
+  --mat-select-enabled-trigger-text-color: #e6eef8;
+
+  .match-list {
+    background: #0f1113;
+    color: #e6eef8;
+
+    h2 { color: #cde7ff; }
+
+    .no-matches {
+      color: #a9bfdb;
+    }
+  }
+
+  mat-list {
+    background: transparent;
+  }
+
+  mat-list-item {
+    background: #161a1e !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    color: #e6eef8;
+
+    h3.match-title, .match-title { color: #e6eef8; }
+    p, .player-count-line { color: #c4d4e8; }
+    span { color: #e6eef8; }
+  }
+
+  .date-on-right { color: #a9bfdb; }
+  .match-title-row .date-on-right { color: #a9bfdb; }
+  .status-line .date-on-right { color: #a9bfdb; }
+
+  button, .mat-mdc-button-base { color: #e6eef8; }
+  .mat-mdc-raised-button { background-color: #0d47a1; color: #ffffff; }
+  .mat-mdc-raised-button:hover { background-color: #0b3b86; }
+
+  mat-divider { border-top-color: rgba(255,255,255,0.12); }
+
+  mat-paginator {
+    background: #1a1e22;
+    color: #e6eef8;
+  }
+
+  mat-progress-bar { margin: 16px 0; }
+}

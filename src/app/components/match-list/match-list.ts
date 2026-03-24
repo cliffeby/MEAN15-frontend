@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, HostBinding } from '@angular/core';
 import { MatListModule } from '@angular/material/list';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -58,6 +58,8 @@ import {
   ],
 })
 export class MatchListComponent implements OnInit, OnDestroy {
+  @HostBinding('class.dark-theme') isDarkTheme = false;
+  private mqListener: ((e: MediaQueryListEvent) => void) | null = null;
 
   // Removed auto-refresh subscription
   matches$: Observable<Match[]>;
@@ -105,15 +107,9 @@ export class MatchListComponent implements OnInit, OnDestroy {
     this.paginatedMatches$ = this.matches$; // Will be updated in ngOnInit
 
     // Initialize defaults from configuration service
-    console.log('Before applying config, pageSize:', this.pageSize);
     this.configService.config$.pipe(take(1)).subscribe((cfg) => {
-      console.log('Loaded config:', cfg.pagination);
       this.pageSizeOptions = cfg?.pagination?.pageSizeOptions || [5, 10, 20, 50];
-      this.pageSize = cfg?.pagination?.defaultPageSize || this.pageSizeOptions[0];
-      console.log('After applying config, pageSize:', this.pageSize);
-
-      // Force pagination setup after initializing defaults
-      this.setupPagination();
+      this.pageSize = cfg?.display?.matchListPageSize || this.pageSizeOptions[0];
     });
   }
 
@@ -125,6 +121,36 @@ export class MatchListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    // Apply theme from configuration
+    try { this.applyTheme(this.configService.displayConfig().theme); } catch { /* ignore in tests */ }
+
+    // Subscribe to configuration changes once (long-lived subscription)
+    this.configService.config$.pipe(takeUntil(this.unsubscribe$)).subscribe((cfg) => {
+      this.applyTheme(cfg.display.theme);
+      const newPageSizeOptions = cfg?.pagination?.pageSizeOptions;
+      const newShowFirstLast = cfg?.pagination?.showFirstLastButtons;
+      const newShowPageSizeOptions = cfg?.pagination?.showPageSizeOptions;
+      const newMatchPageSize = cfg?.display?.matchListPageSize;
+
+      if (
+        Array.isArray(newPageSizeOptions) &&
+        JSON.stringify(newPageSizeOptions) !== JSON.stringify(this.pageSizeOptions)
+      ) {
+        this.pageSizeOptions = newPageSizeOptions;
+      }
+      if (typeof newShowFirstLast === 'boolean') {
+        this.showFirstLastButtons = newShowFirstLast;
+      }
+      if (typeof newShowPageSizeOptions === 'boolean') {
+        this.showPageSizeOptions = newShowPageSizeOptions;
+      }
+      if (typeof newMatchPageSize === 'number' && newMatchPageSize !== this.pageSize) {
+        this.pageSize = newMatchPageSize;
+        this.pageIndex = 0;
+        this.setupPagination();
+      }
+    });
+
     // Read pagination state from query params
     this.route.queryParams.subscribe((params: { [key: string]: any }) => {
       if (params['pageIndex']) {
@@ -159,46 +185,46 @@ export class MatchListComponent implements OnInit, OnDestroy {
     });
     // Dispatch action to load matches
     this.store.dispatch(MatchActions.loadMatches());
+    // Initial pagination setup (after query params and config are applied)
+    this.setupPagination();
   }
 
   private setupPagination(): void {
-    console.log('Setting up pagination with pageSize:', this.pageSize, 'and pageIndex:', this.pageIndex);
-
-    // Setup paginated matches observable
+    // Rebuild the paginated observable using current pageIndex and pageSize
     this.paginatedMatches$ = this.matches$.pipe(
       map((matches) => {
         const startIndex = this.pageIndex * this.pageSize;
-        const paginated = matches.slice(startIndex, startIndex + this.pageSize);
-        console.log('Paginated matches:', paginated);
-        return paginated;
+        return matches.slice(startIndex, startIndex + this.pageSize);
       }),
     );
-
-    // Subscribe to configuration changes so pageSize and paginator options update dynamically
-    this.configService.config$.pipe(takeUntil(this.unsubscribe$)).subscribe((cfg) => {
-      const newPageSizeOptions = cfg?.pagination?.pageSizeOptions;
-      const newShowFirstLast = cfg?.pagination?.showFirstLastButtons;
-      const newShowPageSizeOptions = cfg?.pagination?.showPageSizeOptions;
-
-      if (
-        Array.isArray(newPageSizeOptions) &&
-        JSON.stringify(newPageSizeOptions) !== JSON.stringify(this.pageSizeOptions)
-      ) {
-        this.pageSizeOptions = newPageSizeOptions;
-      }
-
-      if (typeof newShowFirstLast === 'boolean') {
-        this.showFirstLastButtons = newShowFirstLast;
-      }
-      if (typeof newShowPageSizeOptions === 'boolean') {
-        this.showPageSizeOptions = newShowPageSizeOptions;
-      }
-    });
   }
 
   ngOnDestroy() {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
+    if (this.mqListener) {
+      window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', this.mqListener);
+      this.mqListener = null;
+    }
+  }
+
+  private applyTheme(theme: string) {
+    if (!theme) theme = 'auto';
+    if (theme === 'dark') {
+      this.isDarkTheme = true;
+    } else if (theme === 'light') {
+      this.isDarkTheme = false;
+    } else {
+      if (typeof window !== 'undefined' && (window as any).matchMedia) {
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        this.isDarkTheme = !!mq.matches;
+        if (this.mqListener) mq.removeEventListener('change', this.mqListener);
+        this.mqListener = (e: MediaQueryListEvent) => { this.isDarkTheme = !!e.matches; };
+        mq.addEventListener('change', this.mqListener);
+      } else {
+        this.isDarkTheme = false;
+      }
+    }
   }
 
   editMatch(id: string) {
