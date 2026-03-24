@@ -24,6 +24,7 @@ import { AuthService } from '../../services/authService';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 import { UserPreferencesService, ColumnPreference } from '../../services/user-preferences.service';
 import { ConfigurationService } from '../../services/configuration.service';
+import { PhonePipe } from '../../pipes/phone.pipe';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -49,6 +50,7 @@ import { Subscription } from 'rxjs';
     MatTooltipModule,
     FormsModule,
     MatPaginatorModule,
+    PhonePipe,
   ],
 })
 export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -203,6 +205,7 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
       { key: 'usgaIndex', label: 'USGA Index', visible: true },
       { key: 'rochIndex', label: 'Handicap', visible: true },
       { key: 'lastDatePlayed', label: 'Last Played', visible: true },
+      { key: 'CellPhone', label: 'Phone', visible: true },
       { key: 'hidden', label: 'Hidden', visible: false },
       { key: 'actions', label: 'Actions', visible: true, fixed: true },
     ];

@@ -43,6 +43,15 @@
     </mat-error>
   </mat-form-field>
 
+  <mat-form-field appearance="fill">
+    <mat-label>Phone</mat-label>
+    <input matInput formControlName="CellPhone" type="tel" required placeholder="(555) 555-5555"
+      (input)="onPhoneInput($event)" />
+    <mat-error *ngIf="memberForm.get('CellPhone')?.hasError('pattern') && memberForm.get('CellPhone')?.touched">
+      Invalid phone number
+    </mat-error>
+  </mat-form-field>
+
   <div class="default-course-tee-section">
     <h3>Default Course/Tee Combinations</h3>
     <div class="course-tee-select-row">

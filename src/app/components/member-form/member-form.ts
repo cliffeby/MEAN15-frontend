@@ -58,6 +58,7 @@ export class MemberFormComponent implements OnInit {
       usgaIndex: [null, [Validators.min(-10), Validators.max(54)]],
       lastDatePlayed: [''],
       Email: ['', [Validators.required, Validators.email]],
+      CellPhone: ['', Validators.pattern(/^\d{10}$/)],
       scorecardsId: [[]],
       hidden: [false],
     });

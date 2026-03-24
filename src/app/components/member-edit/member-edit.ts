@@ -58,6 +58,7 @@ export class MemberEditComponent implements OnInit {
       usgaIndex: [null, [Validators.min(-10), Validators.max(54)]],
       lastDatePlayed: [''],
       Email: ['', [Validators.required, Validators.email]],
+      CellPhone: ['', Validators.pattern(/^\(\d{3}\) \d{3}-\d{4}$/)],
       scorecardsId: [[]],
       hidden: [false],
     });
@@ -84,7 +85,10 @@ export class MemberEditComponent implements OnInit {
               patchMember.lastDatePlayed = date.toISOString().slice(0, 10);
             }
           }
-          this.memberForm.patchValue(patchMember);
+          this.memberForm.patchValue({
+            ...patchMember,
+            CellPhone: this.formatPhone(patchMember.CellPhone),
+          });
           // Support both [{scorecardId}] and [string] for scorecardsId
           let ids: string[] = [];
           if (Array.isArray(member.scorecardsId) && member.scorecardsId.length > 0) {
@@ -108,6 +112,33 @@ export class MemberEditComponent implements OnInit {
       this.memberForm.get('scorecardsId')?.setValue(ids ?? []);
     });
   }
+  private formatPhone(value: string | null | undefined): string {
+    if (!value) return '';
+    const digits = value.replace(/\D/g, '').slice(0, 10);
+    if (digits.length === 10) {
+      return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+    }
+    return value;
+  }
+
+  onPhoneInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const digits = input.value.replace(/\D/g, '').slice(0, 10);
+    let formatted = '';
+    if (digits.length === 0) {
+      formatted = '';
+    } else if (digits.length <= 3) {
+      formatted = `(${digits}`;
+    } else if (digits.length <= 6) {
+      formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    } else {
+      formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+    }
+    input.value = formatted;
+    this.memberForm.get('CellPhone')?.setValue(formatted, { emitEvent: false });
+    this.memberForm.get('CellPhone')?.markAsTouched();
+  }
+
   getCourseTeeName(scorecardIdOrObj: string | { scorecardId: string }): string {
     let id: string | undefined;
     if (typeof scorecardIdOrObj === 'string') {
@@ -150,6 +181,10 @@ export class MemberEditComponent implements OnInit {
     const author = this.authService.getAuthorObject();
     // Ensure scorecardsId is always an array of objects with scorecardId property
     let memberData = { ...this.memberForm.value, author };
+    // Strip phone formatting before saving
+    if (memberData.CellPhone) {
+      memberData.CellPhone = memberData.CellPhone.replace(/\D/g, '');
+    }
     if (memberData.scorecardsId && !Array.isArray(memberData.scorecardsId)) {
       memberData.scorecardsId = [memberData.scorecardsId];
     }

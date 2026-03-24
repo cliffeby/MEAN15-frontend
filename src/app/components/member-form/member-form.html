@@ -27,10 +27,14 @@
       title="Last Date Played" />
   </mat-form-field>
 
-
   <mat-form-field appearance="fill">
     <mat-label>Email</mat-label>
     <input matInput formControlName="Email" type="email" required placeholder="Enter email" title="Email" />
+  </mat-form-field>
+  <mat-form-field appearance="fill">
+
+    <mat-label>Phone</mat-label>
+    <input matInput formControlName="CellPhone" type="tel" required placeholder="Enter phone number" title="Phone " />
   </mat-form-field>
 
   <div class="default-course-tee-section">
@@ -40,7 +44,8 @@
         <mat-label>Courses</mat-label>
         <mat-select #courseSelect [formControl]="courseControl" multiple panelClass="hover-panel"
           (openedChange)="onDropdownOpened($event, courseSelect)">
-           <mat-option *ngFor="let sc of scorecards | sortByCourseTeeName" [value]="sc._id">{{ sc.courseTeeName || 'Unnamed Course' }}</mat-option>
+          <mat-option *ngFor="let sc of scorecards | sortByCourseTeeName" [value]="sc._id">{{ sc.courseTeeName ||
+            'Unnamed Course' }}</mat-option>
         </mat-select>
       </mat-form-field>
     </div>
@@ -53,13 +58,13 @@
     </div>
   </div>
 
-<div class="form-actions">
-  <button mat-raised-button color="primary" type="submit" [disabled]="loading || memberForm.invalid">
-    {{ loading ? 'Saving...' : 'Save Member' }}
-  </button>
-   <button mat-stroked-button type="button" (click)="onCancel()" [disabled]="loading ">
+  <div class="form-actions">
+    <button mat-raised-button color="primary" type="submit" [disabled]="loading || memberForm.invalid">
+      {{ loading ? 'Saving...' : 'Save Member' }}
+    </button>
+    <button mat-stroked-button type="button" (click)="onCancel()" [disabled]="loading ">
       <mat-icon>cancel</mat-icon>
       Cancel
     </button>
-    </div>
+  </div>
 </form>

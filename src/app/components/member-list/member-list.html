@@ -82,6 +82,11 @@
         <th mat-header-cell *matHeaderCellDef mat-sort-header="Email">Email</th>
         <td mat-cell *matCellDef="let member">{{ member.Email }}</td>
       </ng-container>
+            <!-- Phone Column -->
+      <ng-container matColumnDef="CellPhone">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="CellPhone">Phone</th>
+        <td mat-cell *matCellDef="let member">{{ member.CellPhone | phone }} </td>
+      </ng-container>
 
       <!-- GHIN Column -->
       <ng-container matColumnDef="GHIN">

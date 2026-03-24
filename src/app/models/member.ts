@@ -15,6 +15,7 @@ export interface Member {
     name: string;
   };
   Email: string;
+  CellPhone?: string;
   emailBounceStatus?: 'ok' | 'soft_bounce' | 'hard_bounce' | 'suppressed' | 'invalid';
   emailBounceCount?: number;
   emailLastBounceAt?: string;
