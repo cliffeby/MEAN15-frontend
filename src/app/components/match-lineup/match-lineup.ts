@@ -1,10 +1,11 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { Member } from '../../models/member';
 import { pairFourballTeams, pairFourballTeamsRandom, getTeamIndexSum, PairedGroup, RandomPairingCandidate } from '../../utils/pair-utils';
+import { ConfigurationService } from '../../services/configuration.service';
 
 @Component({
   selector: 'app-match-lineup',
@@ -14,6 +15,11 @@ import { pairFourballTeams, pairFourballTeamsRandom, getTeamIndexSum, PairedGrou
   imports: [CommonModule, MatIconModule, MatButtonModule],
 })
 export class MatchLineupComponent {
+  private configService = inject(ConfigurationService);
+
+  private get method(): string {
+    return this.configService.scoringConfig().handicapCalculationMethod;
+  }
   @Input() pairingMode = false;
   ngOnChanges() {
     if (this.pairingMode && this.foursomeIdsTEMP && this.foursomeIdsTEMP.length > 0) {
@@ -63,7 +69,7 @@ export class MatchLineupComponent {
   pairFourballTeams() {
     if (!this.members || !this.lineUpsArray) return;
     this.pairingMode = true;
-    const result = pairFourballTeams(this.members, this.getMemberById.bind(this), this.lineUpsArray);
+    const result = pairFourballTeams(this.members, this.getMemberById.bind(this), this.lineUpsArray, this.method);
     this.pairedTeams = result.pairedTeams;
     this.foursomeIdsTEMP = result.foursomeIdsTEMP;
     this.partnerIdsTEMP = result.partnerIdsTEMP;
@@ -85,7 +91,7 @@ export class MatchLineupComponent {
 
     if (!this.hasRandomPaired) {
       // First press: run 500 trials and store top 3 candidates
-      this.randomCandidates = pairFourballTeamsRandom(this.getMemberById.bind(this), this.lineUpsArray);
+      this.randomCandidates = pairFourballTeamsRandom(this.getMemberById.bind(this), this.lineUpsArray, 500, this.method);
       this.randomCandidateIndex = 0;
       this.hasRandomPaired = true;
     } else {
@@ -106,7 +112,7 @@ export class MatchLineupComponent {
   @Input() foursomeIdsTEMP: string[][] = [];
   @Input() partnerIdsTEMP: string[][] = [];
   getTeamIndexSum(team: string[]): number {
-    return getTeamIndexSum(team, this.getMemberById.bind(this));
+    return getTeamIndexSum(team, this.getMemberById.bind(this), this.method);
   }
   // Removed duplicate pairedTeams property
 
@@ -142,7 +148,8 @@ export class MatchLineupComponent {
   getCompactNameWithIndex(member: Member): string {
     const firstInitial = member.firstName ? member.firstName.charAt(0).toUpperCase() : '';
     const lastName = member.lastName || 'Unknown';
-    const index = typeof member.rochIndexB4Round === 'number' ? member.rochIndexB4Round.toFixed(1) : 'NA';
+    const raw = this.method === 'usga' ? member.usgaIndexB4Round : member.rochIndexB4Round;
+    const index = typeof raw === 'number' ? raw.toFixed(1) : 'NA';
     return `${lastName}, ${firstInitial}(${index})`;
   }
 

@@ -49,16 +49,19 @@ export class MemberUtils {
   }
 
   /**
-   * Validates that a score has valid score and rochIndex data
+   * Validates that a score has valid score and handicap index data
    */
   static isValidScore(score: Score): boolean {
-    return !!(score.score && score.rochIndexB4Round !== undefined);
+    return !!(score.score && (score.rochIndexB4Round !== undefined || score.usgaIndexB4Round !== undefined));
   }
 
   /**
-   * Calculates net score from gross score and rochIndex
+   * Calculates net score from gross score using the stored scoringMethod to select the correct index
    */
   static calculateNetScore(score: Score): number {
-    return score.score - (score.rochIndexB4Round || 0);
+    const index = score.scoringMethod === 'usga'
+      ? (score.usgaIndexB4Round || 0)
+      : (score.rochIndexB4Round || 0);
+    return score.score - index;
   }
 }

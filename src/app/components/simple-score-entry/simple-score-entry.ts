@@ -28,6 +28,7 @@ import { getMemberScorecard, getMatchScorecard, sortMembersByFoursomeTeamOrder }
 import { calculateDifferential } from '../../utils/score-utils';
 import { buildScoreData } from '../../utils/score-data-builder';
 import { HandicapCalculationService } from '../../services/handicap-calculation.service';
+import { ConfigurationService } from '../../services/configuration.service';
 
 
 @Component({
@@ -62,6 +63,7 @@ export class SimpleScoreEntryComponent implements OnInit {
   private scorecardService = inject(ScorecardService);
   private authService = inject(AuthService);
   private handicapCalculationService = inject(HandicapCalculationService);
+  private configService = inject(ConfigurationService);
 
   matchId!: string;
   match: Match | null = null;
@@ -398,8 +400,10 @@ export class SimpleScoreEntryComponent implements OnInit {
   private calculateNetScore(playerIndex: number): void {
     const player = this.playerScores[playerIndex];
     if (player.totalScore !== null) {
-      const rochCap = this.calculateCourseHandicap(player.rochIndexB4Round, player.scSlope);
-      player.netScore = player.totalScore - rochCap;
+      const method = this.configService.scoringConfig().handicapCalculationMethod;
+      const index = method === 'usga' ? player.usgaIndexB4Round : player.rochIndexB4Round;
+      const cap = this.calculateCourseHandicap(index, player.scSlope);
+      player.netScore = player.totalScore - cap;
     } else {
       player.netScore = 0;
     }
@@ -447,12 +451,14 @@ export class SimpleScoreEntryComponent implements OnInit {
         playerScore.scSlope || 113, playerScore.scRating || 72, playerScore.scRating || 72),
       playerScore,
     );
+    const method = this.configService.scoringConfig().handicapCalculationMethod;
     const scoreData = buildScoreData(
       playerScore,
       this.match!,
       this.scorecard!,
       this.entryMode,
-      this.authService.getAuthorObject()
+      this.authService.getAuthorObject(),
+      method,
     );
     await this.scoreService.savePlayerScore(scoreData, playerScore.existingScoreId);
   }

@@ -8,6 +8,7 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MemberService } from '../../services/memberService';
 import { AuthService } from '../../services/authService';
 import { ScorecardService } from '../../services/scorecardService';
+import { ConfigurationService } from '../../services/configuration.service';
 
 describe('MatchFormComponent', () => {
   let component: MatchFormComponent;
@@ -18,6 +19,7 @@ describe('MatchFormComponent', () => {
   let memberServiceSpy: jasmine.SpyObj<MemberService>;
   let authServiceSpy: jasmine.SpyObj<AuthService>;
   let scorecardServiceSpy: jasmine.SpyObj<ScorecardService>;
+  let configServiceSpy: jasmine.SpyObj<ConfigurationService>;
 
   beforeEach(async () => {
     storeSpy = jasmine.createSpyObj('Store', ['select', 'dispatch']);
@@ -31,6 +33,8 @@ describe('MatchFormComponent', () => {
       name: 'Test User'
     });
     scorecardServiceSpy = jasmine.createSpyObj('ScorecardService', ['getAll']);
+    configServiceSpy = jasmine.createSpyObj('ConfigurationService', ['scoringConfig']);
+    configServiceSpy.scoringConfig.and.returnValue({ handicapCalculationMethod: 'roch' } as any);
 
     storeSpy.select.and.returnValue(of([]));
     memberServiceSpy.getAll.and.returnValue(of([]));
@@ -45,6 +49,7 @@ describe('MatchFormComponent', () => {
         { provide: MemberService, useValue: memberServiceSpy },
         { provide: AuthService, useValue: authServiceSpy },
         { provide: ScorecardService, useValue: scorecardServiceSpy },
+        { provide: ConfigurationService, useValue: configServiceSpy },
         FormBuilder
       ]
     }).compileComponents();

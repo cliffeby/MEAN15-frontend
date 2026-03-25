@@ -1,11 +1,17 @@
 import { Member } from '../models/member';
 
-export function getTeamIndexSum(team: string[], getMemberById: (id: string) => Member | undefined): number {
+function getMemberIndex(member: Member, method: string): number {
+  return method === 'usga'
+    ? (typeof member.usgaIndexB4Round === 'number' ? member.usgaIndexB4Round : 0)
+    : (typeof member.rochIndexB4Round === 'number' ? member.rochIndexB4Round : 0);
+}
+
+export function getTeamIndexSum(team: string[], getMemberById: (id: string) => Member | undefined, method = 'roch'): number {
   let sum = 0;
   for (const memberId of team) {
     const member = getMemberById(memberId);
-    if (member && typeof member.usgaIndexB4Round === 'number') {
-      sum += member.usgaIndexB4Round;
+    if (member) {
+      sum += getMemberIndex(member, method);
     }
   }
   return Math.round(sum * 10) / 10;
@@ -35,14 +41,14 @@ export function getGroupSizes(n: number): number[] {
 
 export type PairedGroup = { teamA: string[]; teamB: string[]; combinedA: number; combinedB: number; loneA?: string };
 
-export function pairFourballTeams(members: Member[], getMemberById: (id: string) => Member | undefined, lineUpsArray: any): {
+export function pairFourballTeams(members: Member[], getMemberById: (id: string) => Member | undefined, lineUpsArray: any, method = 'roch'): {
   pairedTeams: PairedGroup[];
   foursomeIdsTEMP: string[][];
   partnerIdsTEMP: string[][];
 } {
   const lineupIds: string[] = lineUpsArray.value as string[];
   const lineupMembers = lineupIds.map((id) => getMemberById(id)).filter(Boolean) as Member[];
-  lineupMembers.sort((a, b) => (a.usgaIndexB4Round ?? 99) - (b.usgaIndexB4Round ?? 99));
+  lineupMembers.sort((a, b) => (getMemberIndex(a, method) ?? 99) - (getMemberIndex(b, method) ?? 99));
 
   const groupSizes = getGroupSizes(lineupMembers.length);
 
@@ -77,8 +83,8 @@ export function pairFourballTeams(members: Member[], getMemberById: (id: string)
       pairedTeams.push({
         teamA: teamAIds,
         teamB: teamBIds,
-        combinedA: getTeamIndexSum(teamAIds, getMemberById),
-        combinedB: getTeamIndexSum(teamBIds, getMemberById),
+        combinedA: getTeamIndexSum(teamAIds, getMemberById, method),
+        combinedB: getTeamIndexSum(teamBIds, getMemberById, method),
       });
     } else if (size === 3) {
       const A1id = aPlayers[aIdx]?._id as string;
@@ -95,7 +101,7 @@ export function pairFourballTeams(members: Member[], getMemberById: (id: string)
       pairedTeams.push({
         teamA: pairIds,
         teamB: [],
-        combinedA: getTeamIndexSum(pairIds, getMemberById),
+        combinedA: getTeamIndexSum(pairIds, getMemberById, method),
         combinedB: 0,
         loneA: A2id,
       });
@@ -108,7 +114,7 @@ export function pairFourballTeams(members: Member[], getMemberById: (id: string)
       pairedTeams.push({
         teamA: [p1id, p2id],
         teamB: [],
-        combinedA: getTeamIndexSum([p1id, p2id], getMemberById),
+        combinedA: getTeamIndexSum([p1id, p2id], getMemberById, method),
         combinedB: 0,
       });
     } else {
@@ -120,7 +126,7 @@ export function pairFourballTeams(members: Member[], getMemberById: (id: string)
       pairedTeams.push({
         teamA: [soloId],
         teamB: [],
-        combinedA: getTeamIndexSum([soloId], getMemberById),
+        combinedA: getTeamIndexSum([soloId], getMemberById, method),
         combinedB: 0,
       });
     }
@@ -143,11 +149,12 @@ export type RandomPairingCandidate = {
 export function pairFourballTeamsRandom(
   getMemberById: (id: string) => Member | undefined,
   lineUpsArray: any,
-  trials = 500
+  trials = 500,
+  method = 'roch'
 ): RandomPairingCandidate[] {
   const lineupIds: string[] = lineUpsArray.value as string[];
   const lineupMembers = lineupIds.map(id => getMemberById(id)).filter(Boolean) as Member[];
-  lineupMembers.sort((a, b) => (a.usgaIndexB4Round ?? 99) - (b.usgaIndexB4Round ?? 99));
+  lineupMembers.sort((a, b) => (getMemberIndex(a, method) ?? 99) - (getMemberIndex(b, method) ?? 99));
 
   const groupSizes = getGroupSizes(lineupMembers.length);
   const numA = 2 * groupSizes.filter(s => s >= 3).length;
@@ -164,7 +171,8 @@ export function pairFourballTeamsRandom(
   }
 
   function hcap(id: string): number {
-    return getMemberById(id)?.usgaIndexB4Round ?? 0;
+    const m = getMemberById(id);
+    return m ? getMemberIndex(m, method) : 0;
   }
 
   function round1(n: number): number {

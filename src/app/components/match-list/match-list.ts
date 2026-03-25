@@ -329,17 +329,21 @@ export class MatchListComponent implements OnInit, OnDestroy {
 
       const scorecardList = allScorecards?.scorecards || allScorecards || [];
 
-      // Create printable players
+      // Create printable players using the configured handicap calculation method
+      const printScoringConfig = this.configService.scoringConfig();
       const players: PrintablePlayer[] =
         match.lineUps
           ?.map((memberId: any) => {
             const member = members ? members.find((m: any) => m._id === memberId) : null;
             if (member) {
               const memberScorecard = getMemberScorecard(finalScorecard.course, member.scorecardsId || [], scorecardList);
+              const activeIndex = printScoringConfig.handicapCalculationMethod === 'usga'
+                ? member.usgaIndexB4Round || 0
+                : member.rochIndexB4Round || 0;
               return {
                 member,
                 rochIndex: this.hcapCalculationService.calculateCourseHandicap(
-                  member.usgaIndexB4Round || 0,
+                  activeIndex,
                   finalScorecard?.slope,
                 ),
                 teeAbreviation: memberScorecard?.teeAbreviation || '',

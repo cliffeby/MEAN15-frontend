@@ -4,6 +4,7 @@ import { Store } from '@ngrx/store';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { of } from 'rxjs';
 import { FormArray, FormControl } from '@angular/forms';
+import { ConfigurationService } from '../../services/configuration.service';
 
 const mockLineup = [
   { playerId: '1', name: 'Player 1', team: 'A', firstName: 'Player', lastName: 'One',Email: 'mem1@example.com', author: { id: 'u2', email: 'other@example.com', name: 'Other User' } },
@@ -15,10 +16,13 @@ describe('MatchLineupComponent', () => {
   let fixture: ComponentFixture<MatchLineupComponent>;
   let storeSpy: jasmine.SpyObj<Store<any>>;
   let snackBarSpy: jasmine.SpyObj<MatSnackBar>;
+  let configServiceSpy: jasmine.SpyObj<ConfigurationService>;
 
   beforeEach(async () => {
     storeSpy = jasmine.createSpyObj('Store', ['select', 'dispatch']);
     snackBarSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
+    configServiceSpy = jasmine.createSpyObj('ConfigurationService', ['scoringConfig']);
+    configServiceSpy.scoringConfig.and.returnValue({ handicapCalculationMethod: 'roch' } as any);
 
     storeSpy.select.and.callFake((selector: any) => {
       return of([]);
@@ -28,7 +32,8 @@ describe('MatchLineupComponent', () => {
       imports: [MatchLineupComponent],
       providers: [
         { provide: Store, useValue: storeSpy },
-        { provide: MatSnackBar, useValue: snackBarSpy }
+        { provide: MatSnackBar, useValue: snackBarSpy },
+        { provide: ConfigurationService, useValue: configServiceSpy }
       ]
     }).compileComponents();
 

@@ -78,8 +78,9 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   }
 
   getHoleHandicap(playerIndex: number): number {
-    // Returns the rochIndex for a player
-    return this.playerScores[playerIndex]?.rochIndexB4Round || 0;
+    const method = this.configService.scoringConfig().handicapCalculationMethod;
+    const player = this.playerScores[playerIndex];
+    return (method === 'usga' ? player?.usgaIndexB4Round : player?.rochIndexB4Round) || 0;
   }
 
   onKeyDown(event: KeyboardEvent, playerIndex: number, holeIndex: number): void {
@@ -482,7 +483,7 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
     this.playerScores = members.map((member) => ({
       member: member as Member,
       totalScore: null,
-      rochIndexB4Round: (member as Member).usgaIndexB4Round || 0,
+      rochIndexB4Round: (member as Member).rochIndexB4Round || 0,
       usgaIndexB4Round: (member as Member).usgaIndexB4Round || 0,
       usgaIndexAfterRound: 0,
       rochIndexAfterRound: 0,
@@ -780,7 +781,9 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
   private calculatePlayerTotals(playerIndex: number): void {
     const player = this.playerScores[playerIndex];
     const scores = player.scores;
-    const { frontNine, backNine, totalScore, netScore } = calculatePlayerTotals(scores, player.rochIndexB4Round);
+    const method = this.configService.scoringConfig().handicapCalculationMethod;
+    const index = method === 'usga' ? player.usgaIndexB4Round : player.rochIndexB4Round;
+    const { frontNine, backNine, totalScore, netScore } = calculatePlayerTotals(scores, index);
     player.frontNine = frontNine;
     player.backNine = backNine;
     player.totalScore = totalScore;
@@ -913,17 +916,18 @@ export class ScoreEntryComponent implements OnInit, OnDestroy {
       playerScore.scores = holesFormArray.controls.map(ctrl => ctrl.value);
       console.log('savePlayerScore: playerScore.scores before buildScoreData2:', playerScore.scores);
     }
+    const method = this.configService.scoringConfig().handicapCalculationMethod;
     const scoreData = buildScoreData(
       playerScore,
       this.match!,
       this.scorecard!,
       'byHole',
       this.authService.getAuthorObject(),
+      method,
     );
 
     // Apply posting adjustments (e.g. double-bogey max) to scoresToPost / postedScore.
     const pars: number[] = this.scorecard?.pars ?? new Array(18).fill(4);
-    const method = this.configService.scoringConfig().handicapCalculationMethod;
     const { scoresToPost, postedScore } = adjustScoresForPosting(playerScore.scores, pars, method);
     scoreData.scoresToPost = scoresToPost;
     scoreData.postedScore = postedScore;
