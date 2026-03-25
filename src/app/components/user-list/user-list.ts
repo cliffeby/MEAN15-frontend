@@ -1,14 +1,17 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatTableModule } from '@angular/material/table';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatSort, MatSortModule } from '@angular/material/sort';
 import { UserService } from '../../services/userService';
 import { AuthService } from '../../services/authService';
 import { InviteUserDialogComponent } from '../invite-user/invite-user-dialog';
@@ -29,11 +32,19 @@ import { InviteUserDialogComponent } from '../invite-user/invite-user-dialog';
     MatSelectModule,
     MatFormFieldModule,
     MatTableModule,
+    MatSortModule,
+    MatInputModule,
+    FormsModule,
   ]
 })
-export class UserListComponent implements OnInit {
-  users: any[] = [];
+export class UserListComponent implements OnInit, AfterViewInit {
+  dataSource = new MatTableDataSource<any>([]);
+  searchTerm = '';
   loading = false;
+
+  @ViewChild(MatSort) set sort(sort: MatSort) {
+    if (sort) this.dataSource.sort = sort;
+  }
 
   private userService = inject(UserService);
   private snackBar = inject(MatSnackBar);
@@ -55,11 +66,25 @@ export class UserListComponent implements OnInit {
     this.loadUsers();
   }
 
+  ngAfterViewInit() {
+    this.dataSource.filterPredicate = (user, filter) => {
+      const term = filter.toLowerCase();
+      return (
+        user.name?.toLowerCase().includes(term) ||
+        user.email?.toLowerCase().includes(term)
+      );
+    };
+  }
+
+  applyFilter() {
+    this.dataSource.filter = this.searchTerm.trim().toLowerCase();
+  }
+
   loadUsers() {
     this.loading = true;
     this.userService.getAll().subscribe({
       next: (res) => {
-        this.users = res.users || res;
+        this.dataSource.data = res.users || res;
         this.loading = false;
       },
       error: () => {
