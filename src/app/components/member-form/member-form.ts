@@ -65,6 +65,13 @@ export class MemberFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // If the user is a plain 'user' (not fieldhand+), lock the Email to their own address
+    if (!this.authService.hasMinRole('fieldhand')) {
+      const ownEmail = this.authService.getAuthorEmail() || '';
+      this.memberForm.get('Email')?.setValue(ownEmail);
+      this.memberForm.get('Email')?.disable();
+    }
+
     this.scorecardService.getAll().subscribe((response) => {
       this.scorecards = Array.isArray(response) ? response : response.scorecards || [];
       this.sortedScorecards = [...this.scorecards].sort((a, b) => {
@@ -157,17 +164,41 @@ export class MemberFormComponent implements OnInit {
     if (this.memberForm.invalid) return;
     this.loading = true;
     const author = this.authService.getAuthorObject();
-    const memberData = { ...this.memberForm.value, author };
+    const memberData = { ...this.memberForm.getRawValue(), author };
+    const email = memberData.Email?.toLowerCase();
 
-    this.memberService.create(memberData).subscribe({
-      next: () => {
-        this.snackBar.open('Member created!', 'Close', { duration: 2000 });
-        this.memberForm.reset();
-        this.defaultCourseTees = [];
-        this.loading = false;
+    // Check if a member with this email already exists; if so, update instead of create
+    this.memberService.getAll().subscribe({
+      next: (members: any[]) => {
+        const existing = members.find((m: any) => m.Email?.toLowerCase() === email);
+        if (existing) {
+          this.memberService.update(existing._id, memberData).subscribe({
+            next: () => {
+              this.snackBar.open('Member updated!', 'Close', { duration: 2000 });
+              this.loading = false;
+              this.router.navigate(['/members']);
+            },
+            error: () => {
+              this.snackBar.open('Error updating member', 'Close', { duration: 2000 });
+              this.loading = false;
+            },
+          });
+        } else {
+          this.memberService.create(memberData).subscribe({
+            next: () => {
+              this.snackBar.open('Member created!', 'Close', { duration: 2000 });
+              this.loading = false;
+              this.router.navigate(['/members']);
+            },
+            error: () => {
+              this.snackBar.open('Error creating member', 'Close', { duration: 2000 });
+              this.loading = false;
+            },
+          });
+        }
       },
       error: () => {
-        this.snackBar.open('Error creating member', 'Close', { duration: 2000 });
+        this.snackBar.open('Error checking existing members', 'Close', { duration: 2000 });
         this.loading = false;
       },
     });

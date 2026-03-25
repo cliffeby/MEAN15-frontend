@@ -63,13 +63,13 @@ export const routes: Routes = [
         path: 'members/add',
         component: MemberFormComponent,
         canActivate: [roleGuard],
-        data: { role: 'admin' },
+        data: { role: 'user' },
       },
       {
         path: 'members/edit/:id',
         component: MemberEditComponent,
         canActivate: [roleGuard],
-        data: { role: 'admin' },
+        data: { role: 'user' },
       },
       {
         path: 'users',

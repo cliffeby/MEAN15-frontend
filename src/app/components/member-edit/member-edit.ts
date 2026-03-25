@@ -89,6 +89,10 @@ export class MemberEditComponent implements OnInit {
             ...patchMember,
             CellPhone: this.formatPhone(patchMember.CellPhone),
           });
+          // If the user is a plain 'user' (not fieldhand+), lock the Email field
+          if (!this.authService.hasMinRole('fieldhand')) {
+            this.memberForm.get('Email')?.disable();
+          }
           // Support both [{scorecardId}] and [string] for scorecardsId
           let ids: string[] = [];
           if (Array.isArray(member.scorecardsId) && member.scorecardsId.length > 0) {
@@ -180,7 +184,7 @@ export class MemberEditComponent implements OnInit {
     this.loading = true;
     const author = this.authService.getAuthorObject();
     // Ensure scorecardsId is always an array of objects with scorecardId property
-    let memberData = { ...this.memberForm.value, author };
+    let memberData = { ...this.memberForm.getRawValue(), author };
     // Strip phone formatting before saving
     if (memberData.CellPhone) {
       memberData.CellPhone = memberData.CellPhone.replace(/\D/g, '');

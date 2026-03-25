@@ -112,7 +112,19 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
   get isAuthorizedToDelete(): boolean {
     return this.authService.hasMinRole('admin');
   }
-    get author(): any | null {
+  /** Any authenticated user can navigate to add (backend enforces email constraint) */
+  get canAddMember(): boolean {
+    return this.authService.hasMinRole('user');
+  }
+  get currentUserEmail(): string | null {
+    return this.authService.getAuthorEmail();
+  }
+  /** Fieldhand+ can edit anyone; a plain user can only edit their own email-matched record */
+  canEditMember(member: any): boolean {
+    if (this.isAuthorized) return true;
+    return member.Email?.toLowerCase() === this.currentUserEmail?.toLowerCase();
+  }
+  get author(): any | null {
     return this.authService.getAuthorObject();
   }
 
@@ -348,15 +360,16 @@ export class MemberListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   editMember(id: string) {
-    if (!this.isAuthorized) {
-      this.snackBar.open('You are not authorized to edit members.', 'Close', { duration: 2500 });
+    const member = this.members.find(m => (m._id || '') === id);
+    if (!member || !this.canEditMember(member)) {
+      this.snackBar.open('You are not authorized to edit this member.', 'Close', { duration: 2500 });
       return;
     }
     this.router.navigate(['/members/edit', id]);
   }
 
   addMember() {
-    if (!this.isAuthorized) {
+    if (!this.canAddMember) {
       this.snackBar.open('You are not authorized to add members.', 'Close', { duration: 2500 });
       return;
     }
