@@ -556,10 +556,22 @@ ${winnersHtml}
     this.showEmailPreview = false;
   }
 
+  /** Normalize a raw score document: replace any populated ObjectId fields with their string _id values. */
+  private normalizeScoreForUpdate(rawScore: any): any {
+    const toId = (v: any) => (v && typeof v === 'object' && v._id) ? v._id : v;
+    return {
+      ...rawScore,
+      matchId:     toId(rawScore.matchId),
+      memberId:    toId(rawScore.memberId),
+      scorecardId: toId(rawScore.scorecardId),
+    };
+  }
+
   private clearWinnersForAllPlayers(): void {
     this.rawScoreByMember.forEach((rawScore) => {
       if (!rawScore?._id) return;
-      this.scoreService.update(rawScore._id, { ...rawScore, wonOneBall: false, wonTwoBall: false, wonIndo: false }).subscribe({
+      const payload = { ...this.normalizeScoreForUpdate(rawScore), wonOneBall: false, wonTwoBall: false, wonIndo: false };
+      this.scoreService.update(rawScore._id, payload).subscribe({
         error: (err: any) => console.warn('Failed to clear winner flags:', err),
       });
     });
@@ -576,7 +588,7 @@ ${winnersHtml}
       const rawScore = this.rawScoreByMember.get(mid);
       if (!rawScore?._id) continue;
       const updated = {
-        ...rawScore,
+        ...this.normalizeScoreForUpdate(rawScore),
         wonOneBall: winners.oneBallWinners.includes(mid),
         wonTwoBall: winners.twoBallWinners.includes(mid),
         wonIndo: winners.indoWinners.includes(mid),

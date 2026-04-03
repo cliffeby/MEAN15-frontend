@@ -467,8 +467,8 @@ export class ScorecardPdfService {
       const playerHandicap = player.rochIndex;
       const holeHandicap = this.handicapService.getHoleHandicap(scorecard, hole);
       const strokeCount = this.handicapService.getStrokeCountOnHole(playerHandicap, holeHandicap);
-      const lowestHandicapStrokeCount = this.handicapService.getStrokeCountOnHole(lowestHandicap, holeHandicap);
-      const differentialStrokeCount = Math.max(0, strokeCount - lowestHandicapStrokeCount);
+      const handicapDiff = Math.max(0, Math.round(playerHandicap) - Math.round(lowestHandicap));
+      const differentialStrokeCount = this.handicapService.getStrokeCountOnHole(handicapDiff, holeHandicap);
       const scoreVal = holeScores[hole];
       const scoreText = (scoreVal != null && scoreVal > 0) ? scoreVal.toString() : undefined;
       currentX = this.drawCell(pdf, currentX, y, holeColWidth, 8, scoreText, true, undefined, undefined, strokeCount, differentialStrokeCount, false, !!scoreText);

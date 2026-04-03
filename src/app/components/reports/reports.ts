@@ -306,6 +306,13 @@ export class ReportsComponent implements OnInit {
       };
     });
   }
+    public calculateCourseHandicap(index: number, slope: number | undefined): number {
+    if (!index || !slope) {
+      return 0;
+    }
+    return Math.round((index * slope) / 113);
+  }
+
 
   // Utility to get grouped player display info by partner for each foursome, using the API's flat partnerIdsTEMP
   getFoursomePartnerDisplayGroups(members: Member[]): Array<{
